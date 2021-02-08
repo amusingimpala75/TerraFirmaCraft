@@ -7,6 +7,7 @@
 package net.dries007.tfc.common.tileentity;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntityType;
 
@@ -22,7 +23,7 @@ public class FarmlandTileEntity extends TFCTileEntity
         this(TFCTileEntities.FARMLAND.get());
     }
 
-    protected FarmlandTileEntity(TileEntityType<?> type)
+    protected FarmlandTileEntity(BlockEntityType<?> type)
     {
         super(type);
 

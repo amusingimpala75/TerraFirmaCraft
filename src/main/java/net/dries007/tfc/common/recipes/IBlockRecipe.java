@@ -9,14 +9,14 @@ package net.dries007.tfc.common.recipes;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.recipe.Recipe;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 /**
- * A simple {@link IRecipe} extension for {@link BlockRecipeWrapper}
+ * A simple {@link Recipe} extension for {@link BlockRecipeWrapper}
  */
 public interface IBlockRecipe extends ISimpleRecipe<BlockRecipeWrapper>
 {
@@ -27,19 +27,19 @@ public interface IBlockRecipe extends ISimpleRecipe<BlockRecipeWrapper>
     }
 
     @Override
-    default ItemStack getResultItem()
+    default ItemStack getOutput()
     {
         return new ItemStack(getBlockRecipeOutput());
     }
 
     @Override
-    default ItemStack assemble(BlockRecipeWrapper inv)
+    default ItemStack craft(BlockRecipeWrapper inv)
     {
         return new ItemStack(getBlockCraftingResult(inv).getBlock());
     }
 
     /**
-     * Specific parameter version of {@link net.minecraft.item.crafting.IRecipe#matches(IInventory, World)} for block recipes
+     * Specific parameter version of {@link Recipe#matches(Inventory, World)} for block recipes
      */
     default boolean matches(World worldIn, BlockPos pos, BlockState state)
     {
@@ -47,15 +47,15 @@ public interface IBlockRecipe extends ISimpleRecipe<BlockRecipeWrapper>
     }
 
     /**
-     * Specific parameter version of {@link net.minecraft.item.crafting.IRecipe#getCraftingResult(IInventory)} for block recipes.
+     * Specific parameter version of {@link Recipe#craft(Inventory)} for block recipes.
      */
     default BlockState getBlockCraftingResult(BlockRecipeWrapper wrapper)
     {
-        return getBlockRecipeOutput().defaultBlockState();
+        return getBlockRecipeOutput().getDefaultState();
     }
 
     /**
-     * Specific parameter version of {@link IRecipe#getRecipeOutput()} for block recipes.
+     * Specific parameter version of {@link Recipe#getOutput()} for block recipes.
      */
     default Block getBlockRecipeOutput()
     {

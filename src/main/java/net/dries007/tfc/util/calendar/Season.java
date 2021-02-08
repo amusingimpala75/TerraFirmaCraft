@@ -6,9 +6,9 @@
 
 package net.dries007.tfc.util.calendar;
 
-import net.minecraft.util.IStringSerializable;
+import net.minecraft.util.StringIdentifiable;
 
-public enum Season implements IStringSerializable
+public enum Season implements StringIdentifiable
 {
     SPRING,
     SUMMER,
@@ -30,7 +30,7 @@ public enum Season implements IStringSerializable
     }
 
     @Override
-    public String getSerializedName()
+    public String asString()
     {
         return serializedName;
     }

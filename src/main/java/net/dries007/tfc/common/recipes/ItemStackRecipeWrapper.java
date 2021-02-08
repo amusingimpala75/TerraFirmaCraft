@@ -9,7 +9,7 @@ package net.dries007.tfc.common.recipes;
 import net.minecraft.item.ItemStack;
 
 /**
- * A {@link net.minecraftforge.items.wrapper.RecipeWrapper} for single item stacks.
+ * A RecipeWrapper for single item stacks.
  */
 public class ItemStackRecipeWrapper implements IInventoryNoop
 {
@@ -26,7 +26,7 @@ public class ItemStackRecipeWrapper implements IInventoryNoop
     }
 
     @Override
-    public int getContainerSize()
+    public int size()
     {
         return 1;
     }
@@ -38,31 +38,31 @@ public class ItemStackRecipeWrapper implements IInventoryNoop
     }
 
     @Override
-    public ItemStack getItem(int index)
+    public ItemStack getStack(int index)
     {
         return stack;
     }
 
     @Override
-    public ItemStack removeItem(int index, int count)
+    public ItemStack removeStack(int index, int count)
     {
         return stack.split(count);
     }
 
     @Override
-    public ItemStack removeItemNoUpdate(int index)
+    public ItemStack removeStack(int index)
     {
         return stack.split(stack.getCount());
     }
 
     @Override
-    public void setItem(int index, ItemStack stack)
+    public void setStack(int index, ItemStack stack)
     {
         this.stack = stack;
     }
 
     @Override
-    public void clearContent()
+    public void clear()
     {
         stack = ItemStack.EMPTY;
     }

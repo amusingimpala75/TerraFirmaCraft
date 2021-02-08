@@ -6,7 +6,7 @@
 
 package net.dries007.tfc.mixin.client.renderer;
 
-import net.minecraft.client.renderer.FluidBlockRenderer;
+import net.minecraft.client.render.block.FluidRenderer;
 import net.minecraft.fluid.Fluid;
 
 import net.dries007.tfc.common.fluids.FluidHelpers;
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(FluidBlockRenderer.class)
+@Mixin(FluidRenderer.class)
 public abstract class FluidBlockRendererMixin
 {
     /**
@@ -22,10 +22,10 @@ public abstract class FluidBlockRendererMixin
      * We redirect the sameness call to one which compares for mixable fluids as well
      * Non-critical, so require none.
      */
-    @Redirect(method = "isNeighborSameFluid", at = @At(value = "INVOKE", target = "Lnet/minecraft/fluid/Fluid;isSame(Lnet/minecraft/fluid/Fluid;)Z"), require = 0)
+    @Redirect(method = "isSameFluid", at = @At(value = "INVOKE", target = "Lnet/minecraft/fluid/Fluid;isSame(Lnet/minecraft/fluid/Fluid;)Z"), require = 0)
     private static boolean redirect$isNeighborSameFluid$isSame(Fluid fluid, Fluid fluidIn)
     {
-        return fluid.isSame(fluidIn) || FluidHelpers.canMixFluids(fluid, fluidIn);
+        return fluid.matchesType(fluidIn) || FluidHelpers.canMixFluids(fluid, fluidIn);
     }
 
     /**
@@ -33,9 +33,9 @@ public abstract class FluidBlockRendererMixin
      * We redirect the sameness call to one which compares for mixable fluids as well.
      * Non-critical, so require none.
      */
-    @Redirect(method = "getWaterHeight", at = @At(value = "INVOKE", target = "Lnet/minecraft/fluid/Fluid;isSame(Lnet/minecraft/fluid/Fluid;)Z"), require = 0)
+    @Redirect(method = "getNorthWestCornerFluidHeight", at = @At(value = "INVOKE", target = "Lnet/minecraft/fluid/Fluid;isSame(Lnet/minecraft/fluid/Fluid;)Z"), require = 0)
     private boolean redirect$getWaterHeight$isSame(Fluid fluid, Fluid fluidIn)
     {
-        return fluid.isSame(fluidIn) || FluidHelpers.canMixFluids(fluid, fluidIn);
+        return fluid.matchesType(fluidIn) || FluidHelpers.canMixFluids(fluid, fluidIn);
     }
 }

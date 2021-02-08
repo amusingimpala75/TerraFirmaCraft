@@ -6,23 +6,23 @@
 
 package net.dries007.tfc.common.recipes;
 
-import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
+import net.minecraft.recipe.Recipe;
 
 /**
- * A simple set of implementations for {@link IRecipe}, that skips some of the more unused methods for non-crafting uses.
+ * A simple set of implementations for {@link Recipe}, that skips some of the more unused methods for non-crafting uses.
  */
-public interface ISimpleRecipe<C extends IInventory> extends IRecipe<C>
+public interface ISimpleRecipe<C extends Inventory> extends Recipe<C>
 {
     @Override
-    default ItemStack assemble(C inv)
+    default ItemStack craft(C inv)
     {
-        return getResultItem().copy();
+        return getOutput().copy();
     }
 
     @Override
-    default boolean canCraftInDimensions(int width, int height)
+    default boolean fits(int width, int height)
     {
         return true;
     }
@@ -30,10 +30,10 @@ public interface ISimpleRecipe<C extends IInventory> extends IRecipe<C>
     /**
      * This is overridden by default for our recipes as vanilla only supports it's own recipe types in the recipe book anyway.
      * There have been forge PRs to try and add support to this, but frankly, nobody cares.
-     * This then prevents "Unknown recipe category" log spam for every recipe in {@link net.minecraft.client.util.ClientRecipeBook#categorizeAndGroupRecipes(Iterable)}
+     * This then prevents "Unknown recipe category" log spam for every recipe in ClientRecipeBook#categorizeAndGroupRecipes(Iterable)}
      */
     @Override
-    default boolean isSpecial()
+    default boolean isIgnoredInRecipeBook()
     {
         return true;
     }

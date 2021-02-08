@@ -7,7 +7,6 @@
 package net.dries007.tfc.util.data;
 
 import java.util.*;
-import javax.annotation.Nullable;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -15,23 +14,24 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import net.minecraft.resource.JsonDataLoader;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
+import net.minecraft.util.profiler.Profiler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import net.minecraft.client.resources.JsonReloadListener;
-import net.minecraft.profiler.IProfiler;
-import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.crafting.CraftingHelper;
 
 import net.dries007.tfc.TerraFirmaCraft;
+import org.jetbrains.annotations.Nullable;
 
-public abstract class DataManager<T> extends JsonReloadListener
+public abstract class DataManager<T> extends JsonDataLoader
 {
     public static final Logger LOGGER = LogManager.getLogger();
 
     protected final Gson gson;
-    protected final BiMap<ResourceLocation, T> types;
+    protected final BiMap<Identifier, T> types;
 
     protected final List<Runnable> callbacks;
     protected final String typeName;
@@ -54,12 +54,12 @@ public abstract class DataManager<T> extends JsonReloadListener
     }
 
     @Nullable
-    public T get(ResourceLocation id)
+    public T get(Identifier id)
     {
         return types.get(id);
     }
 
-    public T getOrDefault(ResourceLocation id)
+    public T getOrDefault(Identifier id)
     {
         return types.getOrDefault(id, getDefault());
     }
@@ -70,7 +70,7 @@ public abstract class DataManager<T> extends JsonReloadListener
     }
 
     @Nullable
-    public ResourceLocation getId(T type)
+    public Identifier getId(T type)
     {
         return types.inverse().get(type);
     }
@@ -80,7 +80,7 @@ public abstract class DataManager<T> extends JsonReloadListener
         return types.values();
     }
 
-    public Set<ResourceLocation> getKeys()
+    public Set<Identifier> getKeys()
     {
         return types.keySet();
     }
@@ -96,13 +96,13 @@ public abstract class DataManager<T> extends JsonReloadListener
     }
 
     @Override
-    protected void apply(Map<ResourceLocation, JsonElement> objectIn, IResourceManager resourceManagerIn, IProfiler profilerIn)
+    protected void apply(Map<Identifier, JsonElement> objectIn, ResourceManager resourceManagerIn, Profiler profilerIn)
     {
         types.clear();
-        for (Map.Entry<ResourceLocation, JsonElement> entry : objectIn.entrySet())
+        for (Map.Entry<Identifier, JsonElement> entry : objectIn.entrySet())
         {
-            ResourceLocation name = entry.getKey();
-            JsonObject json = JSONUtils.convertToJsonObject(entry.getValue(), "root");
+            Identifier name = entry.getKey();
+            JsonObject json = JsonHelper.asObject(entry.getValue(), "root");
             try
             {
                 if (CraftingHelper.processConditions(json, "conditions"))
@@ -132,7 +132,7 @@ public abstract class DataManager<T> extends JsonReloadListener
         postProcess();
     }
 
-    protected abstract T read(ResourceLocation id, JsonObject obj);
+    protected abstract T read(Identifier id, JsonObject obj);
 
     /**
      * Here for subclasses to override

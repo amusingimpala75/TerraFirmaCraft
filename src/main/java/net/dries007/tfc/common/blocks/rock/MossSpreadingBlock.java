@@ -10,9 +10,9 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
 
 import net.dries007.tfc.config.TFCConfig;
 
@@ -20,9 +20,9 @@ public class MossSpreadingBlock extends Block
 {
     public static void spreadMoss(World world, BlockPos pos, BlockState state, Random random)
     {
-        if (world.isAreaLoaded(pos, 5) && TFCConfig.SERVER.enableMossyRockSpreading.get() && random.nextInt(TFCConfig.SERVER.mossyRockSpreadRate.get()) == 0)
+        if (world.isRegionLoaded(pos, 5) && TFCConfig.SERVER.enableMossyRockSpreading.get() && random.nextInt(TFCConfig.SERVER.mossyRockSpreadRate.get()) == 0)
         {
-            BlockPos targetPos = pos.offset(random.nextInt(4) - random.nextInt(4), random.nextInt(4) - random.nextInt(4), random.nextInt(4) - random.nextInt(4));
+            BlockPos targetPos = pos.add(random.nextInt(4) - random.nextInt(4), random.nextInt(4) - random.nextInt(4), random.nextInt(4) - random.nextInt(4));
             BlockState targetState = world.getBlockState(targetPos);
             if (targetState.getBlock() instanceof IMossGrowingBlock)
             {
@@ -31,9 +31,9 @@ public class MossSpreadingBlock extends Block
         }
     }
 
-    public MossSpreadingBlock(Properties properties)
+    public MossSpreadingBlock(Settings properties)
     {
-        super(properties.randomTicks());
+        super(properties.ticksRandomly());
     }
 
     @Override

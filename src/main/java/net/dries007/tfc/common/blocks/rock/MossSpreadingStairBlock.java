@@ -11,18 +11,18 @@ import java.util.function.Supplier;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.StairsBlock;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
 
 public class MossSpreadingStairBlock extends StairsBlock
 {
-    public MossSpreadingStairBlock(Supplier<BlockState> state, Properties properties)
+    public MossSpreadingStairBlock(Supplier<BlockState> state, Settings properties)
     {
-        super(state, properties);
+        super(state.get(), properties);
     }
 
     @Override
-    public boolean isRandomlyTicking(BlockState state)
+    public boolean hasRandomTicks(BlockState state)
     {
         return true;
     }

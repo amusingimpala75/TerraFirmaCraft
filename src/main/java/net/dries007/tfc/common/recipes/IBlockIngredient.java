@@ -14,17 +14,18 @@ import java.util.stream.Collectors;
 import com.google.gson.*;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.command.arguments.BlockStateParser;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.state.Property;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.ITag;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.util.Lazy;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.state.property.Property;
+import net.minecraft.tag.BlockTags;
+import net.minecraft.tag.RequiredTagList;
+import net.minecraft.tag.Tag;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
+import net.minecraft.util.Lazy;
 
 import net.dries007.tfc.util.Helpers;
+import net.minecraft.util.registry.Registry;
 
 /**
  * This is a simple predicate wrapper for block states.
@@ -79,7 +80,7 @@ public interface IBlockIngredient extends Predicate<BlockState>
                     subIngredients.add(read(subElement));
                 }
                 // Lazy initialize because tags aren't ready to be resolved yet
-                Lazy<Collection<Block>> lazyBlockCollection = Lazy.of(() -> subIngredients.stream().flatMap(i -> i.getValidBlocks().stream()).collect(Collectors.toSet()));
+                Lazy<Collection<Block>> lazyBlockCollection = new Lazy(() -> subIngredients.stream().flatMap(i -> i.getValidBlocks().stream()).collect(Collectors.toSet()));
                 return new IBlockIngredient()
                 {
                     @Override
@@ -111,11 +112,11 @@ public interface IBlockIngredient extends Predicate<BlockState>
                 }
                 else if (obj.has("block"))
                 {
-                    return createSingle(JSONUtils.getAsString(obj, "block"));
+                    return createSingle(JsonHelper.getString(obj, "block"));
                 }
                 else if (obj.has("tag"))
                 {
-                    return createTag(JSONUtils.getAsString(obj, "tag"));
+                    return createTag(JsonHelper.getString(obj, "tag"));
                 }
                 else
                 {
@@ -132,13 +133,13 @@ public interface IBlockIngredient extends Predicate<BlockState>
         /**
          * This is not a direct read, it only populates the block list
          */
-        public IBlockIngredient read(PacketBuffer buffer)
+        public IBlockIngredient read(PacketByteBuf buffer)
         {
             int amount = buffer.readVarInt();
             List<Block> validBlocks = new ArrayList<>();
             for (int i = 0; i < amount; i++)
             {
-                validBlocks.add(buffer.readRegistryIdUnsafe(ForgeRegistries.BLOCKS));
+                validBlocks.add(Registry.BLOCK.get(buffer.readIdentifier()));
             }
             return new IBlockIngredient()
             {
@@ -156,24 +157,24 @@ public interface IBlockIngredient extends Predicate<BlockState>
             };
         }
 
-        public void write(PacketBuffer buffer, IBlockIngredient ingredient)
+        public void write(PacketByteBuf buffer, IBlockIngredient ingredient)
         {
             Collection<Block> validBlocks = ingredient.getValidBlocks();
             buffer.writeVarInt(validBlocks.size());
             for (Block block : validBlocks)
             {
-                buffer.writeRegistryIdUnsafe(ForgeRegistries.BLOCKS, block);
+                buffer.writeIdentifier(Registry.BLOCK.getId(block));
             }
         }
 
         private IBlockIngredient createSingle(String blockName) throws JsonParseException
         {
-            BlockStateParser parser = Helpers.parseBlockState(blockName, false);
-            if (parser.getState() == null)
+            BlockArgumentParser parser = Helpers.parseBlockState(blockName, false);
+            if (parser.getBlockState() == null)
             {
                 throw new JsonParseException("Unable to parse block state");
             }
-            Block block = parser.getState().getBlock();
+            Block block = parser.getBlockState().getBlock();
             List<Block> blockList = Collections.singletonList(block);
             if (parser.getProperties().isEmpty())
             {
@@ -201,9 +202,9 @@ public interface IBlockIngredient extends Predicate<BlockState>
                     {
                         if (stateIn.getBlock() == block)
                         {
-                            for (Map.Entry<Property<?>, Comparable<?>> entry : parser.getProperties().entrySet())
+                            for (Map.Entry<Property<?>, Comparable<?>> entry : parser.getBlockProperties().entrySet())
                             {
-                                if (!stateIn.getValue(entry.getKey()).equals(entry.getValue()))
+                                if (!stateIn.get(entry.getKey()).equals(entry.getValue()))
                                 {
                                     return false;
                                 }
@@ -224,7 +225,7 @@ public interface IBlockIngredient extends Predicate<BlockState>
 
         private IBlockIngredient createTag(String tagName) throws JsonParseException
         {
-            ITag<Block> tag = BlockTags.getAllTags().getTag(new ResourceLocation(tagName));
+            Tag<Block> tag = ((RequiredTagList<Block>)BlockTags.getRequiredTags()).getGroup().getTagOrEmpty(new Identifier(tagName));
             if (tag != null)
             {
                 return new IBlockIngredient()
@@ -238,7 +239,7 @@ public interface IBlockIngredient extends Predicate<BlockState>
                     @Override
                     public Collection<Block> getValidBlocks()
                     {
-                        return tag.getValues();
+                        return tag.values();
                     }
                 };
             }

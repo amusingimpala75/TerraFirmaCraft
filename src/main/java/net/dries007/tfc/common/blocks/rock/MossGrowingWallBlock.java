@@ -22,7 +22,7 @@ public class MossGrowingWallBlock extends WallBlock implements IMossGrowingBlock
 {
     private final Supplier<? extends Block> mossy;
 
-    public MossGrowingWallBlock(Properties properties, Supplier<? extends Block> mossy)
+    public MossGrowingWallBlock(Settings properties, Supplier<? extends Block> mossy)
     {
         super(properties);
 
@@ -34,7 +34,7 @@ public class MossGrowingWallBlock extends WallBlock implements IMossGrowingBlock
     {
         if (!needsWater || FluidHelpers.isSame(worldIn.getFluidState(pos), Fluids.WATER))
         {
-            worldIn.setBlockAndUpdate(pos, Helpers.copyProperties(mossy.get().defaultBlockState(), state));
+            worldIn.setBlockState(pos, Helpers.copyProperties(mossy.get().getDefaultState(), state));
         }
     }
 }

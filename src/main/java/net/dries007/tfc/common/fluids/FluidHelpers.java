@@ -8,6 +8,7 @@ package net.dries007.tfc.common.fluids;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.FlowingFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
@@ -17,6 +18,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldView;
 import net.minecraftforge.event.ForgeEventFactory;
 
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
@@ -63,7 +65,7 @@ public class FluidHelpers
      * @return The fluid state that should exist at that position
      * @see FlowingFluid#getNewLiquid(IWorldReader, BlockPos, BlockState)
      */
-    public static FluidState getNewFluidWithMixing(FlowingFluid self, IWorldReader worldIn, BlockPos pos, BlockState blockStateIn, boolean canConvertToSource, int dropOff)
+    public static FluidState getNewFluidWithMixing(FlowableFluid self, WorldView worldIn, BlockPos pos, BlockState blockStateIn, boolean canConvertToSource, int dropOff)
     {
         int maxAdjacentFluidAmount = 0; // The maximum height of fluids flowing into this block from the sides
         FlowingFluid maxAdjacentFluid = self;

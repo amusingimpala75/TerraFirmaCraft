@@ -27,9 +27,9 @@ import net.dries007.tfc.common.TFCTags;
 import net.dries007.tfc.common.fluids.FluidProperty;
 import net.dries007.tfc.common.fluids.IFluidLoggable;
 
-public abstract class KelpTreeBlock extends SixWayBlock implements IFluidLoggable
+public abstract class KelpTreeBlock extends FacingBlock implements IFluidLoggable
 {
-    public static KelpTreeBlock create(AbstractBlock.Properties builder, FluidProperty fluid)
+    public static KelpTreeBlock create(AbstractBlock.Settings builder, FluidProperty fluid)
     {
         return new KelpTreeBlock(builder)
         {
@@ -41,7 +41,7 @@ public abstract class KelpTreeBlock extends SixWayBlock implements IFluidLoggabl
         };
     }
 
-    protected KelpTreeBlock(AbstractBlock.Properties builder)
+    protected KelpTreeBlock(AbstractBlock.Settings builder)
     {
         super(0.3125F, builder);
         registerDefaultState(stateDefinition.any().setValue(NORTH, Boolean.FALSE).setValue(EAST, Boolean.FALSE).setValue(SOUTH, Boolean.FALSE).setValue(WEST, Boolean.FALSE).setValue(UP, Boolean.FALSE).setValue(DOWN, Boolean.FALSE).setValue(getFluidProperty(), getFluidProperty().keyFor(Fluids.EMPTY)));

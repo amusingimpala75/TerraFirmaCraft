@@ -8,17 +8,15 @@ package net.dries007.tfc.common.recipes;
 
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.ICraftingRecipe;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.util.NonNullList;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.recipe.CraftingRecipe;
 
 import net.dries007.tfc.util.Helpers;
+import net.minecraft.recipe.Recipe;
+import net.minecraft.util.Identifier;
 
-public class DamageInputsCraftingRecipe extends DelegatingRecipe<CraftingInventory> implements ICraftingRecipe
+public class DamageInputsCraftingRecipe extends DelegatingRecipe<CraftingInventory> implements CraftingRecipe
 {
-    protected DamageInputsCraftingRecipe(ResourceLocation id, IRecipe<CraftingInventory> recipe)
+    protected DamageInputsCraftingRecipe(Identifier id, Recipe<CraftingInventory> recipe)
     {
         super(id, recipe);
     }
@@ -43,8 +41,8 @@ public class DamageInputsCraftingRecipe extends DelegatingRecipe<CraftingInvento
     }
 
     @Override
-    public IRecipeSerializer<?> getSerializer()
+    public RecipeSerializer<?> getSerializer()
     {
-        return TFCRecipeSerializers.DAMAGE_INPUTS_CRAFTING.get();
+        return TFCRecipeSerializers.DAMAGE_INPUTS_CRAFTING;
     }
 }

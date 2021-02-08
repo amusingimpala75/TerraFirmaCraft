@@ -10,9 +10,9 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
-import net.minecraft.loot.LootContext;
-import net.minecraft.loot.LootParameter;
 
+import net.minecraft.loot.context.LootContext;
+import net.minecraft.loot.context.LootContextParameter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
@@ -24,13 +24,13 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 @Mixin(LootContext.Builder.class)
 public abstract class LootContextBuilderMixin
 {
-    private static final Sets.SetView<LootParameter<?>> EMPTY = Sets.union(Collections.emptySet(), Collections.emptySet());
+    private static final Sets.SetView<LootContextParameter<?>> EMPTY = Sets.union(Collections.emptySet(), Collections.emptySet());
 
     /**
      * This specifically ignores the first empty set check, by just not computing the extra parameters
      */
-    @Redirect(method = "create", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Sets;difference(Ljava/util/Set;Ljava/util/Set;)Lcom/google/common/collect/Sets$SetView;", remap = false, ordinal = 0))
-    private Sets.SetView<LootParameter<?>> redirect$create$difference(Set<?> set1, Set<?> set2)
+    @Redirect(method = "build", at = @At(value = "INVOKE", target = "Lcom/google/common/collect/Sets;difference(Ljava/util/Set;Ljava/util/Set;)Lcom/google/common/collect/Sets$SetView;", remap = false, ordinal = 0))
+    private Sets.SetView<LootContextParameter<?>> redirect$create$difference(Set<?> set1, Set<?> set2)
     {
         return EMPTY;
     }

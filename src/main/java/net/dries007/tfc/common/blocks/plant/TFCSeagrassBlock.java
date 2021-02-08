@@ -22,7 +22,7 @@ public abstract class TFCSeagrassBlock extends WaterPlantBlock
     protected static final VoxelShape SHORT_GRASS_SHAPE = box(2.0, 0.0, 2.0, 14.0, 12.0, 14.0);
     protected static final VoxelShape SHORTEST_GRASS_SHAPE = box(2.0, 0.0, 2.0, 14.0, 4.0, 14.0);
 
-    public static TFCSeagrassBlock create(IPlant plant, FluidProperty fluid, AbstractBlock.Properties properties)
+    public static TFCSeagrassBlock create(IPlant plant, FluidProperty fluid, AbstractBlock.Settings properties)
     {
         return new TFCSeagrassBlock(properties)
         {
@@ -40,7 +40,7 @@ public abstract class TFCSeagrassBlock extends WaterPlantBlock
         };
     }
 
-    protected TFCSeagrassBlock(AbstractBlock.Properties properties)
+    protected TFCSeagrassBlock(AbstractBlock.Settings properties)
     {
         super(properties);
     }

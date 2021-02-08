@@ -10,10 +10,10 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockReader;
+import net.minecraft.world.BlockView;
 
 /**
- * This is a version of {@link net.minecraftforge.items.wrapper.RecipeWrapper} that is intended to be used for {@link IBlockRecipe}.
+ * This is a version of RecipeWrapper that is intended to be used for {@link IBlockRecipe}.
  * It extends {@link ItemStackRecipeWrapper} for ease of use, and so the block can be visible (via the proxy stack)
  */
 public class BlockRecipeWrapper extends ItemStackRecipeWrapper
@@ -21,7 +21,7 @@ public class BlockRecipeWrapper extends ItemStackRecipeWrapper
     protected final BlockPos pos;
     protected BlockState state;
 
-    public BlockRecipeWrapper(IBlockReader world, BlockPos pos)
+    public BlockRecipeWrapper(BlockView world, BlockPos pos)
     {
         this(pos, world.getBlockState(pos));
     }
@@ -54,7 +54,7 @@ public class BlockRecipeWrapper extends ItemStackRecipeWrapper
 
         private Mutable(BlockPos.Mutable pos)
         {
-            super(pos, Blocks.AIR.defaultBlockState()); // Since the position is not expected to be initialized, we set a default null block state
+            super(pos, Blocks.AIR.getDefaultState()); // Since the position is not expected to be initialized, we set a default null block state
             this.cursor = pos;
         }
 

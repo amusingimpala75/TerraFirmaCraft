@@ -6,27 +6,27 @@
 
 package net.dries007.tfc.world.chunkdata;
 
+import java.util.Optional;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.IWorld;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.WorldAccess;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.IChunk;
+import net.minecraft.world.chunk.WorldChunk;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
-import net.minecraftforge.common.util.LazyOptional;
 
 import net.dries007.tfc.network.ChunkWatchPacket;
+import org.jetbrains.annotations.Nullable;
 
-public class ChunkData implements ICapabilitySerializable<CompoundNBT>
+public class ChunkData implements ICapabilitySerializable<CompoundTag>
 {
     public static final ChunkData EMPTY = new ChunkData.Immutable();
 
-    public static ChunkData get(IWorld world, BlockPos pos)
+    public static ChunkData get(WorldAccess world, BlockPos pos)
     {
         return get(world, new ChunkPos(pos));
     }
@@ -39,13 +39,13 @@ public class ChunkData implements ICapabilitySerializable<CompoundNBT>
      * @see ChunkDataProvider#get(ChunkPos, Status) to directly force chunk generation, or if a world is not available
      * @see ChunkDataCache#get(ChunkPos) to directly access the cache
      */
-    public static ChunkData get(IWorld world, ChunkPos pos)
+    public static ChunkData get(WorldAccess world, ChunkPos pos)
     {
         // Query cache first, picking the correct cache for the current logical side
         ChunkData data = ChunkDataCache.get(world).get(pos);
         if (data == null)
         {
-            return getCapability(world.hasChunk(pos.x, pos.z) ? world.getChunk(pos.getWorldPosition()) : null).orElse(ChunkData.EMPTY);
+            return getCapability(world.isChunkLoaded(pos.x, pos.z) ? world.getChunk(pos.getStartPos()) : null).orElse(ChunkData.EMPTY);
         }
         return data;
     }
@@ -53,16 +53,16 @@ public class ChunkData implements ICapabilitySerializable<CompoundNBT>
     /**
      * Helper method, since lazy optionals and instanceof checks together are ugly
      */
-    public static LazyOptional<ChunkData> getCapability(@Nullable IChunk chunk)
+    public static Optional<ChunkData> getCapability(@Nullable Chunk chunk)
     {
-        if (chunk instanceof Chunk)
+        if (chunk instanceof WorldChunk)
         {
             return ((Chunk) chunk).getCapability(ChunkDataCapability.CAPABILITY);
         }
-        return LazyOptional.empty();
+        return Optional.empty();
     }
 
-    private final LazyOptional<ChunkData> capability;
+    private final Optional<ChunkData> capability;
     private final ChunkPos pos;
 
     private Status status;
@@ -78,7 +78,7 @@ public class ChunkData implements ICapabilitySerializable<CompoundNBT>
     public ChunkData(ChunkPos pos)
     {
         this.pos = pos;
-        this.capability = LazyOptional.of(() -> this);
+        this.capability = Optional.of(() -> this);
 
         reset();
     }
@@ -209,15 +209,15 @@ public class ChunkData implements ICapabilitySerializable<CompoundNBT>
     }
 
     @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side)
+    public <T> Optional<T> getCapability(Capability<T> cap, @Nullable Direction side)
     {
         return ChunkDataCapability.CAPABILITY.orEmpty(cap, capability);
     }
 
     @Override
-    public CompoundNBT serializeNBT()
+    public CompoundTag serializeNBT()
     {
-        CompoundNBT nbt = new CompoundNBT();
+        CompoundTag nbt = new CompoundTag();
 
         nbt.putByte("status", (byte) status.ordinal());
         if (status.isAtLeast(Status.PLATE_TECTONICS))
@@ -226,8 +226,8 @@ public class ChunkData implements ICapabilitySerializable<CompoundNBT>
         }
         if (status.isAtLeast(Status.CLIMATE))
         {
-            nbt.put("rainfall", rainfallLayer.serializeNBT());
-            nbt.put("temperature", temperatureLayer.serializeNBT());
+            nbt.put("rainfall", rainfallLayer.serialize());
+            nbt.put("temperature", temperatureLayer.serialize());
         }
         if (status.isAtLeast(Status.ROCKS))
         {
@@ -243,7 +243,7 @@ public class ChunkData implements ICapabilitySerializable<CompoundNBT>
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt)
+    public void deserializeNBT(CompoundTag nbt)
     {
         if (nbt != null)
         {
@@ -254,8 +254,8 @@ public class ChunkData implements ICapabilitySerializable<CompoundNBT>
             }
             if (status.isAtLeast(Status.CLIMATE))
             {
-                rainfallLayer.deserializeNBT(nbt.getCompound("rainfall"));
-                temperatureLayer.deserializeNBT(nbt.getCompound("temperature"));
+                rainfallLayer.deserialize(nbt.getCompound("rainfall"));
+                temperatureLayer.deserialize(nbt.getCompound("temperature"));
             }
             if (status.isAtLeast(Status.ROCKS))
             {
@@ -323,7 +323,7 @@ public class ChunkData implements ICapabilitySerializable<CompoundNBT>
     {
         private Immutable()
         {
-            super(new ChunkPos(ChunkPos.INVALID_CHUNK_POS));
+            super(new ChunkPos(ChunkPos.MARKER));
         }
 
         @Override
@@ -369,7 +369,7 @@ public class ChunkData implements ICapabilitySerializable<CompoundNBT>
         }
 
         @Override
-        public void deserializeNBT(CompoundNBT nbt)
+        public void deserializeNBT(CompoundTag nbt)
         {
             throw new UnsupportedOperationException("Tried to modify immutable chunk data");
         }

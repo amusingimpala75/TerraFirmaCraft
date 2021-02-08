@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
+import net.minecraft.class_5423;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.registry.DynamicRegistries;
@@ -26,6 +27,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import net.dries007.tfc.util.collections.FiniteLinkedHashMap;
+import org.jetbrains.annotations.Nullable;
 
 import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
 import static net.dries007.tfc.world.biome.BiomeBuilder.builder;
@@ -104,7 +106,7 @@ public final class TFCBiomes
     }
 
     @Nullable
-    public static BiomeExtension getExtension(IBiomeReader world, Biome biome)
+    public static BiomeExtension getExtension(class_5423 world, Biome biome)
     {
         return getExtension(world.registryAccess(), biome);
     }

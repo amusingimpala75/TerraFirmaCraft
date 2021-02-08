@@ -6,60 +6,59 @@
 
 package net.dries007.tfc.common.blocks.rock;
 
-import javax.annotation.Nonnull;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.state.IntegerProperty;
-import net.minecraft.state.StateContainer;
+import net.minecraft.block.ShapeContext;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.IntProperty;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.world.IBlockReader;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.BlockView;
 
 import net.dries007.tfc.common.blocks.GroundcoverBlock;
 import net.dries007.tfc.common.blocks.TFCBlockStateProperties;
 import net.dries007.tfc.common.fluids.IFluidLoggable;
+import org.jetbrains.annotations.NotNull;
 
 public class LooseRockBlock extends GroundcoverBlock implements IFluidLoggable
 {
-    public static final IntegerProperty COUNT = TFCBlockStateProperties.COUNT_1_3;
+    public static final IntProperty COUNT = TFCBlockStateProperties.COUNT_1_3;
 
-    private static final VoxelShape ONE = box(5.0D, 0.0D, 5.0D, 11.0D, 2.0D, 11.0D);
-    private static final VoxelShape TWO = box(2.0D, 0.0D, 2.0D, 14.0D, 2.0D, 14.0D);
-    private static final VoxelShape THREE = box(5.0D, 0.0D, 5.0D, 11.0D, 4.0D, 11.0D);
+    private static final VoxelShape ONE = createCuboidShape(5.0D, 0.0D, 5.0D, 11.0D, 2.0D, 11.0D);
+    private static final VoxelShape TWO = createCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 2.0D, 14.0D);
+    private static final VoxelShape THREE = createCuboidShape(5.0D, 0.0D, 5.0D, 11.0D, 4.0D, 11.0D);
 
-    public LooseRockBlock(Properties properties)
+    public LooseRockBlock(Settings properties)
     {
         super(properties, VoxelShapes.empty(), null);
 
-        registerDefaultState(defaultBlockState().setValue(COUNT, 1));
+        setDefaultState(getDefaultState().with(COUNT, 1));
     }
 
     @Override
-    @Nonnull
-    public BlockState getStateForPlacement(BlockItemUseContext context)
+    @NotNull
+    public BlockState getPlacementState(ItemPlacementContext context)
     {
-        BlockState stateAt = context.getLevel().getBlockState(context.getClickedPos());
-        if (stateAt.is(this))
+        BlockState stateAt = context.getWorld().getBlockState(context.getBlockPos());
+        if (stateAt.isOf(this))
         {
-            return stateAt.setValue(COUNT, Math.min(3, stateAt.getValue(COUNT) + 1));
+            return stateAt.with(COUNT, Math.min(3, stateAt.get(COUNT) + 1));
         }
-        return super.getStateForPlacement(context);
+        return super.getPlacementState(context);
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder)
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder)
     {
-        super.createBlockStateDefinition(builder.add(COUNT));
+        super.appendProperties(builder.add(COUNT));
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getOutlineShape(BlockState state, BlockView worldIn, BlockPos pos, ShapeContext context)
     {
-        switch (state.getValue(COUNT))
+        switch (state.get(COUNT))
         {
             case 1:
                 return ONE;
@@ -68,6 +67,6 @@ public class LooseRockBlock extends GroundcoverBlock implements IFluidLoggable
             case 3:
                 return THREE;
         }
-        throw new IllegalStateException("Unknown value for property LooseRockBlock#ROCKS: " + state.getValue(COUNT));
+        throw new IllegalStateException("Unknown value for property LooseRockBlock#ROCKS: " + state.get(COUNT));
     }
 }

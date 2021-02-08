@@ -8,29 +8,25 @@ package net.dries007.tfc.common.recipes;
 
 import java.util.function.Supplier;
 
+import net.dries007.tfc.util.Helpers;
 import net.minecraft.inventory.CraftingInventory;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.recipe.RecipeSerializer;
 
-import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
-
+@SuppressWarnings("unchecked")
 public class TFCRecipeSerializers
 {
-    public static final DeferredRegister<IRecipeSerializer<?>> RECIPE_SERIALIZERS = DeferredRegister.create(ForgeRegistries.RECIPE_SERIALIZERS, MOD_ID);
-
     // Block Recipes
 
-    public static final RegistryObject<SimpleBlockRecipe.Serializer<CollapseRecipe>> COLLAPSE = register("collapse", () -> new SimpleBlockRecipe.Serializer<>(CollapseRecipe::new));
-    public static final RegistryObject<SimpleBlockRecipe.Serializer<LandslideRecipe>> LANDSLIDE = register("landslide", () -> new SimpleBlockRecipe.Serializer<>(LandslideRecipe::new));
+    public static final SimpleBlockRecipe.Serializer<CollapseRecipe> COLLAPSE = (SimpleBlockRecipe.Serializer<CollapseRecipe>) register("collapse", () -> new SimpleBlockRecipe.Serializer<CollapseRecipe>(CollapseRecipe::new));
+    public static final SimpleBlockRecipe.Serializer<LandslideRecipe> LANDSLIDE = (SimpleBlockRecipe.Serializer<LandslideRecipe>) register("landslide", () -> new SimpleBlockRecipe.Serializer<LandslideRecipe>(LandslideRecipe::new));
 
     // Delegate Recipe Types
 
-    public static final RegistryObject<DelegatingRecipe.Serializer<CraftingInventory, DamageInputsCraftingRecipe>> DAMAGE_INPUTS_CRAFTING = register("damage_inputs_crafting", () -> new DelegatingRecipe.Serializer<>(DamageInputsCraftingRecipe::new));
+    public static final DelegatingRecipe.Serializer<CraftingInventory, DamageInputsCraftingRecipe> DAMAGE_INPUTS_CRAFTING = (DelegatingRecipe.Serializer<CraftingInventory, DamageInputsCraftingRecipe>) register("damage_inputs_crafting", () -> new DelegatingRecipe.Serializer<>(DamageInputsCraftingRecipe::new));
 
-    private static <S extends IRecipeSerializer<?>> RegistryObject<S> register(String name, Supplier<S> factory)
+    private static RecipeSerializer<?> register(String name, Supplier<RecipeSerializer<?>> factory)
     {
-        return RECIPE_SERIALIZERS.register(name, factory);
+        return Registry.register(Registry.RECIPE_SERIALIZER, Helpers.identifier(name), factory.get());
     }
 }

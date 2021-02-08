@@ -27,7 +27,7 @@ public class TFCVineBlock extends VineBlock
 {
     public static final EnumProperty<Season> SEASON_NO_SPRING = TFCBlockStateProperties.SEASON_NO_SPRING;
 
-    public TFCVineBlock(AbstractBlock.Properties properties)
+    public TFCVineBlock(AbstractBlock.Settings properties)
     {
         super(properties);
 

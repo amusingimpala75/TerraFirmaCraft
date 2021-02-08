@@ -8,6 +8,8 @@ package net.dries007.tfc.common.tileentity;
 
 import javax.annotation.Nullable;
 
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import net.minecraft.block.BlockState;
@@ -21,11 +23,11 @@ import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.server.ServerChunkProvider;
 import net.minecraft.world.server.ServerWorld;
 
-public abstract class TFCTileEntity extends TileEntity
+public abstract class TFCTileEntity extends BlockEntity
 {
     protected static final Logger LOGGER = LogManager.getLogger();
 
-    protected TFCTileEntity(TileEntityType<?> type)
+    protected TFCTileEntity(BlockEntityType<?> type)
     {
         super(type);
     }

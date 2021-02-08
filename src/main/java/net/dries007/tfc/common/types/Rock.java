@@ -11,18 +11,24 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
+import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.util.IStringSerializable;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.JSONUtils;
+import net.minecraft.util.JsonHelper;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.StringIdentifiable;
 import net.minecraftforge.common.ToolType;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.dries007.tfc.wrapper.StairsBlock;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.common.blocks.TFCBlocks;
@@ -30,6 +36,7 @@ import net.dries007.tfc.common.blocks.TFCMaterials;
 import net.dries007.tfc.common.blocks.rock.*;
 import net.dries007.tfc.common.blocks.soil.SandBlockType;
 import net.dries007.tfc.util.Helpers;
+import org.jetbrains.annotations.Nullable;
 
 public class Rock
 {
@@ -37,23 +44,23 @@ public class Rock
     private final RockCategory category;
     private final boolean naturallyGenerating;
     private final Map<BlockType, Block> blockVariants;
-    private final ResourceLocation id;
+    private final Identifier id;
 
-    public Rock(ResourceLocation id, JsonObject json)
+    public Rock(Identifier id, JsonObject json)
     {
         this.id = id;
-        String rockCategoryName = JSONUtils.getAsString(json, "category");
+        String rockCategoryName = JsonHelper.getString(json, "category");
         this.category = Helpers.mapSafeOptional(() -> RockCategory.valueOf(rockCategoryName.toUpperCase())).orElseThrow(() -> new JsonParseException("Unknown rock category: " + rockCategoryName));
-        String desertSandColorName = JSONUtils.getAsString(json, "desert_sand_color");
+        String desertSandColorName = JsonHelper.getString(json, "desert_sand_color");
         this.desertSandColor = Helpers.mapSafeOptional(() -> SandBlockType.valueOf(desertSandColorName.toUpperCase())).orElseThrow(() -> new JsonParseException("Unknown sand color: " + desertSandColorName));
-        String beachSandColorName = JSONUtils.getAsString(json, "beach_sand_color");
+        String beachSandColorName = JsonHelper.getString(json, "beach_sand_color");
         this.beachSandColor = Helpers.mapSafeOptional(() -> SandBlockType.valueOf(beachSandColorName.toUpperCase())).orElseThrow(() -> new JsonParseException("Unknown beach sand color: " + beachSandColorName));
-        this.naturallyGenerating = JSONUtils.getAsBoolean(json, "naturally_generated", true);
+        this.naturallyGenerating = JsonHelper.getBoolean(json, "naturally_generated", true);
 
         this.blockVariants = Helpers.findRegistryObjects(json, "blocks", ForgeRegistries.BLOCKS, Arrays.asList(Rock.BlockType.values()), type -> type.name().toLowerCase());
     }
 
-    public ResourceLocation getId()
+    public Identifier getId()
     {
         return id;
     }
@@ -113,24 +120,24 @@ public class Rock
         MARBLE,
     }
 
-    public enum BlockType implements IStringSerializable
+    public enum BlockType implements StringIdentifiable
     {
-        RAW((rock, self) -> new Block(Block.Properties.of(Material.STONE).sound(SoundType.STONE).strength(2, 10).harvestLevel(0).harvestTool(ToolType.PICKAXE)), true),
-        HARDENED((rock, self) -> new Block(Block.Properties.of(Material.STONE).sound(SoundType.STONE).strength(2, 10).harvestLevel(0).harvestTool(ToolType.PICKAXE)), false),
-        SMOOTH((rock, self) -> new Block(Block.Properties.of(Material.STONE).sound(SoundType.STONE).strength(1.5f, 10).harvestLevel(0).harvestTool(ToolType.PICKAXE)), true),
-        COBBLE((rock, self) -> new MossGrowingBlock(Block.Properties.of(Material.STONE).sound(SoundType.STONE).strength(1.5f, 10).harvestLevel(0).harvestTool(ToolType.PICKAXE), TFCBlocks.ROCK_BLOCKS.get(rock).get(self.mossy())), true),
-        BRICKS((rock, self) -> new MossGrowingBlock(Block.Properties.of(Material.STONE).sound(SoundType.STONE).strength(2.0f, 10).harvestLevel(0).harvestTool(ToolType.PICKAXE), TFCBlocks.ROCK_BLOCKS.get(rock).get(self.mossy())), true),
-        GRAVEL((rock, self) -> new Block(Block.Properties.of(Material.SAND, MaterialColor.STONE).sound(SoundType.STONE).strength(0.8f).harvestLevel(0).harvestTool(ToolType.SHOVEL)), false),
-        SPIKE((rock, self) -> new RockSpikeBlock(Block.Properties.of(Material.STONE).sound(SoundType.STONE).strength(1.4f, 10).harvestLevel(0).harvestTool(ToolType.PICKAXE)), false),
-        CRACKED_BRICKS((rock, self) -> new MossSpreadingBlock(Block.Properties.of(Material.STONE).sound(SoundType.STONE).strength(1.5f, 10).harvestLevel(0).harvestTool(ToolType.PICKAXE)), true),
-        MOSSY_BRICKS((rock, self) -> new MossSpreadingBlock(Block.Properties.of(Material.STONE).sound(SoundType.STONE).strength(1.5f, 10).harvestLevel(0).harvestTool(ToolType.PICKAXE)), true),
-        MOSSY_COBBLE((rock, self) -> new Block(Block.Properties.of(Material.STONE).sound(SoundType.STONE).strength(1.5f, 10).harvestLevel(0).harvestTool(ToolType.PICKAXE)), true),
-        CHISELED((rock, self) -> new Block(Block.Properties.of(Material.STONE).sound(SoundType.STONE).strength(1.5f, 10).harvestLevel(0).harvestTool(ToolType.PICKAXE)), false),
-        LOOSE((rock, self) -> new LooseRockBlock(Block.Properties.of(TFCMaterials.NON_SOLID_STONE).strength(0.05f, 0.0f).sound(SoundType.STONE).noOcclusion()), false);
+        RAW((rock, self) -> new Block(FabricBlockSettings.of(Material.STONE).sounds(BlockSoundGroup.STONE).strength(2, 10).breakByTool(FabricToolTags.PICKAXES, 0)), true),
+        HARDENED((rock, self) -> new Block(FabricBlockSettings.of(Material.STONE).sounds(BlockSoundGroup.STONE).strength(2, 10).breakByTool(FabricToolTags.PICKAXES, 0)), false),
+        SMOOTH((rock, self) -> new Block(FabricBlockSettings.of(Material.STONE).sounds(BlockSoundGroup.STONE).strength(1.5f, 10).breakByTool(FabricToolTags.PICKAXES, 0)), true),
+        COBBLE((rock, self) -> new MossGrowingBlock(FabricBlockSettings.of(Material.STONE).sounds(BlockSoundGroup.STONE).strength(1.5f, 10).breakByTool(FabricToolTags.PICKAXES, 0), () -> TFCBlocks.ROCK_BLOCKS.get(rock).get(self.mossy())), true),
+        BRICKS((rock, self) -> new MossGrowingBlock(FabricBlockSettings.of(Material.STONE).sounds(BlockSoundGroup.STONE).strength(2.0f, 10).breakByTool(FabricToolTags.PICKAXES, 0), () -> TFCBlocks.ROCK_BLOCKS.get(rock).get(self.mossy())), true),
+        GRAVEL((rock, self) -> new Block(FabricBlockSettings.of(Material.AGGREGATE, MaterialColor.STONE).sounds(BlockSoundGroup.STONE).strength(0.8f).breakByTool(FabricToolTags.SHOVELS, 0)), false),
+        SPIKE((rock, self) -> new RockSpikeBlock(FabricBlockSettings.of(Material.STONE).sounds(BlockSoundGroup.STONE).strength(1.4f, 10).breakByTool(FabricToolTags.PICKAXES, 0)), false),
+        CRACKED_BRICKS((rock, self) -> new MossSpreadingBlock(FabricBlockSettings.of(Material.STONE).sounds(BlockSoundGroup.STONE).strength(1.5f, 10).breakByTool(FabricToolTags.PICKAXES, 0)), true),
+        MOSSY_BRICKS((rock, self) -> new MossSpreadingBlock(FabricBlockSettings.of(Material.STONE).sounds(BlockSoundGroup.STONE).strength(1.5f, 10).breakByTool(FabricToolTags.PICKAXES, 0)), true),
+        MOSSY_COBBLE((rock, self) -> new Block(FabricBlockSettings.of(Material.STONE).sounds(BlockSoundGroup.STONE).strength(1.5f, 10).breakByTool(FabricToolTags.PICKAXES, 0)), true),
+        CHISELED((rock, self) -> new Block(FabricBlockSettings.of(Material.STONE).sounds(BlockSoundGroup.STONE).strength(1.5f, 10).breakByTool(FabricToolTags.PICKAXES, 0)), false),
+        LOOSE((rock, self) -> new LooseRockBlock(Block.Settings.of(TFCMaterials.NON_SOLID_STONE).strength(0.05f, 0.0f).sounds(BlockSoundGroup.STONE).nonOpaque()), false);
 
         public static final BlockType[] VALUES = values();
         public static final Map<String, BlockType> BY_NAME = Arrays.stream(values()).collect(Collectors.toMap(k -> k.name().toLowerCase(), v -> v));
-        public static final Codec<BlockType> CODEC = IStringSerializable.fromEnum(BlockType::values, BlockType::byName);
+        public static final Codec<BlockType> CODEC = StringIdentifiable.createCodec(BlockType::values, BlockType::byName);
 
         public static BlockType valueOf(int i)
         {
@@ -168,49 +175,49 @@ public class Rock
 
         public SlabBlock createSlab(Default rock)
         {
-            AbstractBlock.Properties properties = AbstractBlock.Properties.of(Material.STONE).sound(SoundType.STONE).strength(1.5f, 10).harvestLevel(0).harvestTool(ToolType.PICKAXE);
+            AbstractBlock.Settings properties = FabricBlockSettings.of(Material.STONE).sounds(BlockSoundGroup.STONE).strength(1.5f, 10).breakByTool(FabricToolTags.PICKAXES, 0);
             if (mossy() == this)
             {
                 return new MossSpreadingSlabBlock(properties);
             }
             else if (mossy() != null)
             {
-                return new MossGrowingSlabBlock(properties, TFCBlocks.ROCK_SLABS.get(rock).get(mossy()));
+                return new MossGrowingSlabBlock(properties, () -> TFCBlocks.ROCK_SLABS.get(rock).get(mossy()));
             }
             return new SlabBlock(properties);
         }
 
-        public StairsBlock createStairs(Default rock)
+        public net.minecraft.block.StairsBlock createStairs(Default rock)
         {
-            Supplier<BlockState> state = () -> TFCBlocks.ROCK_BLOCKS.get(rock).get(this).get().defaultBlockState();
-            AbstractBlock.Properties properties = AbstractBlock.Properties.of(Material.STONE).sound(SoundType.STONE).strength(1.5f, 10).harvestLevel(0).harvestTool(ToolType.PICKAXE);
+            Supplier<BlockState> state = () -> TFCBlocks.ROCK_BLOCKS.get(rock).get(this).getDefaultState();
+            AbstractBlock.Settings properties = FabricBlockSettings.of(Material.STONE).sounds(BlockSoundGroup.STONE).strength(1.5f, 10).breakByTool(FabricToolTags.PICKAXES, 0);
             if (mossy() == this)
             {
                 return new MossSpreadingStairBlock(state, properties);
             }
             else if (mossy() != null)
             {
-                return new MossGrowingStairsBlock(state, properties, TFCBlocks.ROCK_STAIRS.get(rock).get(mossy()));
+                return new MossGrowingStairsBlock(state, properties, () -> TFCBlocks.ROCK_STAIRS.get(rock).get(mossy()));
             }
-            return new StairsBlock(state, properties);
+            return new StairsBlock(state.get(), properties);
         }
 
         public WallBlock createWall(Default rock)
         {
-            AbstractBlock.Properties properties = AbstractBlock.Properties.of(Material.STONE).sound(SoundType.STONE).strength(1.5f, 10).harvestLevel(0).harvestTool(ToolType.PICKAXE);
+            AbstractBlock.Settings properties = FabricBlockSettings.of(Material.STONE).sounds(BlockSoundGroup.STONE).strength(1.5f, 10).breakByTool(FabricToolTags.PICKAXES, 0);
             if (mossy() == this)
             {
                 return new MossSpreadingWallBlock(properties);
             }
             else if (mossy() != null)
             {
-                return new MossGrowingWallBlock(properties, TFCBlocks.ROCK_WALLS.get(rock).get(mossy()));
+                return new MossGrowingWallBlock(properties, () -> TFCBlocks.ROCK_WALLS.get(rock).get(mossy()));
             }
             return new WallBlock(properties);
         }
 
         @Override
-        public String getSerializedName()
+        public String asString()
         {
             return serializedName;
         }

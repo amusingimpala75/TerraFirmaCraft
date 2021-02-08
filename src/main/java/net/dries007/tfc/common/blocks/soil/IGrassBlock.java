@@ -8,11 +8,11 @@ package net.dries007.tfc.common.blocks.soil;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.tags.FluidTags;
-import net.minecraft.util.Direction;
+import net.minecraft.tag.FluidTags;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorldReader;
-import net.minecraft.world.lighting.LightEngine;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.WorldView;
+import net.minecraft.world.chunk.light.ChunkLightProvider;
 
 /**
  * Grass blocks, which MUST
@@ -22,36 +22,36 @@ import net.minecraft.world.lighting.LightEngine;
 public interface IGrassBlock extends ISoilBlock
 {
     /**
-     * Like {@link net.minecraft.block.SpreadableSnowyDirtBlock#canBeGrass(BlockState, IWorldReader, BlockPos)}, but omits the requirement that snow layers only be one thick.
+     * Like {@link net.minecraft.block.SpreadableBlock# canBeGrass(BlockState, WorldView, BlockPos)}, but omits the requirement that snow layers only be one thick.
      * Represents if the current block state can be grass
      */
-    default boolean canBeGrass(BlockState state, IWorldReader world, BlockPos pos)
+    default boolean canBeGrass(BlockState state, WorldView world, BlockPos pos)
     {
-        BlockPos posUp = pos.above();
+        BlockPos posUp = pos.up();
         BlockState stateUp = world.getBlockState(posUp);
-        if (stateUp.is(Blocks.SNOW))
+        if (stateUp.isOf(Blocks.SNOW))
         {
             return true;
         }
-        else if (stateUp.getFluidState().getAmount() == 8)
+        else if (stateUp.getFluidState().getLevel() == 8)
         {
             return false;
         }
         else
         {
-            return LightEngine.getLightBlockInto(world, state, pos, stateUp, posUp, Direction.UP, stateUp.getLightBlock(world, posUp)) < world.getMaxLightLevel();
+            return ChunkLightProvider.getRealisticOpacity(world, state, pos, stateUp, posUp, Direction.UP, stateUp.getOpacity(world, posUp)) < world.getMaxLightLevel();
         }
     }
 
     /**
-     * Like {@link net.minecraft.block.SpreadableSnowyDirtBlock#canPropagate(BlockState, IWorldReader, BlockPos)}
+     * Like {@link net.minecraft.block.SpreadableBlock# canSpread(BlockState, WorldView, BlockPos)}
      * Represents if the current grass can spread to the given location.
      *
      * @param state The grass state to place
      */
-    default boolean canPropagate(BlockState state, IWorldReader world, BlockPos pos)
+    default boolean canPropagate(BlockState state, WorldView world, BlockPos pos)
     {
-        BlockPos posUp = pos.above();
-        return canBeGrass(state, world, pos) && !world.getFluidState(posUp).is(FluidTags.WATER);
+        BlockPos posUp = pos.up();
+        return canBeGrass(state, world, pos) && !world.getFluidState(posUp).isIn(FluidTags.WATER);
     }
 }

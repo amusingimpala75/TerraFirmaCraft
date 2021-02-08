@@ -6,22 +6,21 @@
 
 package net.dries007.tfc.mixin.client.world;
 
-import net.minecraft.client.world.DimensionRenderInfo;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.render.SkyProperties;
+import net.minecraft.util.Identifier;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
-import mcp.MethodsReturnNonnullByDefault;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 @SuppressWarnings("ConstantConditions")
-@MethodsReturnNonnullByDefault
-@Mixin(DimensionRenderInfo.class)
+//@MethodsReturnNonnullByDefault
+@Mixin(SkyProperties.class)
 public interface DimensionRenderInfoAccessor
 {
-    @Accessor(value = "EFFECTS")
-    static Object2ObjectMap<ResourceLocation, DimensionRenderInfo> accessor$Effects() { return null; }
+    @Accessor(value = "BY_IDENTIFIER")
+    static Object2ObjectMap<Identifier, SkyProperties> accessor$Effects() { return null; }
 
-    @Accessor(value = "cloudLevel")
+    @Accessor(value = "cloudsHeight")
     void accessor$setCloudLevel(float cloudLevel);
 }

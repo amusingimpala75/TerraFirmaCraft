@@ -46,7 +46,7 @@ public abstract class KelpTreeFlowerBlock extends Block implements IFluidLoggabl
     private static final VoxelShape SHAPE = Block.box(1.0D, 1.0D, 1.0D, 15.0D, 15.0D, 15.0D);
     private final Supplier<? extends Block> bodyBlock;
 
-    public static KelpTreeFlowerBlock create(AbstractBlock.Properties builder, Supplier<? extends Block> plant, FluidProperty fluid)
+    public static KelpTreeFlowerBlock create(AbstractBlock.Settings builder, Supplier<? extends Block> plant, FluidProperty fluid)
     {
         return new KelpTreeFlowerBlock(builder, plant)
         {
@@ -58,7 +58,7 @@ public abstract class KelpTreeFlowerBlock extends Block implements IFluidLoggabl
         };
     }
 
-    protected KelpTreeFlowerBlock(AbstractBlock.Properties builder, Supplier<? extends Block> bodyBlock)
+    protected KelpTreeFlowerBlock(AbstractBlock.Settings builder, Supplier<? extends Block> bodyBlock)
     {
         super(builder);
         this.bodyBlock = bodyBlock;

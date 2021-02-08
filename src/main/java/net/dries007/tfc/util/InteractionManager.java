@@ -24,6 +24,7 @@ import net.minecraft.item.*;
 import net.minecraft.state.properties.BedPart;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.ITag;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
@@ -152,7 +153,7 @@ public final class InteractionManager
         ACTIONS.add(new Entry(action, stack -> stack.getItem().is(tag), tag::getValues));
     }
 
-    public static Optional<ActionResultType> onItemUse(ItemStack stack, ItemUseContext context)
+    public static Optional<ActionResult> onItemUse(ItemStack stack, ItemUsageContext context)
     {
         if (!ACTIVE.get())
         {

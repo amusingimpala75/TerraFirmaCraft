@@ -34,7 +34,7 @@ public class TFCCoralPlantBlock extends TFCAbstractCoralPlantBlock
     private final Supplier<? extends Block> deadBlock;
     protected static final VoxelShape SHAPE = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 15.0D, 14.0D);
 
-    public TFCCoralPlantBlock(Supplier<? extends Block> deadBlock, AbstractBlock.Properties properties)
+    public TFCCoralPlantBlock(Supplier<? extends Block> deadBlock, AbstractBlock.Settings properties)
     {
         super(properties);
         this.deadBlock = deadBlock;

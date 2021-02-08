@@ -20,7 +20,7 @@ public class MossGrowingBlock extends Block implements IMossGrowingBlock
 {
     private final Supplier<? extends Block> mossy;
 
-    public MossGrowingBlock(Properties properties, Supplier<? extends Block> mossy)
+    public MossGrowingBlock(Settings properties, Supplier<? extends Block> mossy)
     {
         super(properties);
         this.mossy = mossy;
@@ -29,9 +29,9 @@ public class MossGrowingBlock extends Block implements IMossGrowingBlock
     @Override
     public void convertToMossy(World worldIn, BlockPos pos, BlockState state, boolean needsWater)
     {
-        if (!needsWater || FluidHelpers.isSame(worldIn.getFluidState(pos.above()), Fluids.WATER))
+        if (!needsWater || FluidHelpers.isSame(worldIn.getFluidState(pos.up()), Fluids.WATER))
         {
-            worldIn.setBlock(pos, mossy.get().defaultBlockState(), 3);
+            worldIn.setBlockState(pos, mossy.get().getDefaultState(), 3);
         }
     }
 }

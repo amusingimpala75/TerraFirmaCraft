@@ -11,8 +11,8 @@ import java.util.function.Supplier;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SlabBlock;
+import net.minecraft.block.enums.SlabType;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.state.properties.SlabType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -23,7 +23,7 @@ public class MossGrowingSlabBlock extends SlabBlock implements IMossGrowingBlock
 {
     private final Supplier<? extends Block> mossy;
 
-    public MossGrowingSlabBlock(Properties properties, Supplier<? extends Block> mossy)
+    public MossGrowingSlabBlock(Settings properties, Supplier<? extends Block> mossy)
     {
         super(properties);
 
@@ -33,12 +33,12 @@ public class MossGrowingSlabBlock extends SlabBlock implements IMossGrowingBlock
     @Override
     public void convertToMossy(World worldIn, BlockPos pos, BlockState state, boolean needsWater)
     {
-        if (state.getValue(TYPE) == SlabType.DOUBLE)
+        if (state.get(TYPE) == SlabType.DOUBLE)
         {
             // Double slabs convert when the block above is fluid
-            if (!needsWater || FluidHelpers.isSame(worldIn.getFluidState(pos.above()), Fluids.WATER))
+            if (!needsWater || FluidHelpers.isSame(worldIn.getFluidState(pos.up()), Fluids.WATER))
             {
-                worldIn.setBlockAndUpdate(pos, Helpers.copyProperties(mossy.get().defaultBlockState(), state));
+                worldIn.setBlockState(pos, Helpers.copyProperties(mossy.get().getDefaultState(), state));
             }
         }
         else
@@ -46,7 +46,7 @@ public class MossGrowingSlabBlock extends SlabBlock implements IMossGrowingBlock
             // Single slabs convert only when they are fluid logged
             if (!needsWater || FluidHelpers.isSame(worldIn.getFluidState(pos), Fluids.WATER))
             {
-                worldIn.setBlockAndUpdate(pos, Helpers.copyProperties(mossy.get().defaultBlockState(), state));
+                worldIn.setBlockState(pos, Helpers.copyProperties(mossy.get().getDefaultState(), state));
             }
         }
     }

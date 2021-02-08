@@ -6,22 +6,22 @@
 
 package net.dries007.tfc.common.blocks.plant;
 
-import net.minecraft.util.IStringSerializable;
+import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockReader;
+import net.minecraft.world.BlockView;
 
 public interface ITallPlant
 {
-    default Part getPlantPart(IBlockReader world, BlockPos pos)
+    default Part getPlantPart(BlockView world, BlockPos pos)
     {
-        if (world.getBlockState(pos.below()).getBlock() != this)
+        if (world.getBlockState(pos.down()).getBlock() != this)
         {
             return Part.LOWER;
         }
         return Part.UPPER;
     }
 
-    enum Part implements IStringSerializable
+    enum Part implements StringIdentifiable
     {
         UPPER,
         LOWER;
@@ -29,11 +29,11 @@ public interface ITallPlant
         @Override
         public String toString()
         {
-            return this.getSerializedName();
+            return this.asString();
         }
 
         @Override
-        public String getSerializedName()
+        public String asString()
         {
             return name().toLowerCase();
         }

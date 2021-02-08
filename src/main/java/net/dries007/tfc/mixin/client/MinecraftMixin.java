@@ -6,17 +6,17 @@
 
 package net.dries007.tfc.mixin.client;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.concurrent.RecursiveEventLoop;
+import net.minecraft.client.MinecraftClient;
 
 import net.dries007.tfc.TerraFirmaCraft;
 import net.dries007.tfc.config.TFCConfig;
+import net.minecraft.util.thread.ReentrantThreadExecutor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
-@Mixin(Minecraft.class)
-public abstract class MinecraftMixin extends RecursiveEventLoop<Runnable>
+@Mixin(MinecraftClient.class)
+public abstract class MinecraftMixin extends ReentrantThreadExecutor<Runnable>
 {
     private MinecraftMixin(String name)
     {
@@ -28,7 +28,7 @@ public abstract class MinecraftMixin extends RecursiveEventLoop<Runnable>
      *
      * Fixed by https://github.com/MinecraftForge/MinecraftForge/pull/7275
      */
-    @ModifyVariable(method = "loadWorld", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft$WorldSelectionType;NONE:Lnet/minecraft/client/Minecraft$WorldSelectionType;", ordinal = 0), ordinal = 3, index = 13, name = "flag1")
+    @ModifyVariable(method = "startIntegratedServer(Ljava/lang/String;Lnet/minecraft/util/registry/DynamicRegistryManager$Impl;Ljava/util/function/Function;Lcom/mojang/datafixers/util/Function4;ZLnet/minecraft/client/MinecraftClient$WorldLoadAction;)V", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft$WorldLoadAction;NONE:Lnet/minecraft/client/Minecraft$WorldLoadAction;", ordinal = 0), ordinal = 3, index = 13, name = "flag1")
     private boolean modify$doLoadLevel$flag1(boolean flag1)
     {
         if (TFCConfig.CLIENT.ignoreExperimentalWorldGenWarning.get())

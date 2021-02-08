@@ -41,7 +41,7 @@ public class TFCAbstractCoralPlantBlock extends Block implements IFluidLoggable
     public static final FluidProperty FLUID = TFCBlockStateProperties.SALT_WATER;
     private static final VoxelShape AABB = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 4.0D, 14.0D);
 
-    public TFCAbstractCoralPlantBlock(AbstractBlock.Properties properties)
+    public TFCAbstractCoralPlantBlock(AbstractBlock.Settings properties)
     {
         super(properties);
         registerDefaultState(getStateDefinition().any());

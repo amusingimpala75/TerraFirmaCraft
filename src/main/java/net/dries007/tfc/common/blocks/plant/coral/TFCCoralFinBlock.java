@@ -25,7 +25,7 @@ public class TFCCoralFinBlock extends TFCCoralFanBlock
 {
     private final Supplier<? extends Block> deadBlock;
 
-    public TFCCoralFinBlock(Supplier<? extends Block> deadBlock, AbstractBlock.Properties builder)
+    public TFCCoralFinBlock(Supplier<? extends Block> deadBlock, AbstractBlock.Settings builder)
     {
         super(builder);
         this.deadBlock = deadBlock;

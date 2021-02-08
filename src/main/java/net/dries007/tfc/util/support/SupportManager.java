@@ -13,9 +13,9 @@ import java.util.Set;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockReader;
+import net.minecraft.world.BlockView;
 
 import net.dries007.tfc.util.data.DataManager;
 
@@ -24,9 +24,9 @@ public class SupportManager extends DataManager<Support>
     public static final SupportManager INSTANCE = new SupportManager();
 
     /**
-     * Finds all unsupported positions in a large area. It's more efficient than checking each block individually and calling {@link SupportManager#isSupported(IBlockReader, BlockPos)}
+     * Finds all unsupported positions in a large area. It's more efficient than checking each block individually and calling {@link SupportManager#isSupported(BlockView, BlockPos)}
      */
-    public static Set<BlockPos> findUnsupportedPositions(IBlockReader worldIn, BlockPos from, BlockPos to)
+    public static Set<BlockPos> findUnsupportedPositions(BlockView worldIn, BlockPos from, BlockPos to)
     {
         Set<BlockPos> listSupported = new HashSet<>();
         Set<BlockPos> listUnsupported = new HashSet<>();
@@ -40,13 +40,13 @@ public class SupportManager extends DataManager<Support>
         {
             if (!listSupported.contains(searchingPoint))
             {
-                listUnsupported.add(searchingPoint.immutable()); // Adding blocks that wasn't found supported
+                listUnsupported.add(searchingPoint.toImmutable()); // Adding blocks that wasn't found supported
             }
             BlockState supportState = worldIn.getBlockState(searchingPoint);
             INSTANCE.get(supportState).ifPresent(support -> {
                 for (BlockPos supported : support.getSupportedArea(searchingPoint))
                 {
-                    listSupported.add(supported.immutable()); // Adding all supported blocks by this support
+                    listSupported.add(supported.toImmutable()); // Adding all supported blocks by this support
                     listUnsupported.remove(supported); // Remove if this block was added earlier
                 }
             });
@@ -57,7 +57,7 @@ public class SupportManager extends DataManager<Support>
         return listUnsupported;
     }
 
-    public static boolean isSupported(IBlockReader world, BlockPos pos)
+    public static boolean isSupported(BlockView world, BlockPos pos)
     {
         for (BlockPos supportPos : INSTANCE.getMaximumSupportedAreaAround(pos, pos))
         {
@@ -84,11 +84,11 @@ public class SupportManager extends DataManager<Support>
 
     public Iterable<BlockPos> getMaximumSupportedAreaAround(BlockPos minPoint, BlockPos maxPoint)
     {
-        return BlockPos.betweenClosed(minPoint.offset(-maxSupportHorizontal, -maxSupportDown, -maxSupportHorizontal), maxPoint.offset(maxSupportHorizontal, maxSupportUp, maxSupportHorizontal));
+        return BlockPos.iterate(minPoint.add(-maxSupportHorizontal, -maxSupportDown, -maxSupportHorizontal), maxPoint.add(maxSupportHorizontal, maxSupportUp, maxSupportHorizontal));
     }
 
     @Override
-    protected Support read(ResourceLocation id, JsonObject obj)
+    protected Support read(Identifier id, JsonObject obj)
     {
         return new Support(id, obj);
     }

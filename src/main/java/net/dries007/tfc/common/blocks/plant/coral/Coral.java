@@ -11,23 +11,21 @@ import java.util.function.Supplier;
 
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.material.MaterialColor;
+import net.minecraft.block.Material;
+import net.minecraft.block.MaterialColor;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 
 import net.dries007.tfc.common.blocks.TFCBlocks;
+import net.minecraft.sound.BlockSoundGroup;
 
-public class Coral
-{
-    public enum Color
-    {
-        TUBE(MaterialColor.COLOR_BLUE),
-        BRAIN(MaterialColor.COLOR_PINK),
-        BUBBLE(MaterialColor.COLOR_PURPLE),
-        FIRE(MaterialColor.COLOR_RED),
-        HORN(MaterialColor.COLOR_YELLOW);
+public class Coral {
+    public enum Color {
+        TUBE(MaterialColor.BLUE),
+        BRAIN(MaterialColor.PINK),
+        BUBBLE(MaterialColor.PURPLE),
+        FIRE(MaterialColor.RED),
+        HORN(MaterialColor.YELLOW);
 
         private final MaterialColor material;
 
@@ -37,14 +35,13 @@ public class Coral
         }
     }
 
-    public enum BlockType
-    {
-        DEAD_CORAL((color, type) -> new TFCDeadCoralPlantBlock(AbstractBlock.Properties.of(Material.STONE, MaterialColor.COLOR_GRAY).requiresCorrectToolForDrops().noCollission().instabreak())),
-        CORAL((color, type) -> new TFCCoralPlantBlock(TFCBlocks.CORAL.get(color).get(DEAD_CORAL), AbstractBlock.Properties.of(Material.WATER_PLANT, color.material).noCollission().instabreak().sound(SoundType.WET_GRASS))),
-        DEAD_CORAL_FAN((color, type) -> new TFCCoralFanBlock(AbstractBlock.Properties.of(Material.STONE, MaterialColor.COLOR_GRAY).requiresCorrectToolForDrops().noCollission().instabreak())),
-        CORAL_FAN((color, type) -> new TFCCoralFinBlock(TFCBlocks.CORAL.get(color).get(DEAD_CORAL_FAN), AbstractBlock.Properties.of(Material.WATER_PLANT, color.material).noCollission().instabreak().sound(SoundType.WET_GRASS))),
-        DEAD_CORAL_WALL_FAN((color, type) -> new TFCDeadCoralWallFanBlock(AbstractBlock.Properties.of(Material.STONE, MaterialColor.COLOR_GRAY).requiresCorrectToolForDrops().noCollission().instabreak().lootFrom(TFCBlocks.CORAL.get(color).get(DEAD_CORAL_FAN)))),
-        CORAL_WALL_FAN((color, type) -> new TFCCoralWallFanBlock(TFCBlocks.CORAL.get(color).get(DEAD_CORAL_WALL_FAN), AbstractBlock.Properties.of(Material.WATER_PLANT, color.material).noCollission().instabreak().sound(SoundType.WET_GRASS).lootFrom(TFCBlocks.CORAL.get(color).get(CORAL_FAN))));
+    public enum BlockType {
+        DEAD_CORAL((color, type) -> new TFCDeadCoralPlantBlock(AbstractBlock.Settings.of(Material.STONE, MaterialColor.GRAY).requiresTool().noCollision().breakInstantly())),
+        CORAL((color, type) -> new TFCCoralPlantBlock(() -> TFCBlocks.CORAL.get(color).get(DEAD_CORAL), AbstractBlock.Settings.of(Material.UNDERWATER_PLANT, color.material).noCollision().breakInstantly().sounds(BlockSoundGroup.WET_GRASS))),
+        DEAD_CORAL_FAN((color, type) -> new TFCCoralFanBlock(AbstractBlock.Settings.of(Material.STONE, MaterialColor.GRAY).requiresTool().noCollision().breakInstantly())),
+        CORAL_FAN((color, type) -> new TFCCoralFinBlock(() -> TFCBlocks.CORAL.get(color).get(DEAD_CORAL_FAN), AbstractBlock.Settings.of(Material.UNDERWATER_PLANT, color.material).noCollision().breakInstantly().sounds(BlockSoundGroup.WET_GRASS))),
+        DEAD_CORAL_WALL_FAN((color, type) -> new TFCDeadCoralWallFanBlock(AbstractBlock.Settings.of(Material.STONE, MaterialColor.GRAY).requiresTool().noCollision().breakInstantly().dropsLike(TFCBlocks.CORAL.get(color).get(DEAD_CORAL_FAN)))),
+        CORAL_WALL_FAN((color, type) -> new TFCCoralWallFanBlock(() -> TFCBlocks.CORAL.get(color).get(DEAD_CORAL_WALL_FAN), AbstractBlock.Settings.of(Material.UNDERWATER_PLANT, color.material).noCollision().breakInstantly().sounds(BlockSoundGroup.WET_GRASS).dropsLike(TFCBlocks.CORAL.get(color).get(CORAL_FAN))));
 
         public boolean needsItem()
         {
@@ -52,15 +49,14 @@ public class Coral
         }
 
         private final BiFunction<Color, Coral.BlockType, ? extends Block> factory;
-        private final BiFunction<Block, Item.Properties, ? extends BlockItem> blockItemFactory;
+        private final BiFunction<Block, Item.Settings, ? extends BlockItem> blockItemFactory;
 
         BlockType(BiFunction<Color, Coral.BlockType, ? extends Block> factory)
         {
             this(factory, BlockItem::new);
         }
 
-        BlockType(BiFunction<Color, Coral.BlockType, ? extends Block> factory, BiFunction<Block, Item.Properties, ? extends BlockItem> blockItemFactory)
-        {
+        BlockType(BiFunction<Color, Coral.BlockType, ? extends Block> factory, BiFunction<Block, Item.Settings, ? extends BlockItem> blockItemFactory) {
             this.factory = factory;
             this.blockItemFactory = blockItemFactory;
         }
@@ -70,8 +66,7 @@ public class Coral
             return () -> factory.apply(color, this);
         }
 
-        public BlockItem createBlockItem(Block block, Item.Properties properties)
-        {
+        public BlockItem createBlockItem(Block block, Item.Settings properties) {
             return this.blockItemFactory.apply(block, properties);
         }
     }

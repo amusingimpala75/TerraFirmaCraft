@@ -23,7 +23,7 @@ import net.dries007.tfc.common.fluids.IFluidLoggable;
 
 public abstract class WaterPlantBlock extends PlantBlock implements IFluidLoggable
 {
-    public static WaterPlantBlock create(IPlant plant, FluidProperty fluid, Properties properties)
+    public static WaterPlantBlock create(IPlant plant, FluidProperty fluid, Settings properties)
     {
         return new WaterPlantBlock(properties)
         {
@@ -41,7 +41,7 @@ public abstract class WaterPlantBlock extends PlantBlock implements IFluidLoggab
         };
     }
 
-    protected WaterPlantBlock(Properties properties)
+    protected WaterPlantBlock(Settings properties)
     {
         super(properties);
 

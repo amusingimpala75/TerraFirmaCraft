@@ -7,79 +7,81 @@
 package net.dries007.tfc.common.recipes;
 
 import java.util.function.BiFunction;
-import javax.annotation.Nullable;
 
 import com.google.gson.JsonObject;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.RecipeManager;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.server.SUpdateRecipesPacket;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.packet.s2c.play.SynchronizeRecipesS2CPacket;
+import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.RecipeManager;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
+import net.minecraft.recipe.RecipeSerializer;
+
 
 import net.dries007.tfc.util.Helpers;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A recipe that delegates to an internal recipe, held in the "recipe" field.
  * The internal recipe must obviously be compatible but we have no way of assuring that, so we rely on users to not screw this up
  * This is more powerful than creating a recipe type for every combination of modifier (e.g. damage inputs, apply food, etc.)
  */
-public abstract class DelegatingRecipe<C extends IInventory> implements IDelegatingRecipe<C>
+public abstract class DelegatingRecipe<C extends Inventory> implements IDelegatingRecipe<C>
 {
-    public static final ResourceLocation DELEGATE = Helpers.identifier("delegate");
+    public static final Identifier DELEGATE = Helpers.identifier("delegate");
 
-    private final ResourceLocation id;
-    private final IRecipe<C> recipe;
+    private final Identifier id;
+    private final Recipe<C> recipe;
 
-    protected DelegatingRecipe(ResourceLocation id, IRecipe<C> recipe)
+    protected DelegatingRecipe(Identifier id, Recipe<C> recipe)
     {
         this.id = id;
         this.recipe = recipe;
     }
 
     @Override
-    public IRecipe<C> getInternal()
+    public Recipe<C> getInternal()
     {
         return recipe;
     }
 
     @Override
-    public ResourceLocation getId()
+    public Identifier getId()
     {
         return id;
     }
 
-    protected static class Serializer<C extends IInventory, R extends DelegatingRecipe<C>> extends RecipeSerializer<R>
+    protected static class Serializer<C extends Inventory, R extends DelegatingRecipe<C>> implements RecipeSerializer<R>
     {
-        private final BiFunction<ResourceLocation, IRecipe<C>, R> factory;
+        private final BiFunction<Identifier, Recipe<C>, R> factory;
 
-        protected Serializer(BiFunction<ResourceLocation, IRecipe<C>, R> factory)
+        protected Serializer(BiFunction<Identifier, Recipe<C>, R> factory)
         {
             this.factory = factory;
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        public R fromJson(ResourceLocation recipeId, JsonObject json)
+        public R read(Identifier recipeId, JsonObject json)
         {
-            IRecipe<?> internal = RecipeManager.fromJson(DELEGATE, JSONUtils.getAsJsonObject(json, "recipe"));
-            return factory.apply(recipeId, (IRecipe<C>) internal);
+            Recipe<?> internal = RecipeManager.deserialize(DELEGATE, JsonHelper.getObject(json, "recipe"));
+            return factory.apply(recipeId, (Recipe<C>) internal);
         }
 
         @Nullable
         @Override
         @SuppressWarnings("unchecked")
-        public R fromNetwork(ResourceLocation recipeId, PacketBuffer buffer)
+        public R read(Identifier recipeId, PacketByteBuf buffer)
         {
-            IRecipe<?> internal = SUpdateRecipesPacket.fromNetwork(buffer);
-            return factory.apply(recipeId, (IRecipe<C>) internal);
+            Recipe<?> internal = SynchronizeRecipesS2CPacket.readRecipe(buffer);
+            return factory.apply(recipeId, (Recipe<C>) internal);
         }
 
         @Override
-        public void toNetwork(PacketBuffer buffer, R recipe)
+        public void write(PacketByteBuf buffer, R recipe)
         {
-            SUpdateRecipesPacket.toNetwork(recipe.getInternal(), buffer);
+            SynchronizeRecipesS2CPacket.writeRecipe(recipe.getInternal(), buffer);
         }
     }
 }

@@ -8,10 +8,7 @@ package net.dries007.tfc.common.blocks;
 
 import javax.annotation.Nullable;
 
-import net.minecraft.block.BedBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.DyeColor;
@@ -33,7 +30,7 @@ public class ThatchBedBlock extends BedBlock
 {
     private static final VoxelShape BED_SHAPE = Block.box(0.0F, 0.0F, 0.0F, 16.0F, 9.0F, 16.0F);
 
-    public ThatchBedBlock(Properties properties)
+    public ThatchBedBlock(AbstractBlock.Settings properties)
     {
         super(DyeColor.YELLOW, properties);
     }

@@ -6,14 +6,14 @@
 
 package net.dries007.tfc.mixin.client.multiplayer;
 
-import net.minecraft.client.entity.player.ClientPlayerEntity;
-import net.minecraft.client.multiplayer.PlayerController;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
-import net.minecraft.util.ActionResultType;
+import net.minecraft.item.ItemUsageContext;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.hit.BlockHitResult;
 
 import net.dries007.tfc.util.InteractionManager;
 import org.spongepowered.asm.mixin.Mixin;
@@ -26,15 +26,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  *
  * @see InteractionManager
  */
-@Mixin(PlayerController.class)
+@Mixin(ClientPlayerInteractionManager.class)
 public abstract class PlayerControllerMixin
 {
-    @Inject(method = "useItemOn", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;useOn(Lnet/minecraft/item/ItemUseContext;)Lnet/minecraft/util/ActionResultType;"), require = 2, cancellable = true)
-    private void inject$useItemOn(ClientPlayerEntity player, ClientWorld worldIn, Hand handIn, BlockRayTraceResult resultIn, CallbackInfoReturnable<ActionResultType> cir)
+    @Inject(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;useOn(Lnet/minecraft/item/ItemUseContext;)Lnet/minecraft/util/ActionResultType;"), require = 2, cancellable = true)
+    private void inject$useItemOn(ClientPlayerEntity player, ClientWorld worldIn, Hand handIn, BlockHitResult resultIn, CallbackInfoReturnable<ActionResult> cir)
     {
-        final ItemStack stack = player.getItemInHand(handIn);
+        final ItemStack stack = player.getStackInHand(handIn);
         final int startCount = stack.getCount();
-        final ItemUseContext itemContext = new ItemUseContext(player, handIn, resultIn);
+        final ItemUsageContext itemContext = new ItemUsageContext(player, handIn, resultIn);
         InteractionManager.onItemUse(stack, itemContext).ifPresent(result -> {
             if (player.isCreative())
             {

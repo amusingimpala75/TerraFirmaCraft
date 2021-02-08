@@ -7,24 +7,24 @@
 package net.dries007.tfc.common.fluids;
 
 import net.minecraft.block.*;
-import net.minecraft.fluid.FlowingFluid;
+import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorld;
+import net.minecraft.world.BlockView;
+import net.minecraft.world.WorldAccess;
 
 /**
  * A generic interface for a block which is able to contain any number of predetermined fluid properties
  *
  * @see FluidProperty
  */
-public interface IFluidLoggable extends IWaterLoggable, ILiquidContainer, IBucketPickupHandler
+public interface IFluidLoggable extends Waterloggable, FluidFillable, FluidDrainable
 {
-    default boolean canPlaceLiquid(IBlockReader worldIn, BlockPos pos, BlockState state, Fluid fluidIn)
+    default boolean canPlaceLiquid(BlockView worldIn, BlockPos pos, BlockState state, Fluid fluidIn)
     {
-        final Fluid containedFluid = state.getValue(getFluidProperty()).getFluid();
+        final Fluid containedFluid = state.get(getFluidProperty()).getFluid();
         if (containedFluid == Fluids.EMPTY)
         {
             return getFluidProperty().getPossibleFluids().contains(fluidIn);
@@ -32,27 +32,27 @@ public interface IFluidLoggable extends IWaterLoggable, ILiquidContainer, IBucke
         return false;
     }
 
-    default boolean placeLiquid(IWorld worldIn, BlockPos pos, BlockState state, FluidState fluidStateIn)
+    default boolean placeLiquid(WorldAccess worldIn, BlockPos pos, BlockState state, FluidState fluidStateIn)
     {
-        final Fluid containedFluid = state.getValue(getFluidProperty()).getFluid();
-        if (containedFluid == Fluids.EMPTY && getFluidProperty().getPossibleFluids().contains(fluidStateIn.getType()))
+        final Fluid containedFluid = state.get(getFluidProperty()).getFluid();
+        if (containedFluid == Fluids.EMPTY && getFluidProperty().getPossibleFluids().contains(fluidStateIn.getFluid()))
         {
-            if (!worldIn.isClientSide())
+            if (!worldIn.isClient())
             {
-                worldIn.setBlock(pos, state.setValue(getFluidProperty(), getFluidProperty().keyFor(fluidStateIn.getType())), 3);
-                worldIn.getLiquidTicks().scheduleTick(pos, fluidStateIn.getType(), fluidStateIn.getType().getTickDelay(worldIn));
+                worldIn.setBlockState(pos, state.with(getFluidProperty(), getFluidProperty().keyFor(fluidStateIn.getFluid())), 3);
+                worldIn.getFluidTickScheduler().schedule(pos, fluidStateIn.getFluid(), fluidStateIn.getFluid().getTickRate(worldIn));
             }
             return true;
         }
         return false;
     }
 
-    default Fluid takeLiquid(IWorld worldIn, BlockPos pos, BlockState state)
+    default Fluid takeLiquid(WorldAccess worldIn, BlockPos pos, BlockState state)
     {
-        final Fluid containedFluid = state.getValue(getFluidProperty()).getFluid();
+        final Fluid containedFluid = state.get(getFluidProperty()).getFluid();
         if (containedFluid != Fluids.EMPTY)
         {
-            worldIn.setBlock(pos, state.setValue(getFluidProperty(), getFluidProperty().keyFor(Fluids.EMPTY)), 3);
+            worldIn.setBlockState(pos, state.with(getFluidProperty(), getFluidProperty().keyFor(Fluids.EMPTY)), 3);
         }
         return containedFluid;
     }
@@ -63,12 +63,12 @@ public interface IFluidLoggable extends IWaterLoggable, ILiquidContainer, IBucke
     @SuppressWarnings("deprecation")
     default FluidState getFluidState(BlockState state)
     {
-        final Fluid containedFluid = state.getValue(getFluidProperty()).getFluid();
-        if (containedFluid instanceof FlowingFluid)
+        final Fluid containedFluid = state.get(getFluidProperty()).getFluid();
+        if (containedFluid instanceof FlowableFluid)
         {
-            return ((FlowingFluid) containedFluid).getSource(false);
+            return ((FlowableFluid) containedFluid).getStill(false);
         }
-        return containedFluid.defaultFluidState();
+        return containedFluid.getDefaultState();
     }
 
     /**
@@ -83,7 +83,7 @@ public interface IFluidLoggable extends IWaterLoggable, ILiquidContainer, IBucke
     {
         if (getFluidProperty().getPossibleFluids().contains(fluid))
         {
-            return state.setValue(getFluidProperty(), getFluidProperty().keyFor(fluid));
+            return state.with(getFluidProperty(), getFluidProperty().keyFor(fluid));
         }
         return state;
     }

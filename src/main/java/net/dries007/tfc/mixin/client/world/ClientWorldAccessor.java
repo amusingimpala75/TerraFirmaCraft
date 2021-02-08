@@ -6,7 +6,7 @@
 
 package net.dries007.tfc.mixin.client.world;
 
-import net.minecraft.client.renderer.color.ColorCache;
+import net.minecraft.client.world.BiomeColorCache;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.world.level.ColorResolver;
 
@@ -17,6 +17,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 @Mixin(ClientWorld.class)
 public interface ClientWorldAccessor
 {
-    @Accessor("tintCaches")
-    Object2ObjectArrayMap<ColorResolver, ColorCache> getTintCaches();
+    @Accessor("colorCache")
+    Object2ObjectArrayMap<ColorResolver, BiomeColorCache> getTintCaches();
 }

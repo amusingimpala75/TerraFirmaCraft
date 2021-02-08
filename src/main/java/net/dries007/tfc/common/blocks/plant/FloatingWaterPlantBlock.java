@@ -28,7 +28,7 @@ public abstract class FloatingWaterPlantBlock extends PlantBlock
     protected static final VoxelShape SHAPE = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 1.5D, 15.0D);
     private final Supplier<? extends Fluid> fluid;
 
-    public static FloatingWaterPlantBlock create(IPlant plant, Supplier<? extends Fluid> fluid, Properties properties)
+    public static FloatingWaterPlantBlock create(IPlant plant, Supplier<? extends Fluid> fluid, Settings properties)
     {
         return new FloatingWaterPlantBlock(properties, fluid)
         {
@@ -40,7 +40,7 @@ public abstract class FloatingWaterPlantBlock extends PlantBlock
         };
     }
 
-    protected FloatingWaterPlantBlock(Properties properties, Supplier<? extends Fluid> fluid)
+    protected FloatingWaterPlantBlock(Settings properties, Supplier<? extends Fluid> fluid)
     {
         super(properties);
         this.fluid = fluid;

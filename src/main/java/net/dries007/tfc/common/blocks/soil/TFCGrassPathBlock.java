@@ -23,12 +23,12 @@ public class TFCGrassPathBlock extends GrassPathBlock implements ISoilBlock
 {
     private final Supplier<Block> dirtBlock;
 
-    public TFCGrassPathBlock(Properties builder, SoilBlockType soil, SoilBlockType.Variant variant)
+    public TFCGrassPathBlock(Settings builder, SoilBlockType soil, SoilBlockType.Variant variant)
     {
         this(builder, TFCBlocks.SOIL.get(soil).get(variant));
     }
 
-    protected TFCGrassPathBlock(Properties builder, Supplier<Block> dirtBlock)
+    protected TFCGrassPathBlock(Settings builder, Supplier<Block> dirtBlock)
     {
         super(builder);
 

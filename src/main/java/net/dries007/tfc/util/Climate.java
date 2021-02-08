@@ -7,11 +7,10 @@
 package net.dries007.tfc.util;
 
 import java.util.Random;
-import javax.annotation.Nullable;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.IWorld;
+import net.minecraft.world.WorldAccess;
 import net.minecraft.world.biome.Biome;
 
 import net.dries007.tfc.config.TFCConfig;
@@ -24,6 +23,7 @@ import net.dries007.tfc.world.biome.TFCBiomes;
 import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.dries007.tfc.world.noise.INoise1D;
 import net.dries007.tfc.world.noise.NoiseUtil;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Central class for all TFC climate requirements.
@@ -64,7 +64,7 @@ public final class Climate
      * Gets the equivalent to {@link Biome#getTemperature(BlockPos)} for TFC biomes.
      * Called from injected code.
      */
-    public static float getVanillaBiomeTemperature(Biome biome, @Nullable IWorld world, BlockPos pos)
+    public static float getVanillaBiomeTemperature(Biome biome, @Nullable WorldAccess world, BlockPos pos)
     {
         if (world != null && TFCBiomes.getExtension(biome) != null)
         {
@@ -73,7 +73,7 @@ public final class Climate
         return biome.getTemperature(pos);
     }
 
-    public static Biome.RainType getVanillaBiomePrecipitation(Biome biome, @Nullable IWorld world, BlockPos pos)
+    public static Biome.Precipitation getVanillaBiomePrecipitation(Biome biome, @Nullable WorldAccess world, BlockPos pos)
     {
         if (world != null && TFCBiomes.getExtension(biome) != null)
         {
@@ -87,24 +87,24 @@ public final class Climate
      * Will be valid when used on both logical sides.
      * MUST NOT be used by world generation, it should use {@link Climate#calculateTemperature(BlockPos, float, Calendar)} instead, with the average temperature obtained through the correct chunk data source
      */
-    public static float getTemperature(IWorld world, BlockPos pos)
+    public static float getTemperature(WorldAccess world, BlockPos pos)
     {
         ChunkData data = ChunkData.get(world, pos);
         ICalendar calendar = Calendars.get(world);
         return calculateTemperature(pos.getZ(), pos.getY(), data.getAverageTemp(pos), calendar.getCalendarTicks(), calendar.getCalendarDaysInMonth());
     }
 
-    public static Biome.RainType getPrecipitation(IWorld world, BlockPos pos)
+    public static Biome.Precipitation getPrecipitation(WorldAccess world, BlockPos pos)
     {
         ChunkData data = ChunkData.get(world, pos);
         ICalendar calendar = Calendars.get(world);
         float rainfall = data.getRainfall(pos);
         if (rainfall < 100)
         {
-            return Biome.RainType.NONE;
+            return Biome.Precipitation.NONE;
         }
         float temperature = calculateTemperature(pos.getZ(), pos.getY(), data.getAverageTemp(pos), calendar.getCalendarTicks(), calendar.getCalendarDaysInMonth());
-        return temperature < 0 ? Biome.RainType.SNOW : Biome.RainType.RAIN;
+        return temperature < 0 ? Biome.Precipitation.SNOW : Biome.Precipitation.RAIN;
     }
 
     /**

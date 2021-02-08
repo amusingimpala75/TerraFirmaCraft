@@ -9,17 +9,16 @@ package net.dries007.tfc.common.recipes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.item.crafting.IRecipeType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.recipe.RecipeType;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockReader;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 import net.dries007.tfc.client.TFCSounds;
@@ -28,6 +27,7 @@ import net.dries007.tfc.common.entities.TFCFallingBlockEntity;
 import net.dries007.tfc.config.TFCConfig;
 import net.dries007.tfc.util.collections.IndirectHashCollection;
 import net.dries007.tfc.util.support.SupportManager;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * This handles all logic for land slides (sideways gravity affected blocks)
@@ -62,7 +62,7 @@ public class LandslideRecipe extends SimpleBlockRecipe
     @SuppressWarnings("UnusedReturnValue")
     public static boolean tryLandslide(World world, BlockPos pos, BlockState state)
     {
-        if (!world.isClientSide() && TFCConfig.SERVER.enableBlockLandslides.get())
+        if (!world.isClient && TFCConfig.SERVER.enableBlockLandslides.get())
         {
             BlockPos fallPos = getLandSlidePos(world, pos);
             if (fallPos != null)
@@ -76,9 +76,9 @@ public class LandslideRecipe extends SimpleBlockRecipe
                     {
                         world.removeBlock(pos, false);
                     }
-                    world.setBlockAndUpdate(fallPos, fallingState);
-                    world.playSound(null, pos, TFCSounds.DIRT_SLIDE_SHORT.get(), SoundCategory.BLOCKS, 0.4f, 1.0f);
-                    world.addFreshEntity(new TFCFallingBlockEntity(world, fallPos.getX() + 0.5, fallPos.getY(), fallPos.getZ() + 0.5, fallingState));
+                    world.setBlockState(fallPos, fallingState);
+                    world.playSound(null, pos, TFCSounds.DIRT_SLIDE_SHORT, SoundCategory.BLOCKS, 0.4f, 1.0f);
+                    world.spawnEntity(new TFCFallingBlockEntity(world, fallPos.getX() + 0.5, fallPos.getY(), fallPos.getZ() + 0.5, fallingState));
                 }
                 return true;
             }
@@ -93,7 +93,7 @@ public class LandslideRecipe extends SimpleBlockRecipe
         {
             return null;
         }
-        else if (TFCFallingBlockEntity.canFallThrough(world, pos.below()))
+        else if (TFCFallingBlockEntity.canFallThrough(world, pos.down()))
         {
             return pos;
         }
@@ -104,7 +104,7 @@ public class LandslideRecipe extends SimpleBlockRecipe
             {
                 int supportedDirections = 0;
                 List<BlockPos> possibleDirections = new ArrayList<>();
-                for (Direction side : Direction.Plane.HORIZONTAL)
+                for (Direction side : Direction.Type.HORIZONTAL)
                 {
                     if (isSupportedOnSide(world, pos, side))
                     {
@@ -118,8 +118,8 @@ public class LandslideRecipe extends SimpleBlockRecipe
                     else
                     {
                         // In order to fall in a direction, we need both the block immediately next to, and the one below to be open
-                        BlockPos posSide = pos.relative(side);
-                        if (TFCFallingBlockEntity.canFallThrough(world, posSide) && TFCFallingBlockEntity.canFallThrough(world, posSide.below()))
+                        BlockPos posSide = pos.offset(side);
+                        if (TFCFallingBlockEntity.canFallThrough(world, posSide) && TFCFallingBlockEntity.canFallThrough(world, posSide.down()))
                         {
                             possibleDirections.add(posSide);
                         }
@@ -135,26 +135,26 @@ public class LandslideRecipe extends SimpleBlockRecipe
         return null;
     }
 
-    public static boolean isSupportedOnSide(IBlockReader world, BlockPos pos, Direction side)
+    public static boolean isSupportedOnSide(BlockView world, BlockPos pos, Direction side)
     {
-        BlockPos sidePos = pos.relative(side);
+        BlockPos sidePos = pos.offset(side);
         BlockState sideState = world.getBlockState(sidePos);
-        return sideState.isFaceSturdy(world, sidePos, side.getOpposite()) || TFCTags.Blocks.SUPPORTS_LANDSLIDE.contains(sideState.getBlock());
+        return sideState.isSideSolidFullSquare(world, sidePos, side.getOpposite()) || TFCTags.Blocks.SUPPORTS_LANDSLIDE.contains(sideState.getBlock());
     }
 
-    LandslideRecipe(ResourceLocation id, IBlockIngredient ingredient, BlockState outputState, boolean copyInputState)
+    LandslideRecipe(Identifier id, IBlockIngredient ingredient, BlockState outputState, boolean copyInputState)
     {
         super(id, ingredient, outputState, copyInputState);
     }
 
     @Override
-    public IRecipeSerializer<?> getSerializer()
+    public RecipeSerializer<?> getSerializer()
     {
-        return TFCRecipeSerializers.LANDSLIDE.get();
+        return TFCRecipeSerializers.LANDSLIDE;
     }
 
     @Override
-    public IRecipeType<?> getType()
+    public RecipeType<?> getType()
     {
         return TFCRecipeTypes.LANDSLIDE;
     }

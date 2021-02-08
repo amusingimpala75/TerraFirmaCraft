@@ -7,13 +7,13 @@
 package net.dries007.tfc.common.recipes;
 
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 
-public interface IInventoryNoop extends IInventory
+public interface IInventoryNoop extends Inventory
 {
     @Override
-    default int getContainerSize()
+    default int size()
     {
         return 0;
     }
@@ -25,35 +25,35 @@ public interface IInventoryNoop extends IInventory
     }
 
     @Override
-    default ItemStack getItem(int index)
+    default ItemStack getStack(int index)
     {
         return ItemStack.EMPTY;
     }
 
     @Override
-    default ItemStack removeItem(int index, int count)
+    default ItemStack removeStack(int index, int count)
     {
         return ItemStack.EMPTY;
     }
 
     @Override
-    default ItemStack removeItemNoUpdate(int index)
+    default ItemStack removeStack(int index)
     {
         return ItemStack.EMPTY;
     }
 
     @Override
-    default void setItem(int index, ItemStack stack) {}
+    default void setStack(int index, ItemStack stack) {}
 
     @Override
-    default void setChanged() {}
+    default void markDirty() {}
 
     @Override
-    default boolean stillValid(PlayerEntity player)
+    default boolean canPlayerUse(PlayerEntity player)
     {
         return true;
     }
 
     @Override
-    default void clearContent() {}
+    default void clear() {}
 }

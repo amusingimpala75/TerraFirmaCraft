@@ -11,28 +11,28 @@ import java.util.function.Supplier;
 
 import net.minecraft.block.*;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 import net.minecraft.world.server.ServerWorld;
 
-public class BodyPlantBlock extends AbstractBodyPlantBlock
+public class BodyPlantBlock extends AbstractPlantBlock
 {
     private final Supplier<? extends Block> headBlock;
 
-    public BodyPlantBlock(AbstractBlock.Properties properties, Supplier<? extends Block> headBlock, VoxelShape shape, Direction direction)
+    public BodyPlantBlock(AbstractBlock.Settings properties, Supplier<? extends Block> headBlock, VoxelShape shape, Direction direction)
     {
         super(properties, direction, shape, false);
         this.headBlock = headBlock;
     }
 
     @Override
-    protected AbstractTopPlantBlock getHeadBlock()
+    protected AbstractPlantStemBlock getStem()
     {
-        return (AbstractTopPlantBlock) headBlock.get();
+        return (AbstractPlantStemBlock) headBlock.get();
     }
 
     @Override

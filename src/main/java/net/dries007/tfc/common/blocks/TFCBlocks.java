@@ -10,20 +10,17 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import net.minecraft.block.AbstractBlock.Properties;
+import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.block.*;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.material.MaterialColor;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
+import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockReader;
-import net.minecraftforge.common.ToolType;
-import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.BlockView;
 
 import net.dries007.tfc.common.TFCItemGroup;
 import net.dries007.tfc.common.blocks.plant.Plant;
@@ -40,8 +37,8 @@ import net.dries007.tfc.common.types.Ore;
 import net.dries007.tfc.common.types.Rock;
 import net.dries007.tfc.common.types.Wood;
 import net.dries007.tfc.util.Helpers;
+import net.dries007.tfc.forgereplacements.FluidBlock;
 
-import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
 import static net.dries007.tfc.common.TFCItemGroup.*;
 
 
@@ -51,74 +48,71 @@ import static net.dries007.tfc.common.TFCItemGroup.*;
  * Whenever possible, avoid using hardcoded references to these, prefer tags or recipes.
  */
 @SuppressWarnings("unused")
-public final class TFCBlocks
-{
-    public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, MOD_ID);
-
+public final class TFCBlocks {
     // Earth
 
-    public static final Map<SoilBlockType, Map<SoilBlockType.Variant, RegistryObject<Block>>> SOIL = Helpers.mapOfKeys(SoilBlockType.class, type ->
+    public static final Map<SoilBlockType, Map<SoilBlockType.Variant, Block>> SOIL = Helpers.mapOfKeys(SoilBlockType.class, type ->
         Helpers.mapOfKeys(SoilBlockType.Variant.class, variant ->
             register((type.name() + "/" + variant.name()).toLowerCase(), () -> type.create(variant), EARTH)
         )
     );
 
-    public static final RegistryObject<Block> PEAT = register("peat", () -> new Block(Properties.of(Material.DIRT, MaterialColor.TERRACOTTA_BLACK).harvestTool(ToolType.SHOVEL).sound(SoundType.GRAVEL).harvestLevel(0)), EARTH);
-    public static final RegistryObject<Block> PEAT_GRASS = register("peat_grass", () -> new ConnectedGrassBlock(Properties.of(Material.GRASS).randomTicks().strength(0.6F).sound(SoundType.GRASS).harvestTool(ToolType.SHOVEL).harvestLevel(0), PEAT, null, null), EARTH);
+    public static final Block PEAT = register("peat", () -> new Block(FabricBlockSettings.of(Material.SOIL, MaterialColor.BLACK_TERRACOTTA).breakByTool(FabricToolTags.SHOVELS, 0).sounds(BlockSoundGroup.GRAVEL)), EARTH);
+    public static final Block PEAT_GRASS = register("peat_grass", () -> new ConnectedGrassBlock(FabricBlockSettings.of(Material.SOLID_ORGANIC).ticksRandomly().strength(0.6F).sounds(BlockSoundGroup.GRASS).breakByTool(FabricToolTags.SHOVELS, 0), () -> PEAT, null, null), EARTH);
 
-    public static final Map<SandBlockType, RegistryObject<Block>> SAND = Helpers.mapOfKeys(SandBlockType.class, type ->
+    public static final Map<SandBlockType, Block> SAND = Helpers.mapOfKeys(SandBlockType.class, type ->
         register(("sand/" + type.name()).toLowerCase(), type::create, EARTH)
     );
 
-    public static final Map<GroundcoverBlockType, RegistryObject<Block>> GROUNDCOVER = Helpers.mapOfKeys(GroundcoverBlockType.class, type ->
-        register(("groundcover/" + type.name()).toLowerCase(), () -> new GroundcoverBlock(type), block -> new BlockItem(block, new Item.Properties().tab(EARTH)), type.shouldCreateBlockItem())
+    public static final Map<GroundcoverBlockType, Block> GROUNDCOVER = Helpers.mapOfKeys(GroundcoverBlockType.class, type ->
+        register(("groundcover/" + type.name()).toLowerCase(), () -> new GroundcoverBlock(type), block -> new BlockItem(block, new Item.Settings().group(EARTH)), type.shouldCreateBlockItem())
     );
 
-    public static final RegistryObject<Block> SEA_ICE = register("sea_ice", () -> new SeaIceBlock(AbstractBlock.Properties.of(Material.ICE).friction(0.98f).randomTicks().strength(0.5f).sound(SoundType.GLASS).noOcclusion().isValidSpawn(TFCBlocks::onlyPolarBears)), EARTH);
-    public static final RegistryObject<SnowPileBlock> SNOW_PILE = register("snow_pile", () -> new SnowPileBlock(new ForgeBlockProperties(Properties.copy(Blocks.SNOW).harvestTool(ToolType.SHOVEL).harvestLevel(0)).tileEntity(SnowPileTileEntity::new)), EARTH);
-    public static final RegistryObject<ThinSpikeBlock> ICICLE = register("icicle", () -> new ThinSpikeBlock(Properties.of(Material.ICE).noDrops().strength(0.4f).sound(SoundType.GLASS).noOcclusion()));
+    public static final Block SEA_ICE = register("sea_ice", () -> new SeaIceBlock(AbstractBlock.Settings.of(Material.ICE).slipperiness(0.98f).ticksRandomly().strength(0.5f).sounds(BlockSoundGroup.GLASS).nonOpaque().allowsSpawning(TFCBlocks::onlyPolarBears)), EARTH);
+    public static final SnowPileBlock SNOW_PILE = (SnowPileBlock) register("snow_pile", () -> new SnowPileBlock(new ForgeBlockProperties(FabricBlockSettings.copyOf(FabricBlockSettings.copy(Blocks.SNOW)).breakByTool(FabricToolTags.SHOVELS, 0)).tileEntity(SnowPileTileEntity::new)), EARTH);
+    public static final ThinSpikeBlock ICICLE = (ThinSpikeBlock) register("icicle", () -> new ThinSpikeBlock(AbstractBlock.Settings.of(Material.ICE).dropsNothing().strength(0.4f).sounds(BlockSoundGroup.GLASS).nonOpaque()));
 
-    public static final RegistryObject<ThinSpikeBlock> CALCITE = register("calcite", () -> new ThinSpikeBlock(Properties.of(Material.GLASS).noDrops().strength(0.2f).sound(SoundType.BONE_BLOCK)));
+    public static final ThinSpikeBlock CALCITE = (ThinSpikeBlock) register("calcite", () -> new ThinSpikeBlock(AbstractBlock.Settings.of(Material.GLASS).dropsNothing().strength(0.2f).sounds(BlockSoundGroup.BONE)));
 
     // Ores
 
-    public static final Map<Rock.Default, Map<Ore.Default, RegistryObject<Block>>> ORES = Helpers.mapOfKeys(Rock.Default.class, rock ->
+    public static final Map<Rock.Default, Map<Ore.Default, Block>> ORES = Helpers.mapOfKeys(Rock.Default.class, rock ->
         Helpers.mapOfKeys(Ore.Default.class, ore -> !ore.isGraded(), ore ->
-            register(("ore/" + ore.name() + "/" + rock.name()).toLowerCase(), () -> new Block(Block.Properties.of(Material.STONE).sound(SoundType.STONE).strength(3, 10).harvestTool(ToolType.PICKAXE).harvestLevel(0)), TFCItemGroup.ORES)
+            register(("ore/" + ore.name() + "/" + rock.name()).toLowerCase(), () -> new Block(FabricBlockSettings.of(Material.STONE).sounds(BlockSoundGroup.STONE).strength(3, 10).breakByTool(FabricToolTags.PICKAXES, 0)), TFCItemGroup.ORES)
         )
     );
-    public static final Map<Rock.Default, Map<Ore.Default, Map<Ore.Grade, RegistryObject<Block>>>> GRADED_ORES = Helpers.mapOfKeys(Rock.Default.class, rock ->
+    public static final Map<Rock.Default, Map<Ore.Default, Map<Ore.Grade, Block>>> GRADED_ORES = Helpers.mapOfKeys(Rock.Default.class, rock ->
         Helpers.mapOfKeys(Ore.Default.class, Ore.Default::isGraded, ore ->
             Helpers.mapOfKeys(Ore.Grade.class, grade ->
-                register(("ore/" + grade.name() + "_" + ore.name() + "/" + rock.name()).toLowerCase(), () -> new Block(Block.Properties.of(Material.STONE).sound(SoundType.STONE).strength(3, 10).harvestTool(ToolType.PICKAXE).harvestLevel(0)), TFCItemGroup.ORES)
+                register(("ore/" + grade.name() + "_" + ore.name() + "/" + rock.name()).toLowerCase(), () -> new Block(FabricBlockSettings.of(Material.STONE).sounds(BlockSoundGroup.STONE).strength(3, 10).breakByTool(FabricToolTags.PICKAXES, 0)), TFCItemGroup.ORES)
             )
         )
     );
-    public static final Map<Ore.Default, RegistryObject<Block>> SMALL_ORES = Helpers.mapOfKeys(Ore.Default.class, Ore.Default::isGraded, type ->
-        register(("ore/small_" + type.name()).toLowerCase(), () -> GroundcoverBlock.looseOre(Properties.of(Material.GRASS).strength(0.05F, 0.0F).sound(SoundType.NETHER_ORE).noOcclusion()), TFCItemGroup.ORES)
+    public static final Map<Ore.Default, Block> SMALL_ORES = Helpers.mapOfKeys(Ore.Default.class, Ore.Default::isGraded, type ->
+        register(("ore/small_" + type.name()).toLowerCase(), () -> GroundcoverBlock.looseOre(AbstractBlock.Settings.of(Material.PLANT).strength(0.05F, 0.0F).sounds(BlockSoundGroup.NETHER_ORE).nonOpaque()), TFCItemGroup.ORES)
     );
 
     // Rock Stuff
 
-    public static final Map<Rock.Default, Map<Rock.BlockType, RegistryObject<Block>>> ROCK_BLOCKS = Helpers.mapOfKeys(Rock.Default.class, rock ->
+    public static final Map<Rock.Default, Map<Rock.BlockType, Block>> ROCK_BLOCKS = Helpers.mapOfKeys(Rock.Default.class, rock ->
         Helpers.mapOfKeys(Rock.BlockType.class, type ->
             register(("rock/" + type.name() + "/" + rock.name()).toLowerCase(), () -> type.create(rock), ROCK_STUFFS)
         )
     );
 
-    public static final Map<Rock.Default, Map<Rock.BlockType, RegistryObject<SlabBlock>>> ROCK_SLABS = Helpers.mapOfKeys(Rock.Default.class, rock ->
+    public static final Map<Rock.Default, Map<Rock.BlockType, SlabBlock>> ROCK_SLABS = Helpers.mapOfKeys(Rock.Default.class, rock ->
         Helpers.mapOfKeys(Rock.BlockType.class, Rock.BlockType::hasVariants, type ->
-            register(("rock/" + type.name() + "/" + rock.name()).toLowerCase() + "_slab", () -> type.createSlab(rock), ROCK_STUFFS)
+            (SlabBlock) register(("rock/" + type.name() + "/" + rock.name()).toLowerCase() + "_slab", () -> type.createSlab(rock), ROCK_STUFFS)
         )
     );
 
-    public static final Map<Rock.Default, Map<Rock.BlockType, RegistryObject<StairsBlock>>> ROCK_STAIRS = Helpers.mapOfKeys(Rock.Default.class, rock ->
+    public static final Map<Rock.Default, Map<Rock.BlockType, StairsBlock>> ROCK_STAIRS = Helpers.mapOfKeys(Rock.Default.class, rock ->
         Helpers.mapOfKeys(Rock.BlockType.class, Rock.BlockType::hasVariants, type ->
-            register(("rock/" + type.name() + "/" + rock.name()).toLowerCase() + "_stairs", () -> type.createStairs(rock), ROCK_STUFFS)
+            (StairsBlock) register(("rock/" + type.name() + "/" + rock.name()).toLowerCase() + "_stairs", () -> type.createStairs(rock), ROCK_STUFFS)
         )
     );
 
-    public static final Map<Rock.Default, Map<Rock.BlockType, RegistryObject<Block>>> ROCK_WALLS = Helpers.mapOfKeys(Rock.Default.class, rock ->
+    public static final Map<Rock.Default, Map<Rock.BlockType, Block>> ROCK_WALLS = Helpers.mapOfKeys(Rock.Default.class, rock ->
         Helpers.mapOfKeys(Rock.BlockType.class, Rock.BlockType::hasVariants, type ->
             register(("rock/" + type.name() + "/" + rock.name()).toLowerCase() + "_wall", () -> type.createWall(rock), ROCK_STUFFS)
         )
@@ -126,7 +120,7 @@ public final class TFCBlocks
 
     // Metals
 
-    public static final Map<Metal.Default, Map<Metal.BlockType, RegistryObject<Block>>> METALS = Helpers.mapOfKeys(Metal.Default.class, metal ->
+    public static final Map<Metal.Default, Map<Metal.BlockType, Block>> METALS = Helpers.mapOfKeys(Metal.Default.class, metal ->
         Helpers.mapOfKeys(Metal.BlockType.class, type -> type.hasMetal(metal), type ->
             register(("metal/" + type.name() + "/" + metal.name()).toLowerCase(), type.create(metal), METAL)
         )
@@ -134,7 +128,7 @@ public final class TFCBlocks
 
     // Wood
 
-    public static final Map<Wood.Default, Map<Wood.BlockType, RegistryObject<Block>>> WOODS = Helpers.mapOfKeys(Wood.Default.class, wood ->
+    public static final Map<Wood.Default, Map<Wood.BlockType, Block>> WOODS = Helpers.mapOfKeys(Wood.Default.class, wood ->
         Helpers.mapOfKeys(Wood.BlockType.class, type ->
             register(type.nameFor(wood), type.create(wood), WOOD)
         )
@@ -142,70 +136,64 @@ public final class TFCBlocks
 
     // Flora
 
-    public static final Map<Plant, RegistryObject<Block>> PLANTS = Helpers.mapOfKeys(Plant.class, plant ->
-        register(("plant/" + plant.name()).toLowerCase(), plant::create, block -> plant.createBlockItem(block, new Item.Properties().tab(FLORA)), plant.needsItem())
+    public static final Map<Plant, Block> PLANTS = Helpers.mapOfKeys(Plant.class, plant ->
+        register(("plant/" + plant.name()).toLowerCase(), plant::create, block -> plant.createBlockItem(block, new Item.Settings().group(FLORA)), plant.needsItem())
     );
 
-    public static final Map<Coral.Color, Map<Coral.BlockType, RegistryObject<Block>>> CORAL = Helpers.mapOfKeys(Coral.Color.class, color ->
+    public static final Map<Coral.Color, Map<Coral.BlockType, Block>> CORAL = Helpers.mapOfKeys(Coral.Color.class, color ->
         Helpers.mapOfKeys(Coral.BlockType.class, type ->
-            register("coral/" + color.toString().toLowerCase() + "_" + type.toString().toLowerCase(), type.create(color), block -> type.createBlockItem(block, new Item.Properties().tab(FLORA)), type.needsItem())
+            register("coral/" + color.toString().toLowerCase() + "_" + type.toString().toLowerCase(), type.create(color), block -> type.createBlockItem(block, new Item.Settings().group(FLORA)), type.needsItem())
         )
     );
 
-    public static final RegistryObject<Block> SEA_PICKLE = register("sea_pickle", () -> new TFCSeaPickleBlock(AbstractBlock.Properties.of(Material.WATER_PLANT, MaterialColor.COLOR_GREEN)
-        .lightLevel((state) -> TFCSeaPickleBlock.isDead(state) ? 0 : 3 + 3 * state.getValue(SeaPickleBlock.PICKLES)).sound(SoundType.SLIME_BLOCK).noOcclusion()), FLORA);
+    public static final Block SEA_PICKLE = register("sea_pickle", () -> new TFCSeaPickleBlock(AbstractBlock.Settings.of(Material.UNDERWATER_PLANT, MaterialColor.GREEN)
+        .luminance((state) -> TFCSeaPickleBlock.isDead(state) ? 0 : 3 + 3 * state.get(SeaPickleBlock.PICKLES)).sounds(BlockSoundGroup.SLIME).nonOpaque()), FLORA);
 
     // Misc
-
-    public static final RegistryObject<Block> THATCH = register("thatch", () -> new ThatchBlock(new ForgeBlockProperties(Properties.of(Material.PLANT).strength(0.6F, 0.4F).noOcclusion().sound(SoundType.GRASS)).flammable(50, 100)), MISC);
-    public static final RegistryObject<Block> THATCH_BED = register("thatch_bed", () -> new ThatchBedBlock(Properties.of(Material.REPLACEABLE_PLANT).strength(0.6F, 0.4F)), MISC);
+    public static final Block THATCH = register("thatch", () -> new ThatchBlock(new ForgeBlockProperties(FabricBlockSettings.of(Material.PLANT).strength(0.6F, 0.4F).nonOpaque().sounds(BlockSoundGroup.GRASS)).flammable(50, 100)), TFCItemGroup.MISC);
+    public static final Block THATCH_BED = register("thatch_bed", () -> new ThatchBedBlock(Block.Settings.of(Material.REPLACEABLE_PLANT).strength(0.6F, 0.4F)), TFCItemGroup.MISC);
 
     // Fluids
 
-    public static final Map<Metal.Default, RegistryObject<FlowingFluidBlock>> METAL_FLUIDS = Helpers.mapOfKeys(Metal.Default.class, metal ->
-        register("fluid/metal/" + metal.name().toLowerCase(), () -> new FlowingFluidBlock(TFCFluids.METALS.get(metal).getSecond(), Properties.of(TFCMaterials.MOLTEN_METAL).noCollission().strength(100f).noDrops()))
+    public static final Map<Metal.Default, FluidBlock> METAL_FLUIDS = Helpers.mapOfKeys(Metal.Default.class, metal ->
+        (FluidBlock) register("fluid/metal/" + metal.name().toLowerCase(), () -> new FluidBlock(TFCFluids.METALS.get(metal).getSecond(), Block.Settings.of(TFCMaterials.MOLTEN_METAL).noCollision().strength(100f).dropsNothing()))
     );
 
-    public static final RegistryObject<FlowingFluidBlock> SALT_WATER = register("fluid/salt_water", () -> new FlowingFluidBlock(TFCFluids.SALT_WATER.getSecond(), Properties.of(TFCMaterials.SALT_WATER).noCollission().strength(100f).noDrops()));
-    public static final RegistryObject<FlowingFluidBlock> SPRING_WATER = register("fluid/spring_water", () -> new FlowingFluidBlock(TFCFluids.SPRING_WATER.getSecond(), Properties.of(TFCMaterials.SPRING_WATER).noCollission().strength(100f).noDrops()));
+    public static final FluidBlock SALT_WATER = (FluidBlock) register("fluid/salt_water", () -> new FluidBlock(TFCFluids.SALT_WATER.getSecond(), Block.Settings.of(TFCMaterials.SALT_WATER).noCollision().strength(100f).dropsNothing()));
+    public static final FluidBlock SPRING_WATER = (FluidBlock) register("fluid/spring_water", () -> new FluidBlock(TFCFluids.SPRING_WATER.getSecond(), Block.Settings.of(TFCMaterials.SPRING_WATER).noCollision().strength(100f).dropsNothing()));
 
-    public static boolean always(BlockState state, IBlockReader world, BlockPos pos)
-    {
+    public static boolean always(BlockState state, BlockView world, BlockPos pos) {
         return true;
     }
 
-    public static boolean never(BlockState state, IBlockReader world, BlockPos pos)
+    public static boolean never(BlockState state, BlockView world, BlockPos pos)
     {
         return false;
     }
 
-    public static boolean onlyPolarBears(BlockState state, IBlockReader world, BlockPos pos, EntityType<?> type)
-    {
+    public static boolean onlyPolarBears(BlockState state, BlockView world, BlockPos pos, EntityType<?> type) {
         return type == EntityType.POLAR_BEAR; // todo: does this need to be expanded?
     }
 
-    private static <T extends Block> RegistryObject<T> register(String name, Supplier<T> blockSupplier)
-    {
+    private static Block register(String name, Supplier<Block> blockSupplier) {
         return register(name, blockSupplier, block -> null, false);
     }
 
-    private static <T extends Block> RegistryObject<T> register(String name, Supplier<T> blockSupplier, ItemGroup group)
-    {
-        return register(name, blockSupplier, block -> new BlockItem(block, new Item.Properties().tab(group)), true);
+    private static Block register(String name, Supplier<Block> blockSupplier, ItemGroup group) {
+        return register(name, blockSupplier, block -> new BlockItem(block, new Item.Settings().group(group)), true);
     }
 
-    private static <T extends Block> RegistryObject<T> register(String name, Supplier<T> blockSupplier, Item.Properties blockItemProperties)
-    {
+    private static Block register(String name, Supplier<Block> blockSupplier, Item.Settings blockItemProperties) {
         return register(name, blockSupplier, block -> new BlockItem(block, blockItemProperties), true);
     }
 
-    private static <T extends Block> RegistryObject<T> register(String name, Supplier<T> blockSupplier, Function<T, ? extends BlockItem> blockItemFactory, boolean hasItemBlock)
-    {
-        RegistryObject<T> block = BLOCKS.register(name, blockSupplier);
-        if (hasItemBlock)
-        {
-            TFCItems.ITEMS.register(name, () -> blockItemFactory.apply(block.get()));
+    private static Block register(String name, Supplier<Block> blockSupplier, Function<Block, ? extends BlockItem> blockItemFactory, boolean hasItemBlock) {
+        Block block = Registry.register(Registry.BLOCK, Helpers.identifier(name), blockSupplier.get());
+        if (hasItemBlock) {
+            TFCItems.register(name, () -> blockItemFactory.apply(block));
         }
         return block;
     }
+
+    public static void register() {}
 }

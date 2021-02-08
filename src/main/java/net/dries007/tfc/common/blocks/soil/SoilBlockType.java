@@ -10,22 +10,22 @@ import java.util.function.BiFunction;
 
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.material.MaterialColor;
+import net.minecraft.block.Material;
+import net.minecraft.block.MaterialColor;
 
 import net.dries007.tfc.common.blocks.ForgeBlockProperties;
 import net.dries007.tfc.common.blocks.TFCBlocks;
 import net.dries007.tfc.common.tileentity.FarmlandTileEntity;
+import net.minecraft.sound.BlockSoundGroup;
 
 public enum SoilBlockType
 {
-    DIRT((self, variant) -> new DirtBlock(Block.Properties.of(Material.DIRT, MaterialColor.DIRT).strength(0.5F).sound(SoundType.GRAVEL), self.transform(), variant)),
-    GRASS((self, variant) -> new ConnectedGrassBlock(Block.Properties.of(Material.GRASS).randomTicks().strength(0.6F).sound(SoundType.GRASS), self.transform(), variant)),
-    GRASS_PATH((self, variant) -> new TFCGrassPathBlock(Block.Properties.of(Material.DIRT).strength(0.65F).sound(SoundType.GRASS), self.transform(), variant)),
-    CLAY((self, variant) -> new DirtBlock(Block.Properties.of(Material.DIRT, MaterialColor.DIRT).strength(0.5F).sound(SoundType.GRAVEL), self.transform(), variant)),
-    CLAY_GRASS((self, variant) -> new ConnectedGrassBlock(Block.Properties.of(Material.GRASS).randomTicks().strength(0.6F).sound(SoundType.GRASS), self.transform(), variant)),
-    FARMLAND((self, variant) -> new TFCFarmlandBlock(new ForgeBlockProperties(AbstractBlock.Properties.of(Material.DIRT).strength(0.6f).sound(SoundType.GRAVEL).isViewBlocking(TFCBlocks::always).isSuffocating(TFCBlocks::always)).tileEntity(FarmlandTileEntity::new), variant));
+    DIRT((self, variant) -> new DirtBlock(AbstractBlock.Settings.of(Material.SOIL, MaterialColor.DIRT).strength(0.5F).sounds(BlockSoundGroup.GRAVEL), self.transform(), variant)),
+    GRASS((self, variant) -> new ConnectedGrassBlock(Block.Settings.of(Material.SOLID_ORGANIC).ticksRandomly().strength(0.6F).sounds(BlockSoundGroup.GRASS), self.transform(), variant)),
+    GRASS_PATH((self, variant) -> new TFCGrassPathBlock(Block.Settings.of(Material.SOIL).strength(0.65F).sounds(BlockSoundGroup.GRASS), self.transform(), variant)),
+    CLAY((self, variant) -> new DirtBlock(Block.Settings.of(Material.SOIL, MaterialColor.DIRT).strength(0.5F).sounds(BlockSoundGroup.GRAVEL), self.transform(), variant)),
+    CLAY_GRASS((self, variant) -> new ConnectedGrassBlock(Block.Settings.of(Material.SOLID_ORGANIC).ticksRandomly().strength(0.6F).sounds(BlockSoundGroup.GRASS), self.transform(), variant)),
+    FARMLAND((self, variant) -> new TFCFarmlandBlock(new ForgeBlockProperties(AbstractBlock.Settings.of(Material.SOIL).strength(0.6f).sounds(BlockSoundGroup.GRAVEL).blockVision(TFCBlocks::always).suffocates(TFCBlocks::always)).tileEntity(FarmlandTileEntity::new), variant));
 
     public static final SoilBlockType[] VALUES = values();
 

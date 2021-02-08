@@ -1,31 +1,33 @@
-# Reverse gitignore - explicitly include files
-*
-!*/
-!.gitignore
-!.editorconfig
+# gradle
 
-# Github and build script
-!.github/**/*.md
-!.github/**/*.yml
-!gradle/wrapper/gradle-wrapper.jar
-!gradle/wrapper/gradle-wrapper.properties
-!src/**
+.gradle/
+build/
+out/
+classes/
 
-# Resource generation
-!resources/**/*.py
-!resources/structure_templates/**/*.nbt
+# eclipse
 
-# Metadata
-!build.gradle
-!gradle.properties
-!gradlew
-!gradlew.bat
-!LICENSE.txt
-!HEADER.txt
-!README.md
-!CodeStyle.xml
+*.launch
 
-# Other exclusions
-__pycache__/
-*.pyc
-*.pdn
+# idea
+
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# vscode
+
+.settings/
+.vscode/
+bin/
+.classpath
+.project
+
+# macos
+
+*.DS_Store
+
+# fabric
+
+run/

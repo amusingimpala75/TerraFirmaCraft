@@ -8,49 +8,49 @@ package net.dries007.tfc.common.container;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.screen.slot.Slot;
 
 /**
  * A very simple container implementation.
  * Used for gui's that have no internal inventory, or no TE they need to access
  */
-public class SimpleContainer extends Container
+public class SimpleContainer extends ScreenHandler
 {
-    public SimpleContainer(ContainerType<?> type, int windowId)
+    public SimpleContainer(ScreenHandlerType<?> type, int windowId)
     {
         super(type, windowId);
     }
 
-    public SimpleContainer(ContainerType<?> type, int windowId, PlayerInventory playerInv)
+    public SimpleContainer(ScreenHandlerType<?> type, int windowId, PlayerInventory playerInv)
     {
         super(type, windowId);
         addPlayerInventorySlots(playerInv);
     }
 
     @Override
-    public ItemStack quickMoveStack(PlayerEntity player, int index)
+    public ItemStack transferSlot(PlayerEntity player, int index)
     {
         ItemStack stackCopy = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
 
-        if (slot != null && slot.hasItem())
+        if (slot != null && slot.hasStack())
         {
-            ItemStack stack = slot.getItem();
+            ItemStack stack = slot.getStack();
             stackCopy = stack.copy();
 
             if (index < 27)
             {
-                if (!this.moveItemStackTo(stack, 27, 36, false))
+                if (!this.insertItem(stack, 27, 36, false))
                 {
                     return ItemStack.EMPTY;
                 }
             }
             else
             {
-                if (!this.moveItemStackTo(stack, 0, 27, false))
+                if (!this.insertItem(stack, 0, 27, false))
                 {
                     return ItemStack.EMPTY;
                 }
@@ -58,11 +58,11 @@ public class SimpleContainer extends Container
 
             if (stack.isEmpty())
             {
-                slot.set(ItemStack.EMPTY);
+                slot.setStack(ItemStack.EMPTY);
             }
             else
             {
-                slot.setChanged();
+                slot.markDirty();
             }
 
             if (stack.getCount() == stackCopy.getCount())
@@ -81,7 +81,7 @@ public class SimpleContainer extends Container
     }
 
     @Override
-    public boolean stillValid(PlayerEntity playerIn)
+    public boolean canUse(PlayerEntity playerIn)
     {
         return true;
     }

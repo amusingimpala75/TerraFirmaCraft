@@ -9,19 +9,25 @@ package net.dries007.tfc.common.fluids;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
+import net.dries007.tfc.forgereplacements.FlowableFluid;
+import net.dries007.tfc.forgereplacements.FluidProperties;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.fluid.FlowingFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.state.StateContainer;
+import net.minecraft.state.StateManager;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.WorldView;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 
 import com.mojang.datafixers.util.Pair;
@@ -31,7 +37,7 @@ import it.unimi.dsi.fastutil.shorts.Short2ObjectMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
 import net.dries007.tfc.mixin.fluid.FlowingFluidAccessor;
 
-public abstract class MixingFluid extends ForgeFlowingFluid
+public abstract class MixingFluid extends FlowableFluid
 {
     /**
      * @see net.minecraft.fluid.FlowingFluid#getCacheKey(BlockPos, BlockPos)
@@ -43,7 +49,7 @@ public abstract class MixingFluid extends ForgeFlowingFluid
         return (short) ((deltaX + 128 & 255) << 8 | deltaZ + 128 & 255);
     }
 
-    protected MixingFluid(Properties properties)
+    protected MixingFluid(FluidProperties properties)
     {
         super(properties);
     }
@@ -54,12 +60,12 @@ public abstract class MixingFluid extends ForgeFlowingFluid
      * @return The number of adjacent source blocks of this fluid
      * @see net.minecraft.fluid.FlowingFluid#sourceNeighborCount(IWorldReader, BlockPos)
      */
-    public int sourceNeighborCount(IWorldReader worldIn, BlockPos pos)
+    public int sourceNeighborCount(WorldView worldIn, BlockPos pos)
     {
         int adjacentSources = 0;
-        for (Direction direction : Direction.Plane.HORIZONTAL)
+        for (Direction direction : Direction.Type.HORIZONTAL)
         {
-            BlockPos adjacentPos = pos.relative(direction);
+            BlockPos adjacentPos = pos.offset(direction);
             FluidState adjacentFluid = worldIn.getFluidState(adjacentPos);
             if (isSourceBlockOfThisType(adjacentFluid))
             {
@@ -79,16 +85,16 @@ public abstract class MixingFluid extends ForgeFlowingFluid
      */
     public boolean isSourceBlockOfThisType(FluidState stateIn)
     {
-        return stateIn.getType().isSame(this) && stateIn.isSource();
+        return stateIn.getFluid().matchesType(this) && stateIn.isStill();
     }
 
     /**
      * Copy pasta from {@link net.minecraft.fluid.FlowingFluid#spreadToSides(IWorld, BlockPos, FluidState, BlockState)}
      */
-    public void spreadToSides(IWorld world, BlockPos pos, FluidState fluidState, BlockState blockState)
+    public void spreadToSides(WorldAccess world, BlockPos pos, FluidState fluidState, BlockState blockState)
     {
-        int adjacentAmount = fluidState.getAmount() - getDropOff(world);
-        if (fluidState.getValue(FALLING))
+        int adjacentAmount = fluidState.getLevel() - getLevelDecreasePerBlock(world);
+        if (fluidState.get(FALLING))
         {
             // Falling indicates this fluid is being fed from above - this is then going to spread like a source block (8 - drop off)
             adjacentAmount = 7;
@@ -101,17 +107,17 @@ public abstract class MixingFluid extends ForgeFlowingFluid
             {
                 Direction direction = entry.getKey();
                 FluidState fluidstate = entry.getValue();
-                BlockPos blockpos = pos.relative(direction);
+                BlockPos blockpos = pos.offset(direction);
                 BlockState blockstate = world.getBlockState(blockpos);
-                if (canSpreadTo(world, pos, blockState, direction, blockpos, blockstate, world.getFluidState(blockpos), fluidstate.getType()))
+                if (canFlow(world, pos, blockState, direction, blockpos, blockstate, world.getFluidState(blockpos), fluidstate.getType()))
                 {
-                    spreadTo(world, blockpos, blockstate, direction, fluidstate);
+                    flow(world, blockpos, blockstate, direction, fluidstate);
                 }
             }
         }
     }
 
-    public boolean isWaterHole(IBlockReader world, Fluid fluid, BlockPos pos, BlockState state, BlockPos adjacentPos, BlockState adjacentState)
+    public boolean isWaterHole(BlockView world, Fluid fluid, BlockPos pos, BlockState state, BlockPos adjacentPos, BlockState adjacentState)
     {
         if (!((FlowingFluidAccessor) this).invoke$canPassThroughWall(Direction.DOWN, world, pos, state, adjacentPos, adjacentState))
         {
@@ -119,21 +125,21 @@ public abstract class MixingFluid extends ForgeFlowingFluid
         }
         else
         {
-            return adjacentState.getFluidState().getType().isSame(this) || this.canHoldFluid(world, adjacentPos, adjacentState, fluid);
+            return adjacentState.getFluidState().getFluid().matchesType(this) || this.canHoldFluid(world, adjacentPos, adjacentState, fluid);
         }
     }
 
-    public boolean canPassThrough(IBlockReader world, Fluid fluid, BlockPos pos, BlockState state, Direction direction, BlockPos adjacentPos, BlockState adjacentState, FluidState otherFluid)
+    public boolean canPassThrough(BlockView world, Fluid fluid, BlockPos pos, BlockState state, Direction direction, BlockPos adjacentPos, BlockState adjacentState, FluidState otherFluid)
     {
         return !this.isSourceBlockOfThisType(otherFluid) && ((FlowingFluidAccessor) this).invoke$canPassThroughWall(direction, world, pos, state, adjacentPos, adjacentState) && this.canHoldFluid(world, adjacentPos, adjacentState, fluid);
     }
 
-    public boolean canHoldFluid(IBlockReader worldIn, BlockPos pos, BlockState state, Fluid fluidIn)
+    public boolean canHoldFluid(BlockView worldIn, BlockPos pos, BlockState state, Fluid fluidIn)
     {
         Block block = state.getBlock();
-        if (block instanceof ILiquidContainer)
+        if (block instanceof FluidFillable)
         {
-            return ((ILiquidContainer) block).canPlaceLiquid(worldIn, pos, state, fluidIn);
+            return ((FluidFillable) block).canPlaceLiquid(worldIn, pos, state, fluidIn);
         }
         else if (!(block instanceof DoorBlock) && !block.is(BlockTags.SIGNS) && block != Blocks.LADDER && block != Blocks.SUGAR_CANE && block != Blocks.BUBBLE_COLUMN)
         {
@@ -154,7 +160,7 @@ public abstract class MixingFluid extends ForgeFlowingFluid
     }
 
     @Override
-    protected void spread(IWorld worldIn, BlockPos pos, FluidState stateIn)
+    protected void tryFlow(WorldView worldIn, BlockPos pos, FluidState stateIn)
     {
         // Only spread if the current state has actual fluid
         if (!stateIn.isEmpty())
@@ -324,7 +330,7 @@ public abstract class MixingFluid extends ForgeFlowingFluid
     @Override
     public void tick(World worldIn, BlockPos pos, FluidState state)
     {
-        if (!state.isSource())
+        if (!state.isStill())
         {
             // Flowing fluid ticks
             // Inside this statement, we know we're in a non-waterlogged block, as flowing fluids cannot be waterlogged.
@@ -352,40 +358,40 @@ public abstract class MixingFluid extends ForgeFlowingFluid
 
     public static class Flowing extends MixingFluid
     {
-        public Flowing(Properties properties)
+        public Flowing(FluidProperties properties)
         {
             super(properties);
         }
 
-        public boolean isSource(FluidState state)
+        public boolean isStill(FluidState state)
         {
             return false;
         }
 
-        public int getAmount(FluidState state)
+        public int getLevel(FluidState state)
         {
-            return state.getValue(LEVEL);
+            return state.get(LEVEL);
         }
 
-        protected void createFluidStateDefinition(StateContainer.Builder<Fluid, FluidState> builder)
+        protected void appendProperties(StateManager.Builder<Fluid, FluidState> builder)
         {
-            super.createFluidStateDefinition(builder.add(LEVEL));
+            super.appendProperties(builder.add(LEVEL));
         }
     }
 
     public static class Source extends MixingFluid
     {
-        public Source(Properties properties)
+        public Source(FluidProperties properties)
         {
             super(properties);
         }
 
-        public boolean isSource(FluidState state)
+        public boolean isStill(FluidState state)
         {
             return true;
         }
 
-        public int getAmount(FluidState state)
+        public int getLevel(FluidState state)
         {
             return 8;
         }

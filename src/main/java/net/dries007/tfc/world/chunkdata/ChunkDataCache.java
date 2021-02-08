@@ -10,16 +10,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import javax.annotation.Nullable;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.IWorldReader;
+import net.minecraft.world.WorldView;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import net.dries007.tfc.network.PacketHandler;
 import net.dries007.tfc.util.Helpers;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Cache of chunk data
@@ -59,7 +59,7 @@ public final class ChunkDataCache
     /**
      * Gets the normal (not world gen) cache of chunk data for the current logical side
      */
-    public static ChunkDataCache get(IWorldReader world)
+    public static ChunkDataCache get(WorldView world)
     {
         return Helpers.isClientSide(world) ? CLIENT : SERVER;
     }

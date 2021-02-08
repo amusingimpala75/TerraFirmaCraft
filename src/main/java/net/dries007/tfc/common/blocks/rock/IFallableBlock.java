@@ -6,7 +6,7 @@
 
 package net.dries007.tfc.common.blocks.rock;
 
-import net.minecraft.entity.item.FallingBlockEntity;
+import net.minecraft.entity.FallingBlockEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 

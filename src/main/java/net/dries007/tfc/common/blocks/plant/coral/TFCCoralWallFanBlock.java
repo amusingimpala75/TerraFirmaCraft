@@ -30,7 +30,7 @@ public class TFCCoralWallFanBlock extends TFCDeadCoralWallFanBlock
 {
     private final Supplier<? extends Block> deadBlock;
 
-    public TFCCoralWallFanBlock(Supplier<? extends Block> deadBlock, AbstractBlock.Properties builder)
+    public TFCCoralWallFanBlock(Supplier<? extends Block>  deadBlock, AbstractBlock.Settings builder)
     {
         super(builder);
         this.deadBlock = deadBlock;

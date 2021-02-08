@@ -17,20 +17,20 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(ClientWorld.ClientWorldInfo.class)
+@Mixin(ClientWorld.Properties.class)
 public class ClientWorldInfoMixin
 {
-    @Shadow @Final private boolean isFlat;
+    @Shadow @Final private boolean flatWorld;
 
     /**
      * Override horizon height (where the fog color changes from sky to black/dark, as in vanilla it's hardcoded to the sea level
      */
-    @Inject(method = "getHorizonHeight", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getSkyDarknessHeight", at = @At("HEAD"), cancellable = true)
     private void inject$getHorizonHeight(CallbackInfoReturnable<Double> cir)
     {
         if (TFCConfig.CLIENT.assumeTFCWorld.get())
         {
-            cir.setReturnValue(this.isFlat ? 0 : (double) TFCChunkGenerator.SEA_LEVEL);
+            cir.setReturnValue(this.flatWorld ? 0 : (double) TFCChunkGenerator.SEA_LEVEL);
         }
     }
 }

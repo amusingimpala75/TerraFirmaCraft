@@ -17,6 +17,10 @@ import javax.annotation.Nullable;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.WorldView;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import net.minecraft.block.AbstractFireBlock;
@@ -64,6 +68,7 @@ import com.mojang.datafixers.util.Either;
 import net.dries007.tfc.common.fluids.IFluidLoggable;
 import net.dries007.tfc.util.function.FromByteFunction;
 import net.dries007.tfc.util.function.ToByteFunction;
+import org.jetbrains.annotations.NotNull;
 
 import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
 
@@ -73,11 +78,11 @@ public final class Helpers
     private static final Random RANDOM = new Random();
 
     /**
-     * Default {@link ResourceLocation}, except with a TFC namespace
+     * Default {@link Identifier}, except with a TFC namespace
      */
-    public static ResourceLocation identifier(String name)
+    public static Identifier identifier(String name)
     {
-        return new ResourceLocation(MOD_ID, name);
+        return new Identifier(MOD_ID, name);
     }
 
     /**
@@ -85,7 +90,7 @@ public final class Helpers
      *
      * @return Not null!
      */
-    @Nonnull
+    @NotNull
     @SuppressWarnings("ConstantConditions")
     public static <T> T notNull()
     {
@@ -161,12 +166,12 @@ public final class Helpers
         throw new JsonParseException("Weird result, valid parse but not a block state: " + block);
     }
 
-    public static BlockStateParser parseBlockState(String block, boolean allowTags) throws JsonParseException
+    public static BlockArgumentParser parseBlockState(String block, boolean allowTags) throws JsonParseException
     {
         StringReader reader = new StringReader(block);
         try
         {
-            return new BlockStateParser(reader, allowTags).parse(false);
+            return new BlockArgumentParser(reader, allowTags).parse(false);
         }
         catch (CommandSyntaxException e)
         {
@@ -268,17 +273,17 @@ public final class Helpers
     }
 
     /**
-     * Normally, one would just call {@link IWorld#isClientSide()}
+     * Normally, one would just call {@link World#isClient()}
      * HOWEVER
      * There exists a BIG HUGE PROBLEM in very specific scenarios with this
      * Since World's isClientSide() actually returns the isClientSide boolean, which is set AT THE END of the World constructor, many things may happen before this is set correctly. Mostly involving world generation.
-     * At this point, THE CLIENT WORLD WILL RETURN {@code false} to {@link IWorld#isClientSide()}
+     * At this point, THE CLIENT WORLD WILL RETURN {@code false} to {@link World#isClient()}
      *
      * So, this does a roundabout check "is this instanceof ClientWorld or not" without classloading shenanigans.
      */
-    public static boolean isClientSide(IWorldReader world)
+    public static boolean isClientSide(WorldView world)
     {
-        return world instanceof World ? !(world instanceof ServerWorld) : world.isClientSide();
+        return world instanceof World ? !(world instanceof ServerWorld) : world.isClient();
     }
 
     @Nullable

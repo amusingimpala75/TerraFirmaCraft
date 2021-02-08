@@ -9,16 +9,14 @@ package net.dries007.tfc.common.recipes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.item.crafting.IRecipeSerializer;
-import net.minecraft.item.crafting.IRecipeType;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.recipe.RecipeSerializer;
+import net.minecraft.recipe.RecipeType;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 
 import net.dries007.tfc.client.TFCSounds;
@@ -29,6 +27,9 @@ import net.dries007.tfc.util.collections.IndirectHashCollection;
 import net.dries007.tfc.util.support.SupportManager;
 import net.dries007.tfc.util.tracker.Collapse;
 import net.dries007.tfc.util.tracker.WorldTrackerCapability;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.WorldView;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * This handles logic relating to block collapses.
@@ -62,7 +63,7 @@ public class CollapseRecipe extends SimpleBlockRecipe
      */
     public static boolean tryTriggerCollapse(World world, BlockPos pos)
     {
-        if (!world.isClientSide() && world.isAreaLoaded(pos, 32))
+        if (!world.isClient && world.isRegionLoaded(pos, 32))
         {
             if (RANDOM.nextFloat() < TFCConfig.SERVER.collapseTriggerChance.get())
             {
@@ -70,12 +71,12 @@ public class CollapseRecipe extends SimpleBlockRecipe
                 int radX = (RANDOM.nextInt(5) + 4) / 2;
                 int radY = (RANDOM.nextInt(3) + 2) / 2;
                 int radZ = (RANDOM.nextInt(5) + 4) / 2;
-                for (BlockPos checking : SupportManager.findUnsupportedPositions(world, pos.offset(-radX, -radY, -radZ), pos.offset(radX, radY, radZ))) // 9x5x9 max
+                for (BlockPos checking : SupportManager.findUnsupportedPositions(world, pos.add(-radX, -radY, -radZ), pos.add(radX, radY, radZ))) // 9x5x9 max
                 {
                     if (canStartCollapse(world, checking))
                     {
                         startCollapse(world, checking);
-                        world.playSound(null, pos, TFCSounds.ROCK_SLIDE_LONG.get(), SoundCategory.BLOCKS, 1.0f, 1.0f);
+                        world.playSound(null, pos, TFCSounds.ROCK_SLIDE_LONG, SoundCategory.BLOCKS, 1.0f, 1.0f);
                         return true; // Don't need to check other blocks
                     }
                 }
@@ -87,9 +88,9 @@ public class CollapseRecipe extends SimpleBlockRecipe
     /**
      * Checks if a single block is possible to be the locus of a collapse
      */
-    public static boolean canStartCollapse(IWorld world, BlockPos pos)
+    public static boolean canStartCollapse(WorldAccess world, BlockPos pos)
     {
-        return TFCTags.Blocks.CAN_START_COLLAPSE.contains(world.getBlockState(pos).getBlock()) && TFCFallingBlockEntity.canFallThrough(world, pos.below());
+        return TFCTags.Blocks.CAN_START_COLLAPSE.contains(world.getBlockState(pos).getBlock()) && TFCFallingBlockEntity.canFallThrough(world, pos.down());
     }
 
     /**
@@ -105,22 +106,22 @@ public class CollapseRecipe extends SimpleBlockRecipe
         List<BlockPos> secondaryPositions = new ArrayList<>();
 
         // Initially only scan on the bottom layer, and advance upwards
-        for (BlockPos pos : BlockPos.betweenClosed(centerPos.offset(-radius, -4, -radius), centerPos.offset(radius, -4, radius)))
+        for (BlockPos pos : BlockPos.iterate(centerPos.add(-radius, -4, -radius), centerPos.add(radius, -4, radius)))
         {
             boolean foundEmpty = false; // If we've found a space to collapse into
             for (int y = 0; y <= 8; y++)
             {
-                BlockPos posAt = pos.above(y);
+                BlockPos posAt = pos.up(y);
                 BlockState stateAt = world.getBlockState(posAt);
                 if (foundEmpty && TFCTags.Blocks.CAN_COLLAPSE.contains(stateAt.getBlock()))
                 {
                     // Check for a possible collapse
-                    if (posAt.distSqr(centerPos) < radiusSquared && RANDOM.nextFloat() < TFCConfig.SERVER.collapsePropagateChance.get())
+                    if (posAt.getSquaredDistance(centerPos) < radiusSquared && RANDOM.nextFloat() < TFCConfig.SERVER.collapsePropagateChance.get())
                     {
                         if (collapseBlock(world, posAt, stateAt))
                         {
                             // This column has started to collapse. Mark the next block above as unstable for the "follow up"
-                            secondaryPositions.add(posAt.above());
+                            secondaryPositions.add(posAt.up());
                             break;
                         }
                     }
@@ -150,26 +151,26 @@ public class CollapseRecipe extends SimpleBlockRecipe
         if (recipe != null)
         {
             BlockState collapseState = recipe.getBlockCraftingResult(wrapper);
-            world.setBlockAndUpdate(pos, collapseState); // Required as the falling block entity will replace the block in it's first tick
-            world.addFreshEntity(new TFCFallingBlockEntity(world, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, collapseState));
+            world.setBlockState(pos, collapseState); // Required as the falling block entity will replace the block in it's first tick
+            world.spawnEntity(new TFCFallingBlockEntity(world, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, collapseState));
             return true;
         }
         return false;
     }
 
-    CollapseRecipe(ResourceLocation id, IBlockIngredient ingredient, BlockState outputState, boolean copyInputState)
+    CollapseRecipe(Identifier id, IBlockIngredient ingredient, BlockState outputState, boolean copyInputState)
     {
         super(id, ingredient, outputState, copyInputState);
     }
 
     @Override
-    public IRecipeSerializer<?> getSerializer()
+    public RecipeSerializer<?> getSerializer()
     {
-        return TFCRecipeSerializers.COLLAPSE.get();
+        return TFCRecipeSerializers.COLLAPSE;
     }
 
     @Override
-    public IRecipeType<?> getType()
+    public RecipeType<?> getType()
     {
         return TFCRecipeTypes.COLLAPSE;
     }

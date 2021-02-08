@@ -10,20 +10,20 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.entity.item.FallingBlockEntity;
+import net.minecraft.block.ShapeContext;
+import net.minecraft.entity.FallingBlockEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.state.EnumProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.util.Direction;
-import net.minecraft.util.IStringSerializable;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.EnumProperty;
+import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.world.IBlockReader;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
 
 import net.dries007.tfc.client.TFCSounds;
 import net.dries007.tfc.common.TFCTags;
@@ -38,21 +38,21 @@ public class RockSpikeBlock extends Block implements IFluidLoggable, IFallableBl
     public static final EnumProperty<Part> PART = TFCBlockStateProperties.ROCK_SPIKE_PART;
     public static final FluidProperty FLUID = TFCBlockStateProperties.WATER_AND_LAVA;
 
-    public static final VoxelShape BASE_SHAPE = box(2, 0, 2, 14, 16, 14);
-    public static final VoxelShape MIDDLE_SHAPE = box(4, 0, 4, 12, 16, 12);
-    public static final VoxelShape TIP_SHAPE = box(6, 0, 6, 10, 16, 10);
+    public static final VoxelShape BASE_SHAPE = createCuboidShape(2, 0, 2, 14, 16, 14);
+    public static final VoxelShape MIDDLE_SHAPE = createCuboidShape(4, 0, 4, 12, 16, 12);
+    public static final VoxelShape TIP_SHAPE = createCuboidShape(6, 0, 6, 10, 16, 10);
 
-    public RockSpikeBlock(Properties properties)
+    public RockSpikeBlock(Settings properties)
     {
         super(properties);
 
-        registerDefaultState(stateDefinition.any().setValue(PART, Part.BASE).setValue(getFluidProperty(), getFluidProperty().keyFor(Fluids.EMPTY)));
+        setDefaultState(getStateManager().getDefaultState().with(PART, Part.BASE).with(getFluidProperty(), getFluidProperty().keyFor(Fluids.EMPTY)));
     }
 
     @Override
-    public void neighborChanged(BlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving)
+    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving)
     {
-        world.getBlockTicks().scheduleTick(pos, this, 1);
+        world.getBlockTickScheduler().schedule(pos, this, 1);
     }
 
     @Override
@@ -63,33 +63,33 @@ public class RockSpikeBlock extends Block implements IFluidLoggable, IFallableBl
 
     @Override
     @SuppressWarnings("deprecation")
-    public void tick(BlockState state, ServerWorld worldIn, BlockPos pos, Random rand)
+    public void scheduledTick(BlockState state, ServerWorld worldIn, BlockPos pos, Random rand)
     {
         // Check support from above or below
-        BlockPos belowPos = pos.below();
+        BlockPos belowPos = pos.down();
         BlockState belowState = worldIn.getBlockState(belowPos);
-        if (belowState.getBlock() == this && belowState.getValue(PART).isLargerThan(state.getValue(PART)))
+        if (belowState.getBlock() == this && belowState.get(PART).isLargerThan(state.get(PART)))
         {
             // Larger spike below. Tick that to ensure it is supported
-            worldIn.getBlockTicks().scheduleTick(belowPos, this, 1);
+            worldIn.getBlockTickScheduler().schedule(belowPos, this, 1);
             return;
         }
-        else if (belowState.isFaceSturdy(worldIn, belowPos, Direction.UP))
+        else if (belowState.isSideSolidFullSquare(worldIn, belowPos, Direction.UP))
         {
             // Full block below, this is supported
             return;
         }
 
         // No support below, try above
-        BlockPos abovePos = pos.above();
+        BlockPos abovePos = pos.up();
         BlockState aboveState = worldIn.getBlockState(abovePos);
-        if (aboveState.getBlock() == this && aboveState.getValue(PART).isLargerThan(state.getValue(PART)))
+        if (aboveState.getBlock() == this && aboveState.get(PART).isLargerThan(state.get(PART)))
         {
             // Larger spike above. Tick to ensure that it is supported
-            worldIn.getBlockTicks().scheduleTick(abovePos, this, 1);
+            worldIn.getBlockTickScheduler().schedule(abovePos, this, 1);
             return;
         }
-        else if (aboveState.isFaceSturdy(worldIn, abovePos, Direction.DOWN))
+        else if (aboveState.isSideSolidFullSquare(worldIn, abovePos, Direction.DOWN))
         {
             // Full block above, this is supported
             return;
@@ -98,11 +98,11 @@ public class RockSpikeBlock extends Block implements IFluidLoggable, IFallableBl
         // No support, so either collapse, or break
         if (TFCTags.Blocks.CAN_COLLAPSE.contains(this) && CollapseRecipe.collapseBlock(worldIn, pos, state))
         {
-            worldIn.playSound(null, pos, TFCSounds.ROCK_SLIDE_SHORT.get(), SoundCategory.BLOCKS, 0.8f, 1.0f);
+            worldIn.playSound(null, pos, TFCSounds.ROCK_SLIDE_SHORT, SoundCategory.BLOCKS, 0.8f, 1.0f);
         }
         else
         {
-            worldIn.destroyBlock(pos, true);
+            worldIn.breakBlock(pos, true);
         }
     }
 
@@ -110,14 +110,14 @@ public class RockSpikeBlock extends Block implements IFluidLoggable, IFallableBl
     public void onceFinishedFalling(World worldIn, BlockPos pos, FallingBlockEntity fallingBlock)
     {
         // todo: better shatter sound
-        worldIn.destroyBlock(pos, false);
-        worldIn.playSound(null, pos, TFCSounds.ROCK_SLIDE_SHORT.get(), SoundCategory.BLOCKS, 0.8f, 2.0f);
+        worldIn.breakBlock(pos, false);
+        worldIn.playSound(null, pos, TFCSounds.ROCK_SLIDE_SHORT, SoundCategory.BLOCKS, 0.8f, 2.0f);
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getOutlineShape(BlockState state, BlockView worldIn, BlockPos pos, ShapeContext context)
     {
-        switch (state.getValue(PART))
+        switch (state.get(PART))
         {
             case BASE:
                 return BASE_SHAPE;
@@ -136,17 +136,17 @@ public class RockSpikeBlock extends Block implements IFluidLoggable, IFallableBl
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder)
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder)
     {
         builder.add(PART, getFluidProperty());
     }
 
-    public enum Part implements IStringSerializable
+    public enum Part implements StringIdentifiable
     {
         BASE, MIDDLE, TIP;
 
         @Override
-        public String getSerializedName()
+        public String asString()
         {
             return name().toLowerCase();
         }

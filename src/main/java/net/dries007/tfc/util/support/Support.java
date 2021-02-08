@@ -9,26 +9,26 @@ package net.dries007.tfc.util.support;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
 import net.minecraft.util.math.BlockPos;
 
 import net.dries007.tfc.common.recipes.IBlockIngredient;
 
 public class Support
 {
-    private final ResourceLocation id;
+    private final Identifier id;
     private final int supportUp, supportDown, supportHorizontal;
     private final IBlockIngredient ingredient;
 
-    public Support(ResourceLocation id, JsonObject json)
+    public Support(Identifier id, JsonObject json)
     {
         this.id = id;
 
         this.ingredient = IBlockIngredient.Serializer.INSTANCE.read(json.get("ingredient"));
-        this.supportUp = JSONUtils.getAsInt(json, "support_up", 0);
-        this.supportDown = JSONUtils.getAsInt(json, "support_down", 0);
-        this.supportHorizontal = JSONUtils.getAsInt(json, "support_horizontal", 0);
+        this.supportUp = JsonHelper.getInt(json, "support_up", 0);
+        this.supportDown = JsonHelper.getInt(json, "support_down", 0);
+        this.supportHorizontal = JsonHelper.getInt(json, "support_horizontal", 0);
 
         if (supportUp < 0 || supportDown < 0 || supportHorizontal < 0)
         {
@@ -36,7 +36,7 @@ public class Support
         }
     }
 
-    public ResourceLocation getId()
+    public Identifier getId()
     {
         return id;
     }
@@ -69,6 +69,6 @@ public class Support
 
     public Iterable<BlockPos> getSupportedArea(BlockPos center)
     {
-        return BlockPos.betweenClosed(center.offset(-supportHorizontal, -supportDown, -supportHorizontal), center.offset(supportHorizontal, supportUp, supportHorizontal));
+        return BlockPos.iterate(center.add(-supportHorizontal, -supportDown, -supportHorizontal), center.add(supportHorizontal, supportUp, supportHorizontal));
     }
 }

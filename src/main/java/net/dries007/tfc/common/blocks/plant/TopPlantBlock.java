@@ -10,22 +10,22 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 import net.minecraft.block.*;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorldReader;
-import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.ForgeHooks;
 
 import net.dries007.tfc.config.TFCConfig;
 
-public class TopPlantBlock extends AbstractTopPlantBlock
+public class TopPlantBlock extends AbstractPlantStemBlock
 {
     private final Supplier<? extends Block> bodyBlock;
 
-    public TopPlantBlock(AbstractBlock.Properties properties, Supplier<? extends Block> bodyBlock, Direction direction, VoxelShape shape)
+    public TopPlantBlock(AbstractBlock.Settings properties, Supplier<? extends Block> bodyBlock, Direction direction, VoxelShape shape)
     {
         super(properties, direction, shape, false, 0);
         this.bodyBlock = bodyBlock;
@@ -62,7 +62,7 @@ public class TopPlantBlock extends AbstractTopPlantBlock
     }
 
     @Override
-    protected int getBlocksToGrowWhenBonemealed(Random rand)
+    protected int method_26376(Random rand)
     {
         return 0;
     }
@@ -74,13 +74,13 @@ public class TopPlantBlock extends AbstractTopPlantBlock
     }
 
     @Override
-    protected Block getBodyBlock()
+    protected Block getPlant()
     {
         return bodyBlock.get();
     }
 
     @Override
-    protected boolean canGrowInto(BlockState state)
+    protected boolean chooseStemState(BlockState state)
     {
         return PlantBlockHelper.isValidGrowthState(state);
     }

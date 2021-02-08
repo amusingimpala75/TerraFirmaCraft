@@ -7,126 +7,125 @@
 package net.dries007.tfc.common.fluids;
 
 import java.util.Random;
-import javax.annotation.Nullable;
 
+import net.dries007.tfc.forgereplacements.FlowableFluid;
+import net.dries007.tfc.forgereplacements.FluidProperties;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.fluid.LavaFluid;
-import net.minecraft.particles.IParticleData;
-import net.minecraft.state.StateContainer;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.state.StateManager;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fluids.ForgeFlowingFluid;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.WorldView;
 
-public abstract class MoltenFluid extends ForgeFlowingFluid
+public abstract class MoltenFluid extends FlowableFluid
 {
     private final LavaFluid lava;
 
-    protected MoltenFluid(Properties properties)
+    protected MoltenFluid(FluidProperties properties)
     {
         super(properties);
         this.lava = (LavaFluid) Fluids.LAVA;
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    protected void animateTick(World worldIn, BlockPos pos, FluidState state, Random random)
+    @Environment(EnvType.CLIENT)
+    protected void randomDisplayTick(World worldIn, BlockPos pos, FluidState state, Random random)
     {
-        lava.animateTick(worldIn, pos, state, random);
+        lava.randomDisplayTick(worldIn, pos, state, random);
     }
 
     @Override
-    protected void randomTick(World worldIn, BlockPos pos, FluidState state, Random random)
+    protected void onRandomTick(World worldIn, BlockPos pos, FluidState state, Random random)
     {
-        lava.randomTick(worldIn, pos, state, random);
+        lava.onRandomTick(worldIn, pos, state, random);
     }
 
-    @OnlyIn(Dist.CLIENT)
-    @Nullable
+    @Environment(EnvType.CLIENT)
     @Override
-    protected IParticleData getDripParticle()
+    protected ParticleEffect getParticle()
     {
-        return lava.getDripParticle();
+        return lava.getParticle();
     }
 
     @Override
-    protected boolean isRandomlyTicking()
+    protected boolean hasRandomTicks()
     {
         return true;
     }
 
     @Override
-    protected void beforeDestroyingBlock(IWorld worldIn, BlockPos pos, BlockState state)
+    protected void beforeBreakingBlock(WorldAccess worldIn, BlockPos pos, BlockState state)
     {
-        worldIn.levelEvent(1501, pos, 0);
+        worldIn.syncWorldEvent(1501, pos, 0);
     }
 
     @Override
-    protected int getSlopeFindDistance(IWorldReader worldIn)
+    protected int getFlowSpeed(WorldView worldIn)
     {
-        return lava.getSlopeFindDistance(worldIn);
+        return lava.getFlowSpeed(worldIn);
     }
 
     @Override
-    protected int getDropOff(IWorldReader worldIn)
+    protected int getLevelDecreasePerBlock(WorldView worldIn)
     {
-        return lava.getDropOff(worldIn);
+        return lava.getLevelDecreasePerBlock(worldIn);
     }
 
     @Override
-    public int getTickDelay(IWorldReader world)
+    public int getTickRate(WorldView world)
     {
-        return lava.getTickDelay(world);
+        return lava.getTickRate(world);
     }
 
     @Override
-    protected int getSpreadDelay(World worldIn, BlockPos pos, FluidState fluidState_, FluidState fluidState1_)
+    protected int getNextTickDelay(World worldIn, BlockPos pos, FluidState fluidState_, FluidState fluidState1_)
     {
-        return lava.getSpreadDelay(worldIn, pos, fluidState_, fluidState1_);
+        return lava.getNextTickDelay(worldIn, pos, fluidState_, fluidState1_);
     }
 
     public static class Flowing extends MoltenFluid
     {
-        public Flowing(Properties properties)
+        public Flowing(FluidProperties properties)
         {
             super(properties);
         }
 
-        public boolean isSource(FluidState state)
+        public boolean isStill(FluidState state)
         {
             return false;
         }
 
-        public int getAmount(FluidState state)
+        public int getLevel(FluidState state)
         {
-            return state.getValue(LEVEL);
+            return state.get(LEVEL);
         }
 
-        protected void createFluidStateDefinition(StateContainer.Builder<Fluid, FluidState> builder)
+        protected void appendProperties(StateManager.Builder<Fluid, FluidState> builder)
         {
-            super.createFluidStateDefinition(builder.add(LEVEL));
+            super.appendProperties(builder.add(LEVEL));
         }
     }
 
     public static class Source extends MoltenFluid
     {
-        public Source(Properties properties)
+        public Source(FluidProperties properties)
         {
             super(properties);
         }
 
-        public boolean isSource(FluidState state)
+        public boolean isStill(FluidState state)
         {
             return true;
         }
 
-        public int getAmount(FluidState state)
+        public int getLevel(FluidState state)
         {
             return 8;
         }

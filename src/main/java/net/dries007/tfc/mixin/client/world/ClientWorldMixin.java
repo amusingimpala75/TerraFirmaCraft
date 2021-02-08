@@ -8,7 +8,7 @@ package net.dries007.tfc.mixin.client.world;
 
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorld;
+import net.minecraft.world.WorldAccess;
 import net.minecraft.world.biome.Biome;
 
 import net.dries007.tfc.client.TFCColors;
@@ -23,10 +23,10 @@ public abstract class ClientWorldMixin
     /**
      * Replace a call to {@link Biome#getSkyColor()} with one that has a position and world context
      */
-    @Redirect(method = "getSkyColor", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/biome/Biome;getSkyColor()I"))
+    @Redirect(method = "method_23777", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/biome/Biome;getSkyColor()I"))
     private int getSkyColor(Biome biome, BlockPos pos)
     {
-        IWorld world = (ClientWorld) (Object) this;
+        WorldAccess world = (ClientWorld) (Object) this;
         if (TFCBiomes.getExtension(world, biome) != null)
         {
             return TFCColors.getSkyColor(pos);

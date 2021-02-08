@@ -43,7 +43,7 @@ public class TFCSeaPickleBlock extends Block implements IFluidLoggable
     protected static final VoxelShape THREE_AABB = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 6.0D, 14.0D);
     protected static final VoxelShape FOUR_AABB = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 7.0D, 14.0D);
 
-    public TFCSeaPickleBlock(AbstractBlock.Properties properties)
+    public TFCSeaPickleBlock(AbstractBlock.Settings properties)
     {
         super(properties);
         registerDefaultState(getStateDefinition().any().setValue(PICKLES, 1));

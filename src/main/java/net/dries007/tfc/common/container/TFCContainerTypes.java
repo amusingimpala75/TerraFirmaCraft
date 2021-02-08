@@ -6,26 +6,20 @@
 
 package net.dries007.tfc.common.container;
 
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraftforge.common.extensions.IForgeContainerType;
-import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.fml.network.IContainerFactory;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.dries007.tfc.util.Helpers;
+import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.ScreenHandlerType;
 
-import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
+public final class TFCContainerTypes {
+    public static final ScreenHandlerType<SimpleContainer> CALENDAR = register("calendar", (windowId, inv) -> new SimpleContainer(TFCContainerTypes.CALENDAR, windowId, inv));
+    public static final ScreenHandlerType<SimpleContainer> NUTRITION = register("nutrition", ((windowId, inv) -> new SimpleContainer(TFCContainerTypes.NUTRITION, windowId, inv)));
+    public static final ScreenHandlerType<SimpleContainer> CLIMATE = register("climate", ((windowId, inv) -> new SimpleContainer(TFCContainerTypes.CLIMATE, windowId, inv)));
 
-public final class TFCContainerTypes
-{
-    public static final DeferredRegister<ContainerType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.CONTAINERS, MOD_ID);
-
-    public static final RegistryObject<ContainerType<SimpleContainer>> CALENDAR = register("calendar", (windowId, inv, data) -> new SimpleContainer(TFCContainerTypes.CALENDAR.get(), windowId, inv));
-    public static final RegistryObject<ContainerType<SimpleContainer>> NUTRITION = register("nutrition", ((windowId, inv, data) -> new SimpleContainer(TFCContainerTypes.NUTRITION.get(), windowId, inv)));
-    public static final RegistryObject<ContainerType<SimpleContainer>> CLIMATE = register("climate", ((windowId, inv, data) -> new SimpleContainer(TFCContainerTypes.CLIMATE.get(), windowId, inv)));
-
-    private static <C extends Container> RegistryObject<ContainerType<C>> register(String name, IContainerFactory<C> factory)
-    {
-        return CONTAINERS.register(name, () -> IForgeContainerType.create(factory));
+    private static <T extends ScreenHandler> ScreenHandlerType<T> register(String name, ScreenHandlerRegistry.SimpleClientHandlerFactory<T> factory) {
+        //return CONTAINERS.register(name, () -> IForgeContainerType.create(factory));
+        return ScreenHandlerRegistry.registerSimple(Helpers.identifier(name), factory);
     }
+
+    public static void register() {}
 }

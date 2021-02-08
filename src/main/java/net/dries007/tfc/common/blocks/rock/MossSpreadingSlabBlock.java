@@ -10,14 +10,14 @@ import java.util.Random;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.SlabBlock;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
 
 public class MossSpreadingSlabBlock extends SlabBlock
 {
-    public MossSpreadingSlabBlock(Properties properties)
+    public MossSpreadingSlabBlock(Settings properties)
     {
-        super(properties.randomTicks());
+        super(properties.ticksRandomly());
     }
 
     @Override

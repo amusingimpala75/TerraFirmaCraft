@@ -21,7 +21,7 @@ import net.minecraft.world.World;
 
 public class SeaIceBlock extends IceBlock
 {
-    public SeaIceBlock(Properties properties)
+    public SeaIceBlock(Settings properties)
     {
         super(properties);
     }

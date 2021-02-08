@@ -6,16 +6,16 @@
 
 package net.dries007.tfc.common.recipes;
 
-import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.util.NonNullList;
+import net.minecraft.recipe.Ingredient;
+import net.minecraft.recipe.Recipe;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.world.World;
 
-public interface IDelegatingRecipe<C extends IInventory> extends IRecipe<C>
+public interface IDelegatingRecipe<C extends Inventory> extends Recipe<C>
 {
-    IRecipe<C> getInternal();
+    Recipe<C> getInternal();
 
     @Override
     default boolean matches(C inv, World worldIn)
@@ -24,39 +24,39 @@ public interface IDelegatingRecipe<C extends IInventory> extends IRecipe<C>
     }
 
     @Override
-    default ItemStack assemble(C inv)
+    default ItemStack craft(C inv)
     {
-        return getInternal().assemble(inv);
+        return getInternal().craft(inv);
     }
 
     @Override
-    default boolean canCraftInDimensions(int width, int height)
+    default boolean fits(int width, int height)
     {
-        return getInternal().canCraftInDimensions(width, height);
+        return getInternal().fits(width, height);
     }
 
     @Override
-    default ItemStack getResultItem()
+    default ItemStack getOutput()
     {
-        return getInternal().getResultItem();
+        return getInternal().getOutput();
     }
 
     @Override
-    default NonNullList<ItemStack> getRemainingItems(C inv)
+    default DefaultedList<ItemStack> getRemainingStacks(C inv)
     {
-        return getInternal().getRemainingItems(inv);
+        return getInternal().getRemainingStacks(inv);
     }
 
     @Override
-    default NonNullList<Ingredient> getIngredients()
+    default DefaultedList<Ingredient> getPreviewInputs()
     {
-        return getInternal().getIngredients();
+        return getInternal().getPreviewInputs();
     }
 
     @Override
-    default boolean isSpecial()
+    default boolean isIgnoredInRecipeBook()
     {
-        return getInternal().isSpecial();
+        return getInternal().isIgnoredInRecipeBook();
     }
 
     @Override
@@ -66,8 +66,8 @@ public interface IDelegatingRecipe<C extends IInventory> extends IRecipe<C>
     }
 
     @Override
-    default ItemStack getToastSymbol()
+    default ItemStack getRecipeKindIcon()
     {
-        return getInternal().getToastSymbol();
+        return getInternal().getRecipeKindIcon();
     }
 }

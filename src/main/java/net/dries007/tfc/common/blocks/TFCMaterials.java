@@ -6,13 +6,13 @@
 
 package net.dries007.tfc.common.blocks;
 
-import net.minecraft.block.material.Material;
-import net.minecraft.block.material.MaterialColor;
-import net.minecraft.block.material.PushReaction;
+import net.minecraft.block.Material;
+import net.minecraft.block.MaterialColor;
+import net.minecraft.block.piston.PistonBehavior;
 
 public class TFCMaterials
 {
-    public static final Material MOLTEN_METAL = new Builder(MaterialColor.FIRE).noCollider().notSolidBlocking().nonSolid().destroyOnPush().replaceable().liquid().build();
+    public static final Material MOLTEN_METAL = new Builder(MaterialColor.LAVA).noCollider().notSolidBlocking().nonSolid().destroyOnPush().replaceable().liquid().build();
     public static final Material SALT_WATER = new Builder(MaterialColor.WATER).noCollider().notSolidBlocking().nonSolid().destroyOnPush().replaceable().liquid().build();
     public static final Material SPRING_WATER = new Builder(MaterialColor.WATER).noCollider().notSolidBlocking().nonSolid().destroyOnPush().replaceable().liquid().build();
 
@@ -21,10 +21,9 @@ public class TFCMaterials
     /**
      * This is an exact copy of {@link Material.Builder} except with all builder methods set to public
      */
-    public static class Builder
-    {
+    public static class Builder {
         private final MaterialColor color;
-        private PushReaction pushReaction = PushReaction.NORMAL;
+        private PistonBehavior pushReaction = PistonBehavior.NORMAL;
         private boolean blocksMotion = true;
         private boolean flammable;
         private boolean liquid;
@@ -75,13 +74,13 @@ public class TFCMaterials
 
         public Builder destroyOnPush()
         {
-            this.pushReaction = PushReaction.DESTROY;
+            this.pushReaction = PistonBehavior.DESTROY;
             return this;
         }
 
         public Builder notPushable()
         {
-            this.pushReaction = PushReaction.BLOCK;
+            this.pushReaction = PistonBehavior.BLOCK;
             return this;
         }
 

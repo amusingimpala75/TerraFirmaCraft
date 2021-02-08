@@ -6,6 +6,7 @@
 
 package net.dries007.tfc;
 
+import net.fabricmc.api.ModInitializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import net.minecraft.util.registry.Registry;
@@ -46,28 +47,62 @@ import net.dries007.tfc.world.decorator.TFCDecorators;
 import net.dries007.tfc.world.feature.TFCFeatures;
 import net.dries007.tfc.world.surfacebuilder.TFCSurfaceBuilders;
 
-@Mod(TerraFirmaCraft.MOD_ID)
-public final class TerraFirmaCraft
-{
+//@Mod(TerraFirmaCraft.MOD_ID)
+public final class TerraFirmaCraft implements ModInitializer {
     public static final String MOD_ID = "tfc";
     public static final String MOD_NAME = "TerraFirmaCraft";
 
     public static final Logger LOGGER = LogManager.getLogger();
 
-    public TerraFirmaCraft()
+    //@SubscribeEvent
+    public void setup() {
+        LOGGER.info("TFC Common Setup");
+
+        // Setup methods
+        HeatCapability.setup();
+        ForgingCapability.setup();
+        ChunkDataCapability.setup();
+        WorldTrackerCapability.setup();
+        ServerCalendar.setup();
+        InteractionManager.setup();
+        TFCWorldType.setup();
+        TFCLoot.setup();
+
+        DispenserBehaviors.syncSetup();
+        //event.enqueueWork(DispenserBehaviors::syncSetup);
+
+        // World gen registry objects
+        Registry.register(Registry.CHUNK_GENERATOR, Helpers.identifier("overworld"), TFCChunkGenerator.CODEC);
+        Registry.register(Registry.BIOME_SOURCE, Helpers.identifier("overworld"), TFCBiomeProvider.CODEC);
+    }
+
+    //TODO: Implement Config
+    /*@SubscribeEvent
+    public void onConfigReloading(ModConfig.Reloading event)
     {
+        TFCConfig.reload();
+    }
+
+    @SubscribeEvent
+    public void onConfigLoading(ModConfig.Loading event)
+    {
+        TFCConfig.reload();
+    }*/
+
+    @Override
+    public void onInitialize() {
         LOGGER.info("TFC Constructor");
         LOGGER.debug("Debug Logging Enabled");
 
         // Event bus subscribers
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        modEventBus.register(this);
+        //IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        //modEventBus.register(this);
 
-        TFCBlocks.BLOCKS.register(modEventBus);
-        TFCItems.ITEMS.register(modEventBus);
-        TFCContainerTypes.CONTAINERS.register(modEventBus);
-        TFCEntities.ENTITIES.register(modEventBus);
-        TFCFluids.FLUIDS.register(modEventBus);
+        TFCBlocks.register();
+        TFCItems.register();
+        TFCContainerTypes.register();
+        TFCEntities.register();
+        TFCFluids.register();
         TFCRecipeSerializers.RECIPE_SERIALIZERS.register(modEventBus);
         TFCSounds.SOUNDS.register(modEventBus);
         TFCTileEntities.TILE_ENTITIES.register(modEventBus);
@@ -84,39 +119,7 @@ public final class TerraFirmaCraft
         // Init methods
         TFCConfig.init();
         PacketHandler.init();
-    }
 
-    @SubscribeEvent
-    public void setup(FMLCommonSetupEvent event)
-    {
-        LOGGER.info("TFC Common Setup");
-
-        // Setup methods
-        HeatCapability.setup();
-        ForgingCapability.setup();
-        ChunkDataCapability.setup();
-        WorldTrackerCapability.setup();
-        ServerCalendar.setup();
-        InteractionManager.setup();
-        TFCWorldType.setup();
-        TFCLoot.setup();
-
-        event.enqueueWork(DispenserBehaviors::syncSetup);
-
-        // World gen registry objects
-        Registry.register(Registry.CHUNK_GENERATOR, Helpers.identifier("overworld"), TFCChunkGenerator.CODEC);
-        Registry.register(Registry.BIOME_SOURCE, Helpers.identifier("overworld"), TFCBiomeProvider.CODEC);
-    }
-
-    @SubscribeEvent
-    public void onConfigReloading(ModConfig.Reloading event)
-    {
-        TFCConfig.reload();
-    }
-
-    @SubscribeEvent
-    public void onConfigLoading(ModConfig.Loading event)
-    {
-        TFCConfig.reload();
+        setup();
     }
 }

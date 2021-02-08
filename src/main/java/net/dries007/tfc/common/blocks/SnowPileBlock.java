@@ -64,10 +64,10 @@ public class SnowPileBlock extends SnowBlock implements IForgeBlockProperties
     @Override
     public boolean removedByPlayer(BlockState state, World world, BlockPos pos, PlayerEntity player, boolean willHarvest, FluidState fluid)
     {
-        playerWillDestroy(world, pos, state, player);
+        onBreak(world, pos, state, player);
         SnowPileTileEntity te = Helpers.getTileEntityOrThrow(world, pos, SnowPileTileEntity.class);
         BlockState newState = te.getDestroyedState(state);
-        return world.setBlock(pos, newState, world.isClientSide ? 11 : 3);
+        return world.setBlockState(pos, newState, world.isClient ? 11 : 3);
     }
 
     @Override

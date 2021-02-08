@@ -6,9 +6,8 @@
 
 package net.dries007.tfc.common.blocks.plant;
 
-import net.minecraft.state.IntegerProperty;
-
 import net.dries007.tfc.util.calendar.Month;
+import net.minecraft.state.property.IntProperty;
 
 /**
  * Marker interface for {@link PlantBlock} subclasses.
@@ -24,5 +23,5 @@ public interface IPlant
     /**
      * Get the stage property used for the growth of this plant
      */
-    IntegerProperty getStageProperty();
+    IntProperty getStageProperty();
 }

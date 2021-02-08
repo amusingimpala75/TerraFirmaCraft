@@ -61,7 +61,7 @@ public class ThinSpikeBlock extends Block
 
     public static final BooleanProperty TIP = TFCBlockStateProperties.TIP;
 
-    public ThinSpikeBlock(Properties properties)
+    public ThinSpikeBlock(Settings properties)
     {
         super(properties);
 

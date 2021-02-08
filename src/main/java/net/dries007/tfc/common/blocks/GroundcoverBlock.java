@@ -29,8 +29,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
+import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.IWorldReader;
@@ -57,7 +57,7 @@ public class GroundcoverBlock extends Block implements IFluidLoggable
         return new GroundcoverBlock(properties, TWIG, null);
     }
 
-    public static GroundcoverBlock looseOre(Properties properties)
+    public static GroundcoverBlock looseOre(Settings properties)
     {
         return new GroundcoverBlock(properties, SMALL, null);
     }
@@ -70,7 +70,7 @@ public class GroundcoverBlock extends Block implements IFluidLoggable
         this(Properties.of(Material.GRASS).strength(0.05F, 0.0F).sound(SoundType.NETHER_WART).noOcclusion(), cover.getShape(), cover.getVanillaItem());
     }
 
-    public GroundcoverBlock(Properties properties, VoxelShape shape, @Nullable Supplier<? extends Item> pickBlock)
+    public GroundcoverBlock(Settings properties, VoxelShape shape, @Nullable Supplier<? extends Item> pickBlock)
     {
         super(properties);
 

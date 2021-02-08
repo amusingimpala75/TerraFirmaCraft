@@ -9,11 +9,11 @@ package net.dries007.tfc.mixin.block;
 import java.util.Random;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.block.BreakableBlock;
 import net.minecraft.block.IceBlock;
+import net.minecraft.block.TransparentBlock;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
 
 import net.dries007.tfc.config.TFCConfig;
 import net.dries007.tfc.util.Climate;
@@ -27,11 +27,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
  * Modifies ice blocks such that they melt based on the TFC climate
  */
 @Mixin(IceBlock.class)
-public abstract class IceBlockMixin extends BreakableBlock
+public abstract class IceBlockMixin extends TransparentBlock
 {
     @Shadow protected abstract void melt(BlockState state, World worldIn, BlockPos pos);
 
-    private IceBlockMixin(Properties properties)
+    private IceBlockMixin(Settings properties)
     {
         super(properties);
     }

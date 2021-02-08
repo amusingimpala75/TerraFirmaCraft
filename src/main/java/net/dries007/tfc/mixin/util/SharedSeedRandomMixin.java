@@ -8,8 +8,7 @@ package net.dries007.tfc.mixin.util;
 
 import java.util.Random;
 
-import net.minecraft.util.SharedSeedRandom;
-
+import net.minecraft.world.gen.ChunkRandom;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -38,10 +37,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * Blam, so the first nextFloat() between setSeed(n) and setSeed(n + 1) is that distance apart ^
  * Which as you can see... isn't that far from 0
  */
-@Mixin(SharedSeedRandom.class)
+@Mixin(ChunkRandom.class)
 public abstract class SharedSeedRandomMixin extends Random
 {
-    @Inject(method = "setFeatureSeed", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "setDecoratorSeed", at = @At("HEAD"), cancellable = true)
     private void inject$setFeatureSeed(long baseSeed, int index, int decoration, CallbackInfoReturnable<Long> cir)
     {
         setSeed(baseSeed);

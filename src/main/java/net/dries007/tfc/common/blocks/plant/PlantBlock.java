@@ -8,6 +8,7 @@ package net.dries007.tfc.common.blocks.plant;
 
 import java.util.Random;
 
+import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.BlockItemUseContext;
@@ -29,7 +30,7 @@ public abstract class PlantBlock extends TFCBushBlock
 
     protected static final VoxelShape PLANT_SHAPE = box(2.0, 0.0, 2.0, 14.0, 16.0, 14.0);
 
-    public static PlantBlock create(IPlant plant, Properties properties)
+    public static PlantBlock create(IPlant plant, AbstractBlock.Settings properties)
     {
         return new PlantBlock(properties)
         {
@@ -42,8 +43,7 @@ public abstract class PlantBlock extends TFCBushBlock
         };
     }
 
-    protected PlantBlock(Properties properties)
-    {
+    protected PlantBlock(AbstractBlock.Settings properties) {
         super(properties);
 
         registerDefaultState(getStateDefinition().any().setValue(getPlant().getStageProperty(), 0).setValue(AGE, 0));

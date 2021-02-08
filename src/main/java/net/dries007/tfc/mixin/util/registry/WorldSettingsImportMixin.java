@@ -12,6 +12,8 @@ import com.google.gson.JsonElement;
 import net.minecraft.util.RegistryKey;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.datafix.DelegatingDynamicOps;
+import net.minecraft.util.dynamic.ForwardingDynamicOps;
+import net.minecraft.util.dynamic.RegistryOps;
 import net.minecraft.util.registry.MutableRegistry;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.WorldSettingsImport;
@@ -34,12 +36,12 @@ import org.spongepowered.asm.mixin.injection.Redirect;
  * Loading world gen data packs produces errors that are unclear and painful at best, and outright hides them at worst.
  * This tries to inject logging messages at common points where errors occur and are hidden, or adds additional context to these locations.
  */
-@Mixin(WorldSettingsImport.class)
-public abstract class WorldSettingsImportMixin<T> extends DelegatingDynamicOps<T>
+@Mixin(RegistryOps.class)
+public abstract class WorldSettingsImportMixin<T> extends ForwardingDynamicOps<T>
 {
     @Shadow
     @Final
-    private WorldSettingsImport.IResourceAccess resources;
+    private RegistryOps.EntryLoader entryLoader;
 
     private WorldSettingsImportMixin(DynamicOps<T> dynamicOps)
     {
@@ -47,10 +49,10 @@ public abstract class WorldSettingsImportMixin<T> extends DelegatingDynamicOps<T
     }
 
     @Redirect(method = "readAndRegisterElement", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/registry/WorldSettingsImport$IResourceAccess;parseElement(Lcom/mojang/serialization/DynamicOps;Lnet/minecraft/util/RegistryKey;Lnet/minecraft/util/RegistryKey;Lcom/mojang/serialization/Decoder;)Lcom/mojang/serialization/DataResult;"), require = 0)
-    private <E> DataResult<Pair<E, OptionalInt>> inject$readAndRegisterElement(WorldSettingsImport.IResourceAccess resourceAccess, DynamicOps<JsonElement> dynamicOps, RegistryKey<? extends Registry<E>> rootKey, RegistryKey<E> elementKey, Decoder<E> decoder, RegistryKey<? extends Registry<E>> registryKey, MutableRegistry<E> mutableRegistry, Codec<E> mapCodec, ResourceLocation keyIdentifier)
+    private <E> DataResult<Pair<E, OptionalInt>> inject$readAndRegisterElement(RegistryOps.EntryLoader resourceAccess, DynamicOps<JsonElement> dynamicOps, RegistryKey<? extends Registry<E>> rootKey, RegistryKey<E> elementKey, Decoder<E> decoder, RegistryKey<? extends Registry<E>> registryKey, MutableRegistry<E> mutableRegistry, Codec<E> mapCodec, ResourceLocation keyIdentifier)
     {
         // Call the original parse function and return the result. This redirect is simply used as an argument getter and injection point
-        DataResult<Pair<E, OptionalInt>> dataResult = resources.parseElement(dynamicOps, rootKey, elementKey, decoder);
+        DataResult<Pair<E, OptionalInt>> dataResult = entryLoader.load(dynamicOps, rootKey, elementKey, decoder);
 
         // At this point we can do a couple extra checks, and spit out some more useful error information
         if (TFCConfig.COMMON.enableDevTweaks.get() && !dataResult.result().isPresent())

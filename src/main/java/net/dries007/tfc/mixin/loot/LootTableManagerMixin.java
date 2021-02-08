@@ -7,17 +7,17 @@
 package net.dries007.tfc.mixin.loot;
 
 import com.google.gson.Gson;
+import net.minecraft.loot.LootManager;
+import net.minecraft.resource.JsonDataLoader;
 import org.apache.logging.log4j.Logger;
-import net.minecraft.client.resources.JsonReloadListener;
-import net.minecraft.loot.LootTableManager;
 
 import net.dries007.tfc.config.TFCConfig;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(LootTableManager.class)
-public abstract class LootTableManagerMixin extends JsonReloadListener
+@Mixin(LootManager.class)
+public abstract class LootTableManagerMixin extends JsonDataLoader
 {
     private LootTableManagerMixin(Gson gson_, String string_)
     {

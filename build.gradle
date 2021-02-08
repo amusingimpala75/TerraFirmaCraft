@@ -1,72 +1,26 @@
 import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 
-buildscript {
-    repositories {
-        maven { url = 'https://files.minecraftforge.net/maven' }
-        maven { url = 'https://dist.creeper.host/Sponge/maven' }
-        jcenter()
-        mavenCentral()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
-        classpath 'org.spongepowered:mixingradle:0.7-SNAPSHOT'
-    }
-}
-
 plugins {
+	id 'fabric-loom' version '0.5-SNAPSHOT'
+	id 'maven-publish'
     id 'net.minecrell.licenser' version '0.4.1'
     id 'idea'
 }
 
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'org.spongepowered.mixin'
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
-/*
- * !! Important Info for Contributors !!
- *
- * This project uses Mappificator (https://github.com/alcatrazEscapee/mappificator) for its mappings. This is a tool based on the official mappings provided by Mojang.
- * For information on how to set that up, see the project's README.md, it should detail how to create a customized mapping set and publish it to your maven local for use by FG.
- * While mappificator is recommended as it adds comments and parameter names to the standard official mappings, it is by no means necessary.
- * If you wish to use standard official mappings, see the below instructions to add the "use_official_mappings" property to your local dev.gradle
- *
- * This will create (if it does not exist) and use a 'dev.gradle' file in the root directory of this project.
- * It is used to set various property overrides in one's local development environment, without having to edit this file.
- * local.gradle should resemble the following:
- *
- * // In dev.gradle
- * ext {
- *     property_name = "a property value"
- *     another_property = true
- * }
- *
- * Important properties can can be configured in this manner:
- * use_official_mappings = true
- *  - This will tell gradle to use the official mappings for the purposes of mapping Minecraft source code. Using this option DOES NOT require setting up Mappificator. It WILL NOT de-obfuscate parameter names, or apply comments to the Minecraft source.
- */
-
-def localProperties = new File('./dev.gradle')
-localProperties.createNewFile()
-
-apply from: 'dev.gradle'
-
-def envVersion = System.getenv("version")
-version = envVersion == null ? "dev" : envVersion
-
-def mappingsOfficial = (project.hasProperty('use_official_mappings') && Boolean.valueOf(use_official_mappings)) ||
-        System.getenv("USE_OFFICIAL_MAPPINGS") != null || // Detect in an actions buildscript
-        System.getenv("JITPACK") != null // Detect in a jitpack publishing environment
-def mappingsChannel = mappingsOfficial ? 'official' : 'snapshot'
-def mappingsVersion = mappingsOfficial ? minecraft_version : mappings_version
-
-println 'Using mappings: ' + mappingsChannel + ' / ' + mappingsVersion
-
-group = "net.dries007.tfc" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "TerraFirmaCraft-Forge-${minecraft_version}"
-
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+archivesBaseName = "TerraFirmaCraft-Fabric-${minecraft_version}"
+version = project.mod_version
+group = "net.dries007.tfc"
 
 repositories {
+    // Add repositories to retrieve artifacts from in here.
+    // You should only use this when depending on other mods because
+    // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
+    // See https://docs.gradle.org/current/userguide/declaring_repositories.html
+    // for more information about repositories.
     mavenCentral()
     mavenLocal()
     maven {
@@ -75,83 +29,47 @@ repositories {
     }
 }
 
-minecraft {
-    mappings channel: mappingsChannel, version: mappingsVersion
-    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-
-    def testClasses = String.join(File.pathSeparator, "${mod_id}%%${sourceSets.main.output.resourcesDir}", "${mod_id}%%${sourceSets.main.output.classesDirs.asPath}", "${mod_id}%%${sourceSets.test.output.resourcesDir}", "${mod_id}%%${sourceSets.test.output.classesDirs.asPath}")
-
-    runs {
-        client {
-            workingDirectory project.file('run')
-            arg '-mixin.config=' + mod_id + '.mixins.json'
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                tfc {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        server {
-            workingDirectory project.file('run')
-            arg '-mixin.config=' + mod_id + '.mixins.json'
-            arg '--nogui'
-            property 'forge.logging.console.level', 'debug'
-
-            mods {
-                tfc {
-                    source sourceSets.main
-                }
-            }
-        }
-
-        integrationTest {
-            parent runs.client
-            workingDirectory project.file('run')
-            ideaModule "${project.name}.test"
-            property 'forge.logging.console.level', 'debug' // This logging level prevents any other server information messages and leaves only the unit test output
-            environment 'MOD_CLASSES', testClasses // Forge will ignore all test sources unless we explicitly tell it to include them as mod sources
-            mods {
-                tfc {
-                    sources sourceSets.main, sourceSets.test
-                }
-            }
-        }
-
-        unitTest {
-            parent runs.server // This run config inherits settings from the server config
-            workingDirectory project.file('run')
-            main 'com.alcatrazescapee.mcjunitlib.DedicatedTestServerLauncher' // The main class which launches a customized server which then runs JUnit tests
-            ideaModule "${project.name}.test" // Tell IDEA to use the classpath of the test module
-            property 'forge.logging.console.level', 'unittest' // This logging level prevents any other server information messages and leaves only the unit test output
-            environment 'MOD_CLASSES', testClasses // Forge will ignore all test sources unless we explicitly tell it to include them as mod sources
-            environment 'target', 'fmltestserver' // This is a custom service used to launch with ModLauncher's transforming class loader
-            mods {
-                tfc {
-                    sources sourceSets.main, sourceSets.test
-                }
-            }
-        }
-    }
-}
-
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+	// To change the versions see the gradle.properties file
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    testImplementation fg.deobf("com.github.alcatrazEscapee:mcjunitlib:${mcjunitlib_version}-${minecraft_version}")
+	// Fabric API. This is technically optional, but you probably want it anyway.
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
+	// You may need to force-disable transitiveness on them.
 }
 
 processResources {
-    // Minify the json files in the output jar, reduces overall jar size.
-    // Also removes comments from mcresources, as they don't need to be included
-    doLast {
-        fileTree(dir: outputs.files.asPath, include: "**/*.json").each { File file ->
-            file.text = JsonOutput.toJson(new JsonSlurper().parse(file))
-            file.text = file.text.replace('"__comment__":"This file was automatically created by mcresources",', '')
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
+    	doLast {
+        	fileTree(dir: outputs.files.asPath, include: "**/*.json").each { File file ->
+            	file.text = JsonOutput.toJson(new JsonSlurper().parse(file))
+            	file.text = file.text.replace('"__comment__":"This file was automatically created by mcresources",', '')
         }
     }
+}
+
+tasks.withType(JavaCompile).configureEach {
+	// ensure that the encoding is set to UTF-8, no matter what the system default is
+	// this fixes some edge cases with special characters not displaying correctly
+	// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
+	// If Javadoc is generated, this must be specified in that task too.
+	it.options.encoding = "UTF-8"
+
+	// The Minecraft launcher currently installs Java 8 for users, so your mod probably wants to target Java 8 too
+	// JDK 9 introduced a new way of specifying this that will make sure no newer classes or methods are used.
+	// We'll use that if it's available, but otherwise we'll use the older option.
+	def targetVersion = 8
+	if (JavaVersion.current().isJava9Compatible()) {
+		 it.options.release = targetVersion
+	}
 }
 
 // Automatically apply a license header when running checkLicense / updateLicense
@@ -168,16 +86,38 @@ license {
     exclude 'net/dries007/tfc/world/noise/OpenSimplex3D.java'
 }
 
-// Puts the mod version into the jar for mods.toml to read from
-jar {
-    manifest {
-        attributes ([
-                "Implementation-Version": "${version}",
-                "MixinConfigs": "${mod_id}.mixins.json"
-        ])
-    }
+java {
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+	// if it is present.
+	// If you remove this line, sources will not be generated.
+	withSourcesJar()
 }
 
-mixin {
-    add sourceSets.main, "${mod_id}.refmap.json"
+jar {
+	from("LICENSE") {
+		rename { "${it}_${project.archivesBaseName}"}
+	}
+}
+
+// configure the maven publication
+publishing {
+	publications {
+		mavenJava(MavenPublication) {
+			// add all the jars that should be included when publishing to maven
+			artifact(remapJar) {
+				builtBy remapJar
+			}
+			artifact(sourcesJar) {
+				builtBy remapSourcesJar
+			}
+		}
+	}
+    
+    // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+    repositories {
+        // Add repositories to publish to here.
+        // Notice: This block does NOT have the same function as the block in the top level.
+        // The repositories here will be used for publishing your artifact, not for
+        // retrieving dependencies.
+    }
 }
