@@ -9,8 +9,8 @@ package net.dries007.tfc.common.fluids;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
-import net.dries007.tfc.forgereplacements.FlowableFluid;
-import net.dries007.tfc.forgereplacements.FluidProperties;
+import net.dries007.tfc.forgereplacements.fluid.FlowableFluid;
+import net.dries007.tfc.forgereplacements.fluid.FluidProperties;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.fluid.FlowingFluid;

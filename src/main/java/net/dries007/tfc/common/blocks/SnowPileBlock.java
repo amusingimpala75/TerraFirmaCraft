@@ -20,6 +20,7 @@ import net.minecraft.world.World;
 
 import net.dries007.tfc.common.tileentity.SnowPileTileEntity;
 import net.dries007.tfc.util.Helpers;
+import net.minecraft.world.WorldAccess;
 
 /**
  * This block is a snow layer block that hides / covers a block underneath
@@ -35,9 +36,9 @@ public class SnowPileBlock extends SnowBlock implements IForgeBlockProperties
      * @param state      The original state
      * @param snowLayers How many layers of snow were in the original state (may be 0 if the state doesn't pile up it's own snow)
      */
-    public static void convertToPile(IWorld world, BlockPos pos, BlockState state)
+    public static void convertToPile(WorldAccess world, BlockPos pos, BlockState state)
     {
-        world.setBlock(pos, TFCBlocks.SNOW_PILE.get().defaultBlockState(), 3);
+        world.setBlockState(pos, TFCBlocks.SNOW_PILE.getDefaultState(), 3);
         Helpers.getTileEntityOrThrow(world, pos, SnowPileTileEntity.class).setInternalState(state);
     }
 

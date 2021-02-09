@@ -17,6 +17,8 @@ import javax.annotation.Nullable;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
@@ -299,9 +301,9 @@ public final class Helpers
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends TileEntity> T getTileEntityOrThrow(IWorldReader world, BlockPos pos, Class<T> tileEntityClass)
+    public static <T extends BlockEntity> T getTileEntityOrThrow(WorldView world, BlockPos pos, Class<T> tileEntityClass)
     {
-        TileEntity te = world.getBlockEntity(pos);
+        BlockEntity te = world.getBlockEntity(pos);
         if (tileEntityClass.isInstance(te))
         {
             return (T) te;

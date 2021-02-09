@@ -6,14 +6,13 @@
 
 package net.dries007.tfc.util.calendar;
 
-import javax.annotation.Nullable;
-
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.PacketByteBuf;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
 
 import net.dries007.tfc.config.TFCConfig;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * This is the central tick tracking mechanism for all of TFC
@@ -58,9 +57,9 @@ public class Calendar implements ICalendar
         return daysInMonth;
     }
 
-    public CompoundNBT write()
+    public CompoundTag write()
     {
-        CompoundNBT nbt = new CompoundNBT();
+        CompoundTag nbt = new CompoundTag();
 
         nbt.putInt("daysInMonth", daysInMonth);
 
@@ -73,7 +72,7 @@ public class Calendar implements ICalendar
         return nbt;
     }
 
-    public void read(@Nullable CompoundNBT nbt)
+    public void read(@Nullable CompoundTag nbt)
     {
         if (nbt != null)
         {
@@ -87,7 +86,7 @@ public class Calendar implements ICalendar
         }
     }
 
-    public void write(PacketBuffer buffer)
+    public void write(PacketByteBuf buffer)
     {
         buffer.writeVarInt(daysInMonth);
 
@@ -98,7 +97,7 @@ public class Calendar implements ICalendar
         buffer.writeBoolean(arePlayersLoggedOn);
     }
 
-    public void read(PacketBuffer buffer)
+    public void read(PacketByteBuf buffer)
     {
         daysInMonth = buffer.readVarInt();
 

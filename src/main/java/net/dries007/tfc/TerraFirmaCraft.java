@@ -6,7 +6,11 @@
 
 package net.dries007.tfc;
 
+import com.mojang.brigadier.CommandDispatcher;
+import net.dries007.tfc.common.command.TFCCommands;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.minecraft.command.CommandSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import net.minecraft.util.registry.Registry;
@@ -103,8 +107,8 @@ public final class TerraFirmaCraft implements ModInitializer {
         TFCContainerTypes.register();
         TFCEntities.register();
         TFCFluids.register();
-        TFCRecipeSerializers.RECIPE_SERIALIZERS.register(modEventBus);
-        TFCSounds.SOUNDS.register(modEventBus);
+        TFCRecipeSerializers.register();
+        TFCSounds.register();
         TFCTileEntities.TILE_ENTITIES.register(modEventBus);
 
         TFCBiomes.BIOMES.register(modEventBus);
@@ -115,6 +119,7 @@ public final class TerraFirmaCraft implements ModInitializer {
         TFCBlockStateProviderTypes.BLOCK_STATE_PROVIDER_TYPES.register(modEventBus);
         TFCBlockPlacers.BLOCK_PLACER_TYPES.register(modEventBus);
         TFCWorldType.WORLD_TYPES.register(modEventBus);
+        CommandRegistrationCallback.EVENT.register((dispatcher, isDedicated) -> TFCCommands.register(dispatcher));
 
         // Init methods
         TFCConfig.init();

@@ -1,4 +1,4 @@
-package net.dries007.tfc.forgereplacements;
+package net.dries007.tfc.forgereplacements.fluid;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;

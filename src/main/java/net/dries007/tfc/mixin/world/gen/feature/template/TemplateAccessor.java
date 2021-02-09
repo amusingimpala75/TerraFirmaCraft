@@ -8,21 +8,19 @@ package net.dries007.tfc.mixin.world.gen.feature.template;
 
 import java.util.List;
 
+import net.minecraft.structure.Structure;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.gen.feature.template.PlacementSettings;
-import net.minecraft.world.gen.feature.template.Template;
 
 import net.dries007.tfc.world.feature.tree.TreeFeature;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@Mixin(Template.class)
+@Mixin(Structure.class)
 public interface TemplateAccessor
 {
     /**
-     * Used by {@link TreeFeature#placeTemplateInWorld(Template, PlacementSettings, IWorld, BlockPos)} for a optimized implementation
+     * Used by {@link TreeFeature#placeTemplateInWorld(Structure, PlacementSettings, IWorld, BlockPos)} for a optimized implementation
      */
-    @Accessor("palettes")
-    List<Template.Palette> accessor$getPalettes();
+    @Accessor("blockInfoLists")
+    List<Structure.PalettedBlockInfoList> accessor$getPalettes();
 }

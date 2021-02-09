@@ -29,4 +29,6 @@ public class TFCRecipeSerializers
     {
         return Registry.register(Registry.RECIPE_SERIALIZER, Helpers.identifier(name), factory.get());
     }
+
+    public static void register() {}
 }

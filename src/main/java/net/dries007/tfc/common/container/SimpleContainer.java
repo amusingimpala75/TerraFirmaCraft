@@ -70,10 +70,10 @@ public class SimpleContainer extends ScreenHandler
                 return ItemStack.EMPTY;
             }
 
-            ItemStack stackTake = slot.onTake(player, stack);
+            ItemStack stackTake = slot.onTakeItem(player, stack);
             if (index == 0)
             {
-                player.drop(stackTake, false);
+                player.dropItem(stackTake, false);
             }
         }
 

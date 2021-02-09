@@ -7,10 +7,11 @@
 package net.dries007.tfc.common.command;
 
 import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.TranslatableText;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -26,65 +27,65 @@ public final class TimeCommand
     private static final String PLAYER_TICKS = "tfc.commands.time.query.player_ticks";
     private static final String CALENDAR_TICKS = "tfc.commands.time.query.calendar_ticks";
 
-    public static LiteralArgumentBuilder<CommandSource> create()
+    public static LiteralArgumentBuilder<ServerCommandSource> create()
     {
-        return Commands.literal("time")
-            .requires(source -> source.hasPermission(2))
-            .then(Commands.literal("set")
-                .then(Commands.literal("monthlength")
-                    .then(Commands.argument("value", IntegerArgumentType.integer(1))
+        return CommandManager.literal("time")
+            .requires(source -> source.hasPermissionLevel(2))
+            .then(CommandManager.literal("set")
+                .then(CommandManager.literal("monthlength")
+                    .then(CommandManager.argument("value", IntegerArgumentType.integer(1))
                         .executes(context -> setMonthLength(IntegerArgumentType.getInteger(context, "value")))
                     )
                 )
-                .then(Commands.literal("day")
-                    .executes(context -> setTime(context.getSource().getServer(), 1000))
+                .then(CommandManager.literal("day")
+                    .executes(context -> setTime(context.getSource().getMinecraftServer(), 1000))
                 )
-                .then(Commands.literal("noon")
-                    .executes(context -> setTime(context.getSource().getServer(), 6000))
+                .then(CommandManager.literal("noon")
+                    .executes(context -> setTime(context.getSource().getMinecraftServer(), 6000))
                 )
-                .then(Commands.literal("night")
-                    .executes(context -> setTime(context.getSource().getServer(), 13000))
+                .then(CommandManager.literal("night")
+                    .executes(context -> setTime(context.getSource().getMinecraftServer(), 13000))
                 )
-                .then(Commands.literal("midnight")
-                    .executes(context -> setTime(context.getSource().getServer(), 18000))
+                .then(CommandManager.literal("midnight")
+                    .executes(context -> setTime(context.getSource().getMinecraftServer(), 18000))
                 )
             )
-            .then(Commands.literal("add")
-                .then(Commands.literal("years")
-                    .then(Commands.argument("value", IntegerArgumentType.integer(1))
+            .then(CommandManager.literal("add")
+                .then(CommandManager.literal("years")
+                    .then(CommandManager.argument("value", IntegerArgumentType.integer(1))
                         .executes(context -> addTime(IntegerArgumentType.getInteger(context, "value") * Calendars.SERVER.getCalendarTicksInYear()))
                     )
                 )
-                .then(Commands.literal("months")
-                    .then(Commands.argument("value", IntegerArgumentType.integer(1))
+                .then(CommandManager.literal("months")
+                    .then(CommandManager.argument("value", IntegerArgumentType.integer(1))
                         .executes(context -> addTime(IntegerArgumentType.getInteger(context, "value") * Calendars.SERVER.getCalendarTicksInMonth()))
                     )
                 )
-                .then(Commands.literal("days")
-                    .then(Commands.argument("value", IntegerArgumentType.integer(1))
+                .then(CommandManager.literal("days")
+                    .then(CommandManager.argument("value", IntegerArgumentType.integer(1))
                         .executes(context -> addTime(IntegerArgumentType.getInteger(context, "value") * ICalendar.TICKS_IN_DAY))
                     )
                 )
-                .then(Commands.literal("ticks")
-                    .then(Commands.argument("value", IntegerArgumentType.integer(1))
+                .then(CommandManager.literal("ticks")
+                    .then(CommandManager.argument("value", IntegerArgumentType.integer(1))
                         .executes(context -> addTime(IntegerArgumentType.getInteger(context, "value")))
                     )
                 )
             )
-            .then(Commands.literal("query")
-                .then(Commands.literal("daytime")
+            .then(CommandManager.literal("query")
+                .then(CommandManager.literal("daytime")
                     .executes(context -> sendQueryResults(context.getSource(), DAYTIME, Calendars.SERVER.getCalendarDayTime()))
                 )
-                .then(Commands.literal("gametime")
-                    .executes(context -> sendQueryResults(context.getSource(), GAME_TIME, context.getSource().getLevel().getGameTime()))
+                .then(CommandManager.literal("gametime")
+                    .executes(context -> sendQueryResults(context.getSource(), GAME_TIME, context.getSource().getWorld().getTime()))
                 )
-                .then(Commands.literal("day")
+                .then(CommandManager.literal("day")
                     .executes(context -> sendQueryResults(context.getSource(), DAY, Calendars.SERVER.getTotalDays()))
                 )
-                .then(Commands.literal("ticks")
+                .then(CommandManager.literal("ticks")
                     .executes(context -> sendQueryResults(context.getSource(), PLAYER_TICKS, Calendars.SERVER.getTicks()))
                 )
-                .then(Commands.literal("calendarticks")
+                .then(CommandManager.literal("calendarticks")
                     .executes(context -> sendQueryResults(context.getSource(), CALENDAR_TICKS, Calendars.SERVER.getCalendarTicks()))
                 )
             );
@@ -98,14 +99,14 @@ public final class TimeCommand
 
     private static int setTime(MinecraftServer server, int dayTime)
     {
-        for (ServerWorld world : server.getAllLevels())
+        for (ServerWorld world : server.getWorlds())
         {
-            long dayTimeJump = dayTime - (world.getDayTime() % ICalendar.TICKS_IN_DAY);
+            long dayTimeJump = dayTime - (world.getTimeOfDay() % ICalendar.TICKS_IN_DAY);
             if (dayTimeJump < 0)
             {
                 dayTimeJump += ICalendar.TICKS_IN_DAY;
             }
-            world.setDayTime(world.getDayTime() + dayTimeJump);
+            world.setTimeOfDay(world.getTimeOfDay() + dayTimeJump);
         }
         Calendars.SERVER.setTimeFromDayTime(dayTime);
         return Command.SINGLE_SUCCESS;
@@ -119,7 +120,7 @@ public final class TimeCommand
 
     private static int sendQueryResults(CommandSource source, String translationKey, long value)
     {
-        source.sendSuccess(new TranslationTextComponent(translationKey, (int) value), false);
+        ((ServerCommandSource)source).sendFeedback(new TranslatableText(translationKey, (int) value), false);
         return Command.SINGLE_SUCCESS;
     }
 }

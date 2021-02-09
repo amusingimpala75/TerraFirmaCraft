@@ -6,10 +6,9 @@
 
 package net.dries007.tfc.util.calendar;
 
-import net.minecraft.world.IWorldReader;
-
 import net.dries007.tfc.client.ClientCalendar;
 import net.dries007.tfc.util.Helpers;
+import net.minecraft.world.WorldView;
 
 /**
  * This is the central tick tracking mechanism for all of TFC
@@ -31,7 +30,7 @@ public final class Calendars
     /**
      * Gets the correct calendar for the current world context
      */
-    public static ICalendar get(IWorldReader world)
+    public static ICalendar get(WorldView world)
     {
         return Helpers.isClientSide(world) ? CLIENT : SERVER;
     }

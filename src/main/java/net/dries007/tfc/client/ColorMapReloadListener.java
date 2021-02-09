@@ -9,18 +9,18 @@ package net.dries007.tfc.client;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-import net.minecraft.client.resources.ColorMapLoader;
-import net.minecraft.client.resources.ReloadListener;
-import net.minecraft.profiler.IProfiler;
-import net.minecraft.resources.IResourceManager;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.util.RawTextureDataLoader;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.resource.SinglePreparationResourceReloadListener;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.profiler.Profiler;
 
-public class ColorMapReloadListener extends ReloadListener<int[]>
+public class ColorMapReloadListener extends SinglePreparationResourceReloadListener<int[]>
 {
-    private final ResourceLocation textureLocation;
+    private final Identifier textureLocation;
     private final Consumer<int[]> consumer;
 
-    public ColorMapReloadListener(Consumer<int[]> consumer, ResourceLocation textureLocation)
+    public ColorMapReloadListener(Consumer<int[]> consumer, Identifier textureLocation)
     {
         this.textureLocation = textureLocation;
         this.consumer = consumer;
@@ -28,11 +28,11 @@ public class ColorMapReloadListener extends ReloadListener<int[]>
 
     @Override
     @SuppressWarnings("deprecation")
-    protected int[] prepare(IResourceManager resourceManagerIn, IProfiler profilerIn)
+    protected int[] prepare(ResourceManager resourceManagerIn, Profiler profilerIn)
     {
         try
         {
-            return ColorMapLoader.getPixels(resourceManagerIn, textureLocation);
+            return RawTextureDataLoader.loadRawTextureData(resourceManagerIn, textureLocation);
         }
         catch (IOException ioexception)
         {
@@ -41,7 +41,7 @@ public class ColorMapReloadListener extends ReloadListener<int[]>
     }
 
     @Override
-    protected void apply(int[] objectIn, IResourceManager resourceManagerIn, IProfiler profilerIn)
+    protected void apply(int[] objectIn, ResourceManager resourceManagerIn, Profiler profilerIn)
     {
         consumer.accept(objectIn);
     }

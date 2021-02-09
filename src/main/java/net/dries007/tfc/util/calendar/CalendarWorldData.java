@@ -6,19 +6,19 @@
 
 package net.dries007.tfc.util.calendar;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.PersistentState;
 
 import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
 
-public class CalendarWorldData extends WorldSavedData
+public class CalendarWorldData extends PersistentState
 {
     private static final String NAME = MOD_ID + "_calendar";
 
     public static CalendarWorldData get(ServerWorld world)
     {
-        return world.getDataStorage().computeIfAbsent(CalendarWorldData::new, NAME);
+        return world.getPersistentStateManager().getOrCreate(CalendarWorldData::new, NAME);
     }
 
     private final Calendar calendar;
@@ -36,13 +36,13 @@ public class CalendarWorldData extends WorldSavedData
     }
 
     @Override
-    public void load(CompoundNBT nbt)
+    public void fromTag(CompoundTag nbt)
     {
         calendar.read(nbt.getCompound("calendar"));
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT nbt)
+    public CompoundTag toTag(CompoundTag nbt)
     {
         nbt.put("calendar", Calendars.SERVER.write());
         return nbt;

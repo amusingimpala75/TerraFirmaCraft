@@ -19,12 +19,12 @@ import org.spongepowered.asm.mixin.gen.Accessor;
  *
  * @see GameRulesAccessor
  */
-@Mixin(GameRules.RuleType.class)
+@Mixin(GameRules.Type.class)
 public interface GameRulesRuleTypeAccessor
 {
-    @Accessor("callback")
+    @Accessor("changeCallback")
     BiConsumer<MinecraftServer, Object> accessor$getCallback();
 
-    @Accessor("callback")
+    @Accessor("changeCallback")
     void accessor$setCallback(BiConsumer<MinecraftServer, Object> callback);
 }

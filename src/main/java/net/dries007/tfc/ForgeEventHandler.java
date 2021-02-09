@@ -66,7 +66,7 @@ import net.dries007.tfc.world.chunkdata.ITFCChunkGenerator;
 
 import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
 
-@Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+//@Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class ForgeEventHandler
 {
     private static final Logger LOGGER = LogManager.getLogger();

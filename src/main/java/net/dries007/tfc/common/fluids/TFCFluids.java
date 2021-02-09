@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import net.dries007.tfc.forgereplacements.FluidProperties;
+import net.dries007.tfc.forgereplacements.fluid.FluidProperties;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
@@ -106,7 +106,7 @@ public final class TFCFluids {
      */
     private static FluidPair<FlowableFluid> register(String sourceName, String flowingName, Consumer<FluidProperties> builder, boolean burning)
     {
-        return register(sourceName, flowingName, builder, net.dries007.tfc.forgereplacements.FlowableFluid.Still::new, net.dries007.tfc.forgereplacements.FlowableFluid.Flowing::new, burning);
+        return register(sourceName, flowingName, builder, net.dries007.tfc.forgereplacements.fluid.FlowableFluid.Still::new, net.dries007.tfc.forgereplacements.fluid.FlowableFluid.Flowing::new, burning);
     }
 
     @SuppressWarnings("unchecked")

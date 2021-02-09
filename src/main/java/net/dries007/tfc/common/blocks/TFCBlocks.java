@@ -37,7 +37,7 @@ import net.dries007.tfc.common.types.Ore;
 import net.dries007.tfc.common.types.Rock;
 import net.dries007.tfc.common.types.Wood;
 import net.dries007.tfc.util.Helpers;
-import net.dries007.tfc.forgereplacements.FluidBlock;
+import net.dries007.tfc.forgereplacements.fluid.FluidBlock;
 
 import static net.dries007.tfc.common.TFCItemGroup.*;
 

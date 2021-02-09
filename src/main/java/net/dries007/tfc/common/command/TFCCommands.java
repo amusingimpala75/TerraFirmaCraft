@@ -6,17 +6,16 @@
 
 package net.dries007.tfc.common.command;
 
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-
 import com.mojang.brigadier.CommandDispatcher;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
 
 public final class TFCCommands
 {
-    public static void register(CommandDispatcher<CommandSource> dispatcher)
+    public static void register(CommandDispatcher<ServerCommandSource> dispatcher)
     {
         // Register all new commands as sub commands of the `tfc` root
-        dispatcher.register(Commands.literal("tfc")
+        dispatcher.register(CommandManager.literal("tfc")
             .then(ClearWorldCommand.create())
             .then(HeatCommand.create())
             .then(PlayerCommand.create())

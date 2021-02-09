@@ -6,7 +6,7 @@
 
 package net.dries007.tfc.client;
 
-import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -35,11 +35,11 @@ public enum ClimateRenderCache
      */
     public void onClientTick()
     {
-        World world = Minecraft.getInstance().level;
-        PlayerEntity player = Minecraft.getInstance().player;
+        World world = MinecraftClient.getInstance().world;
+        PlayerEntity player = MinecraftClient.getInstance().player;
         if (world != null && player != null)
         {
-            BlockPos pos = player.blockPosition();
+            BlockPos pos = player.getBlockPos();
             ChunkData data = ChunkDataCache.CLIENT.getOrEmpty(pos);
 
             ticks = Calendars.CLIENT.getTicks();

@@ -8,30 +8,25 @@ package net.dries007.tfc.util;
 
 import java.util.Random;
 
-import javax.annotation.Nullable;
-
+import net.dries007.tfc.fabric.duck.WorldDuck;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.FlowingFluidBlock;
+import net.minecraft.block.FluidBlock;
 import net.minecraft.block.SnowBlock;
 import net.minecraft.fluid.FluidState;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.util.Direction;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.IWorldReader;
-import net.minecraft.world.LightType;
-import net.minecraft.world.World;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.*;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerWorld;
 
 import net.dries007.tfc.common.TFCTags;
 import net.dries007.tfc.common.blocks.SnowPileBlock;
 import net.dries007.tfc.common.blocks.TFCBlocks;
 import net.dries007.tfc.common.blocks.ThinSpikeBlock;
 import net.dries007.tfc.common.fluids.TFCFluids;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * This is a helper class which handles environment effects
@@ -50,8 +45,8 @@ public final class EnvironmentHelpers
         ChunkPos chunkPos = chunkIn.getPos();
         if (random.nextInt(16) == 0)
         {
-            BlockPos pos = world.getHeightmapPos(Heightmap.Type.MOTION_BLOCKING, world.getBlockRandomPos(chunkPos.getMinBlockX(), 0, chunkPos.getMinBlockZ(), 15));
-            if (world.isAreaLoaded(pos, 2))
+            BlockPos pos = world.getTopPosition(Heightmap.Type.MOTION_BLOCKING, world.getRandomPosInChunk(chunkPos.getStartX(), 0, chunkPos.getStartZ(), 15));
+            if (((WorldDuck)world).inject$isAreaLoaded(pos, 2))
             {
                 float temperature = Climate.getTemperature(world, pos);
                 if (world.isRaining() && temperature < Climate.SNOW_STACKING_TEMPERATURE)
@@ -64,7 +59,7 @@ public final class EnvironmentHelpers
                     BlockState targetState = world.getBlockState(targetPos);
                     if (!tryStackSnow(world, targetPos, targetState))
                     {
-                        targetPos = findOptimalSnowLocation(world, pos.below(), random);
+                        targetPos = findOptimalSnowLocation(world, pos.down(), random);
                         targetState = world.getBlockState(targetPos);
                         tryStackSnow(world, targetPos, targetState);
                     }
@@ -77,35 +72,35 @@ public final class EnvironmentHelpers
                     final BlockPos iciclePos = findIcicleLocation(world, pos, random);
                     if (iciclePos != null)
                     {
-                        BlockPos posAbove = iciclePos.above();
+                        BlockPos posAbove = iciclePos.up();
                         BlockState stateAbove = world.getBlockState(posAbove);
-                        if (stateAbove.is(TFCBlocks.ICICLE.get()))
+                        if (stateAbove.isOf(TFCBlocks.ICICLE))
                         {
-                            world.setBlock(posAbove, stateAbove.setValue(ThinSpikeBlock.TIP, false), 3 | 16);
+                            world.setBlockState(posAbove, stateAbove.with(ThinSpikeBlock.TIP, false), 3 | 16);
                         }
-                        world.setBlock(iciclePos, TFCBlocks.ICICLE.get().defaultBlockState().setValue(ThinSpikeBlock.TIP, true), 3);
+                        world.setBlockState(iciclePos, TFCBlocks.ICICLE.getDefaultState().with(ThinSpikeBlock.TIP, true), 3);
                     }
                 }
 
                 if (temperature < Climate.SEA_ICE_FREEZE_TEMPERATURE)
                 {
                     // Freeze salt water into sea ice
-                    tryFreezeSeaIce(world, pos.below());
+                    tryFreezeSeaIce(world, pos.down());
                 }
             }
         }
     }
 
     @SuppressWarnings("deprecation")
-    private static boolean tryStackSnow(IWorld world, BlockPos pos, BlockState state)
+    private static boolean tryStackSnow(WorldAccess world, BlockPos pos, BlockState state)
     {
-        if ((state.is(Blocks.SNOW) || state.is(TFCBlocks.SNOW_PILE.get())) && state.getValue(SnowBlock.LAYERS) < 7)
+        if ((state.isOf(Blocks.SNOW) || state.isOf(TFCBlocks.SNOW_PILE)) && state.get(SnowBlock.LAYERS) < 7)
         {
             // Vanilla snow block stacking
-            BlockState newState = state.setValue(SnowBlock.LAYERS, state.getValue(SnowBlock.LAYERS) + 1);
-            if (newState.canSurvive(world, pos))
+            BlockState newState = state.with(SnowBlock.LAYERS, state.get(SnowBlock.LAYERS) + 1);
+            if (newState.canPlaceAt(world, pos))
             {
-                world.setBlock(pos, newState, 3);
+                world.setBlockState(pos, newState, 3);
             }
             return true;
         }
@@ -115,30 +110,30 @@ public final class EnvironmentHelpers
             SnowPileBlock.convertToPile(world, pos, state);
             return true;
         }
-        else if (state.isAir() && Blocks.SNOW.defaultBlockState().canSurvive(world, pos))
+        else if (state.isAir() && Blocks.SNOW.getDefaultState().canPlaceAt(world, pos))
         {
             // Vanilla snow placement (single layers)
-            world.setBlock(pos, Blocks.SNOW.defaultBlockState(), 3);
+            world.setBlockState(pos, Blocks.SNOW.getDefaultState(), 3);
         }
         return false;
     }
 
     /**
-     * Logic is borrowed from {@link net.minecraft.world.biome.Biome#shouldFreeze(IWorldReader, BlockPos)} but with the water fluid swapped out, and the temperature check changed (in the original code it's redirected by mixin)
+     * Logic is borrowed from {@link net.minecraft.world.biome.Biome#canSetIce(WorldView, BlockPos)} but with the water fluid swapped out, and the temperature check changed (in the original code it's redirected by mixin)
      */
-    private static void tryFreezeSeaIce(IWorld worldIn, BlockPos pos)
+    private static void tryFreezeSeaIce(WorldAccess worldIn, BlockPos pos)
     {
         if (Climate.getTemperature(worldIn, pos) < Climate.SEA_ICE_FREEZE_TEMPERATURE)
         {
-            if (pos.getY() >= 0 && pos.getY() < 256 && worldIn.getBrightness(LightType.BLOCK, pos) < 10)
+            if (pos.getY() >= 0 && pos.getY() < 256 && worldIn.getLightLevel(LightType.BLOCK, pos) < 10)
             {
                 BlockState state = worldIn.getBlockState(pos);
                 FluidState fluid = worldIn.getFluidState(pos);
-                if (fluid.getType() == TFCFluids.SALT_WATER.getSource() && state.getBlock() instanceof FlowingFluidBlock)
+                if (fluid.getFluid() == TFCFluids.SALT_WATER.getSource() && state.getBlock() instanceof FluidBlock)
                 {
-                    if (!worldIn.isWaterAt(pos.west()) || !worldIn.isWaterAt(pos.east()) || !worldIn.isWaterAt(pos.north()) || !worldIn.isWaterAt(pos.south()))
+                    if (!worldIn.isWater(pos.west()) || !worldIn.isWater(pos.east()) || !worldIn.isWater(pos.north()) || !worldIn.isWater(pos.south()))
                     {
-                        worldIn.setBlock(pos, TFCBlocks.SEA_ICE.get().defaultBlockState(), 3);
+                        worldIn.setBlockState(pos, TFCBlocks.SEA_ICE.getDefaultState(), 3);
                     }
                 }
             }
@@ -146,18 +141,18 @@ public final class EnvironmentHelpers
     }
 
     @SuppressWarnings("deprecation")
-    private static BlockPos findOptimalSnowLocation(IWorld world, BlockPos pos, Random random)
+    private static BlockPos findOptimalSnowLocation(WorldAccess world, BlockPos pos, Random random)
     {
         BlockState state = world.getBlockState(pos);
         BlockPos targetPos = null;
         int found = 0;
-        if (state.is(Blocks.SNOW) || state.is(TFCBlocks.SNOW_PILE.get()))
+        if (state.isOf(Blocks.SNOW) || state.isOf(TFCBlocks.SNOW_PILE))
         {
-            for (Direction direction : Direction.Plane.HORIZONTAL)
+            for (Direction direction : Direction.Type.HORIZONTAL)
             {
-                BlockPos adjPos = pos.relative(direction);
+                BlockPos adjPos = pos.offset(direction);
                 BlockState adjState = world.getBlockState(adjPos);
-                if (((adjState.is(Blocks.SNOW) || adjState.is(TFCBlocks.SNOW_PILE.get())) && adjState.getValue(SnowBlock.LAYERS) < state.getValue(SnowBlock.LAYERS)) || (adjState.isAir() && Blocks.SNOW.defaultBlockState().canSurvive(world, adjPos)))
+                if (((adjState.isOf(Blocks.SNOW) || adjState.isOf(TFCBlocks.SNOW_PILE)) && adjState.get(SnowBlock.LAYERS) < state.get(SnowBlock.LAYERS)) || (adjState.isAir() && Blocks.SNOW.getDefaultState().canPlaceAt(world, adjPos)))
                 {
                     found++;
                     if (targetPos == null || random.nextInt(found) == 0)
@@ -178,17 +173,17 @@ public final class EnvironmentHelpers
     @SuppressWarnings("deprecation")
     private static BlockPos findIcicleLocation(World world, BlockPos pos, Random random)
     {
-        final Direction side = Direction.Plane.HORIZONTAL.getRandomDirection(random);
-        BlockPos adjacentPos = pos.relative(side);
-        final int adjacentHeight = world.getHeight(Heightmap.Type.MOTION_BLOCKING, adjacentPos.getX(), adjacentPos.getZ());
+        final Direction side = Direction.Type.HORIZONTAL.random(random);
+        BlockPos adjacentPos = pos.offset(side);
+        final int adjacentHeight = world.getTopY(Heightmap.Type.MOTION_BLOCKING, adjacentPos.getX(), adjacentPos.getZ());
         BlockPos foundPos = null;
         int found = 0;
         for (int y = 0; y < adjacentHeight; y++)
         {
             final BlockState stateAt = world.getBlockState(adjacentPos);
-            final BlockPos posAbove = adjacentPos.above();
+            final BlockPos posAbove = adjacentPos.up();
             final BlockState stateAbove = world.getBlockState(posAbove);
-            if (stateAt.isAir() && (stateAbove.getBlock().is(TFCBlocks.ICICLE.get()) || stateAbove.isFaceSturdy(world, posAbove, Direction.DOWN)))
+            if (stateAt.isAir() && (stateAbove.getBlock().is(TFCBlocks.ICICLE) || stateAbove.isSideSolidFullSquare(world, posAbove, Direction.DOWN)))
             {
                 found++;
                 if (foundPos == null || random.nextInt(found) == 0)

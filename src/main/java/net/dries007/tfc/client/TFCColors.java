@@ -7,10 +7,9 @@
 package net.dries007.tfc.client;
 
 import java.util.function.ToIntFunction;
-import javax.annotation.Nullable;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.level.ColorResolver;
@@ -25,17 +24,18 @@ import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.dries007.tfc.world.chunkdata.ChunkDataCache;
 import net.dries007.tfc.world.noise.NoiseUtil;
+import org.jetbrains.annotations.Nullable;
 
 public final class TFCColors
 {
-    public static final ResourceLocation SKY_COLORS_LOCATION = Helpers.identifier("textures/colormap/sky.png");
-    public static final ResourceLocation FOG_COLORS_LOCATION = Helpers.identifier("textures/colormap/fog.png");
-    public static final ResourceLocation WATER_COLORS_LOCATION = Helpers.identifier("textures/colormap/water.png");
-    public static final ResourceLocation WATER_FOG_COLORS_LOCATION = Helpers.identifier("textures/colormap/water_fog.png");
-    public static final ResourceLocation FOLIAGE_COLORS_LOCATION = Helpers.identifier("textures/colormap/foliage.png");
-    public static final ResourceLocation FOLIAGE_FALL_COLORS_LOCATION = Helpers.identifier("textures/colormap/foliage_fall.png");
-    public static final ResourceLocation FOLIAGE_WINTER_COLORS_LOCATION = Helpers.identifier("textures/colormap/foliage_winter.png");
-    public static final ResourceLocation GRASS_COLORS_LOCATION = Helpers.identifier("textures/colormap/grass.png");
+    public static final Identifier SKY_COLORS_LOCATION = Helpers.identifier("textures/colormap/sky.png");
+    public static final Identifier FOG_COLORS_LOCATION = Helpers.identifier("textures/colormap/fog.png");
+    public static final Identifier WATER_COLORS_LOCATION = Helpers.identifier("textures/colormap/water.png");
+    public static final Identifier WATER_FOG_COLORS_LOCATION = Helpers.identifier("textures/colormap/water_fog.png");
+    public static final Identifier FOLIAGE_COLORS_LOCATION = Helpers.identifier("textures/colormap/foliage.png");
+    public static final Identifier FOLIAGE_FALL_COLORS_LOCATION = Helpers.identifier("textures/colormap/foliage_fall.png");
+    public static final Identifier FOLIAGE_WINTER_COLORS_LOCATION = Helpers.identifier("textures/colormap/foliage_winter.png");
+    public static final Identifier GRASS_COLORS_LOCATION = Helpers.identifier("textures/colormap/grass.png");
 
     public static final ColorResolver FRESH_WATER = createColorResolver(TFCColors::getWaterColor);
     public static final ColorResolver SALT_WATER = createColorResolver(TFCColors::getWaterColor);
@@ -122,7 +122,7 @@ public final class TFCColors
     {
         if (pos != null && tintIndex == 0)
         {
-            final Season season = state.getValue(TFCBlockStateProperties.SEASON_NO_SPRING);
+            final Season season = state.get(TFCBlockStateProperties.SEASON_NO_SPRING);
             final Month month = Calendars.CLIENT.getCalendarMonthOfYear();
             switch (adjustSeason(season, month))
             {

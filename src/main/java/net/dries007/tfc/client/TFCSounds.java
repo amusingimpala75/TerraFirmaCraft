@@ -21,4 +21,6 @@ public final class TFCSounds
     {
         return Registry.register(Registry.SOUND_EVENT, Helpers.identifier(name), new SoundEvent(Helpers.identifier(name)));
     }
+
+    public static void register() {}
 }

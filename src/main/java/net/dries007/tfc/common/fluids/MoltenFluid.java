@@ -8,8 +8,8 @@ package net.dries007.tfc.common.fluids;
 
 import java.util.Random;
 
-import net.dries007.tfc.forgereplacements.FlowableFluid;
-import net.dries007.tfc.forgereplacements.FluidProperties;
+import net.dries007.tfc.forgereplacements.fluid.FlowableFluid;
+import net.dries007.tfc.forgereplacements.fluid.FluidProperties;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;

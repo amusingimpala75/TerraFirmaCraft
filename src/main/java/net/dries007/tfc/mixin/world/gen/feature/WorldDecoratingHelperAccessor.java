@@ -6,21 +6,21 @@
 
 package net.dries007.tfc.mixin.world.gen.feature;
 
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.feature.WorldDecoratingHelper;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
+import net.minecraft.world.gen.decorator.DecoratorContext;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 /**
- * Adds accessors for the internal fields on {@link WorldDecoratingHelper} as that class is needlessly limiting, and our climate decorator needs access to chunk data.
+ * Adds accessors for the internal fields on {@link DecoratorContext} as that class is needlessly limiting, and our climate decorator needs access to chunk data.
  */
-@Mixin(WorldDecoratingHelper.class)
+@Mixin(DecoratorContext.class)
 public interface WorldDecoratingHelperAccessor
 {
-    @Accessor(value = "level")
-    ISeedReader accessor$getLevel();
+    @Accessor(value = "world")
+    StructureWorldAccess accessor$getLevel();
 
     @Accessor(value = "generator")
     ChunkGenerator accessor$getGenerator();

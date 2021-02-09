@@ -9,6 +9,8 @@
     "block.SnowBlockMixin",
     "entity.EntityTypeAccessor",
     "entity.item.FallingBlockEntityAccessor",
+    "fabric.client.gui.ScreenAccessor",
+    "fabric.world.WorldMixin",
     "fluid.FlowingFluidAccessor",
     "fluid.FlowingFluidMixin",
     "item.crafting.RecipeManagerAccessor",

@@ -9,8 +9,8 @@ package net.dries007.tfc.util.calendar;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.TranslatableText;
 
 import net.dries007.tfc.util.Helpers;
 
@@ -43,6 +43,9 @@ public enum Day
         BIRTHDAYS.put("JANUARY20", "Therighthon");
         BIRTHDAYS.put("FEBRUARY21", "CtrlAltDavid");
         BIRTHDAYS.put("MARCH10", "Disastermoo");
+
+        //Fabric Port / Maintenance TODO: Check if okay
+        BIRTHDAYS.put("DECEMBER19", "AmusingImpala");
     }
 
     public static Day valueOf(int i)
@@ -50,14 +53,14 @@ public enum Day
         return i < 0 ? MONDAY : i >= VALUES.length ? SUNDAY : VALUES[i];
     }
 
-    public static IFormattableTextComponent getDayName(long totalDays, Month month, int dayOfMonth)
+    public static MutableText getDayName(long totalDays, Month month, int dayOfMonth)
     {
         String birthday = BIRTHDAYS.get(month.name() + dayOfMonth);
         if (birthday != null)
         {
-            return new TranslationTextComponent("tfc.tooltip.calendar_birthday", birthday);
+            return new TranslatableText("tfc.tooltip.calendar_birthday", birthday);
         }
         Day day = Day.valueOf((int) totalDays % 7);
-        return new TranslationTextComponent(Helpers.getEnumTranslationKey(day));
+        return new TranslatableText(Helpers.getEnumTranslationKey(day));
     }
 }

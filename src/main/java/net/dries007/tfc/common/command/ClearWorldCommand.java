@@ -12,21 +12,21 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import net.dries007.tfc.forgereplacements.command.EnumArgument;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.Heightmap;
 import net.minecraft.world.World;
-import net.minecraft.world.gen.Heightmap;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
-import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.server.command.EnumArgument;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -42,12 +42,12 @@ public final class ClearWorldCommand
     private static final String STARTING = "tfc.commands.clear_world.starting";
     private static final String DONE = "tfc.commands.clear_world.done";
 
-    public static LiteralArgumentBuilder<CommandSource> create()
+    public static LiteralArgumentBuilder<ServerCommandSource> create()
     {
-        return Commands.literal("clearworld")
-            .requires(source -> source.hasPermission(2))
-            .then(Commands.argument("radius", IntegerArgumentType.integer(1, 250))
-                .then(Commands.argument("preset", EnumArgument.enumArgument(Preset.class))
+        return CommandManager.literal("clearworld")
+            .requires(source -> source.hasPermissionLevel(2))
+            .then(CommandManager.argument("radius", IntegerArgumentType.integer(1, 250))
+                .then(CommandManager.argument("preset", EnumArgument.enumArgument(Preset.class))
                     .executes(cmd -> clearWorld(cmd.getSource(), IntegerArgumentType.getInteger(cmd, "radius"), cmd.getArgument("preset", Preset.class)))
                 )
                 .executes(cmd -> clearWorld(cmd.getSource(), IntegerArgumentType.getInteger(cmd, "radius"), Preset.ALL))
@@ -57,14 +57,14 @@ public final class ClearWorldCommand
     @SuppressWarnings("deprecation")
     private static int clearWorld(CommandSource source, int radius, Preset preset)
     {
-        source.sendSuccess(new TranslationTextComponent(STARTING), true);
+        ((ServerCommandSource)source).sendFeedback(new TranslatableText(STARTING), true);
 
-        final World world = source.getLevel();
-        final BlockPos center = new BlockPos(source.getPosition());
-        final BlockState air = Blocks.AIR.defaultBlockState();
+        final World world = ((ServerCommandSource) source).getWorld();
+        final BlockPos center = new BlockPos(((ServerCommandSource) source).getPosition());
+        final BlockState air = Blocks.AIR.getDefaultState();
 
         final BlockPos.Mutable mutablePos = new BlockPos.Mutable();
-        final Predicate<BlockState> predicate = preset.make(source.getServer());
+        final Predicate<BlockState> predicate = preset.make(((ServerCommandSource) source).getMinecraftServer());
 
         int blocksRemoved = 0;
 
@@ -72,20 +72,20 @@ public final class ClearWorldCommand
         {
             for (int z = -radius; z <= radius; z++)
             {
-                final int height = world.getHeight(Heightmap.Type.WORLD_SURFACE, center.getX() + x, center.getZ() + z);
+                final int height = world.getTopY(Heightmap.Type.WORLD_SURFACE, center.getX() + x, center.getZ() + z);
                 for (int y = 0; y < height; y++)
                 {
                     mutablePos.set(center).move(x, 0, z).setY(y);
                     BlockState state = world.getBlockState(mutablePos);
                     if (!state.isAir() && predicate.test(state))
                     {
-                        world.setBlock(mutablePos, air, 2 | 16);
+                        world.setBlockState(mutablePos, air, 2 | 16);
                         blocksRemoved++;
                     }
                 }
             }
         }
-        source.sendSuccess(new TranslationTextComponent(DONE, blocksRemoved), true);
+        ((ServerCommandSource) source).sendFeedback(new TranslatableText(DONE, blocksRemoved), true);
         return Command.SINGLE_SUCCESS;
     }
 
@@ -97,21 +97,21 @@ public final class ClearWorldCommand
     {
         ALL(server -> state -> true),
         RAW_ROCK(server -> {
-            final Set<Block> blocks = TFCBlocks.ROCK_BLOCKS.values().stream().map(map -> map.get(Rock.BlockType.RAW).get()).collect(Collectors.toSet());
+            final Set<Block> blocks = TFCBlocks.ROCK_BLOCKS.values().stream().map(map -> map.get(Rock.BlockType.RAW)).collect(Collectors.toSet());
             return state -> blocks.contains(state.getBlock());
         }),
         EARTH(server -> {
             final Set<Block> blocks = Stream.of(
-                TFCBlocks.ROCK_BLOCKS.values().stream().map(map -> map.get(Rock.BlockType.RAW).get()),
-                TFCBlocks.ROCK_BLOCKS.values().stream().map(map -> map.get(Rock.BlockType.GRAVEL).get()),
-                TFCBlocks.SOIL.get(SoilBlockType.DIRT).values().stream().map(RegistryObject::get),
-                TFCBlocks.SOIL.get(SoilBlockType.GRASS).values().stream().map(RegistryObject::get),
-                TFCBlocks.SAND.values().stream().map(RegistryObject::get)
+                TFCBlocks.ROCK_BLOCKS.values().stream().map(map -> map.get(Rock.BlockType.RAW)),
+                TFCBlocks.ROCK_BLOCKS.values().stream().map(map -> map.get(Rock.BlockType.GRAVEL)),
+                TFCBlocks.SOIL.get(SoilBlockType.DIRT).values().stream(),
+                TFCBlocks.SOIL.get(SoilBlockType.GRASS).values().stream(),
+                TFCBlocks.SAND.values().stream()
             ).flatMap(t -> t).collect(Collectors.toSet());
             return state -> blocks.contains(state.getBlock());
         }),
         NOT_ORE(server -> {
-            final Registry<ConfiguredFeature<?, ?>> registry = server.registryAccess().registryOrThrow(Registry.CONFIGURED_FEATURE_REGISTRY);
+            final Registry<ConfiguredFeature<?, ?>> registry = server.getRegistryManager().get(Registry.CONFIGURED_FEATURE_WORLDGEN);
             Set<Block> blocks = registry.stream()
                 .filter(feature -> feature.feature instanceof VeinFeature<?, ?>)
                 .flatMap(feature -> ((VeinConfig) feature.config).getOreStates().stream())

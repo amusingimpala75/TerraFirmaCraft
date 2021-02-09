@@ -6,10 +6,10 @@
 
 package net.dries007.tfc.util.calendar;
 
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.world.World;
 
 import net.dries007.tfc.util.Helpers;
@@ -85,17 +85,17 @@ public interface ICalendar
 
     /* Format Methods */
 
-    static ITextComponent getTimeAndDate(long time, long daysInMonth)
+    static Text getTimeAndDate(long time, long daysInMonth)
     {
         return ICalendar.getTimeAndDate(ICalendar.getHourOfDay(time), ICalendar.getMinuteOfHour(time), ICalendar.getMonthOfYear(time, daysInMonth), ICalendar.getDayOfMonth(time, daysInMonth), ICalendar.getTotalYears(time, daysInMonth));
     }
 
-    static ITextComponent getTimeAndDate(int hour, int minute, Month month, int day, long years)
+    static Text getTimeAndDate(int hour, int minute, Month month, int day, long years)
     {
-        return new StringTextComponent(String.format("%d:%02d ", hour, minute))
-            .append(new TranslationTextComponent(Helpers.getEnumTranslationKey(month)))
+        return new LiteralText(String.format("%d:%02d ", hour, minute))
+            .append(new TranslatableText(Helpers.getEnumTranslationKey(month)))
             .append(" ")
-            .append(new TranslationTextComponent("tfc.tooltip.calendar_days_years", day, years));
+            .append(new TranslatableText("tfc.tooltip.calendar_days_years", day, years));
     }
 
     /**
@@ -187,7 +187,7 @@ public interface ICalendar
      * Get the equivalent total world time
      * World time 0 = 6:00 AM, which is calendar time 6000
      *
-     * @return a value in [0, 24000) which should match the result of {@link World#getDayTime()}
+     * @return a value in [0, 24000) which should match the result of {@link World#getTimeOfDay()}
      */
     default long getCalendarDayTime()
     {
@@ -213,7 +213,7 @@ public interface ICalendar
     /**
      * Calculates the current day from a calendar time.
      */
-    default IFormattableTextComponent getCalendarDayOfYear()
+    default MutableText getCalendarDayOfYear()
     {
         return Day.getDayName(getTotalCalendarDays(), getCalendarMonthOfYear(), getCalendarDayOfMonth());
     }
@@ -242,7 +242,7 @@ public interface ICalendar
         return getCalendarDaysInMonth() * MONTHS_IN_YEAR * TICKS_IN_DAY;
     }
 
-    default ITextComponent getCalendarTimeAndDate()
+    default Text getCalendarTimeAndDate()
     {
         return ICalendar.getTimeAndDate(getCalendarTicks(), getCalendarDaysInMonth());
     }

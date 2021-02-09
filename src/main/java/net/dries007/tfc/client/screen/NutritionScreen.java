@@ -6,11 +6,11 @@
 
 package net.dries007.tfc.client.screen;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screen.inventory.InventoryScreen;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import net.minecraftforge.fml.network.PacketDistributor;
 
 import net.dries007.tfc.client.screen.button.PlayerInventoryTabButton;
@@ -22,9 +22,9 @@ import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
 
 public class NutritionScreen extends TFCContainerScreen<SimpleContainer>
 {
-    public static final ResourceLocation TEXTURE = new ResourceLocation(MOD_ID, "textures/gui/player_nutrition.png");
+    public static final Identifier TEXTURE = new Identifier(MOD_ID, "textures/gui/player_nutrition.png");
 
-    public NutritionScreen(SimpleContainer container, PlayerInventory playerInventory, ITextComponent name)
+    public NutritionScreen(SimpleContainer container, PlayerInventory playerInventory, Text name)
     {
         super(container, playerInventory, name, TEXTURE);
     }
@@ -33,13 +33,13 @@ public class NutritionScreen extends TFCContainerScreen<SimpleContainer>
     public void init()
     {
         super.init();
-        addButton(new PlayerInventoryTabButton(leftPos, topPos, 176, 4, 20, 22, 128, 0, 1, 3, 0, 0, button -> {
-            inventory.player.containerMenu = inventory.player.inventoryMenu;
-            Minecraft.getInstance().setScreen(new InventoryScreen(inventory.player));
+        addButton(new PlayerInventoryTabButton(x, y, 176, 4, 20, 22, 128, 0, 1, 3, 0, 0, button -> {
+            playerInventory.player.currentScreenHandler = playerInventory.player.playerScreenHandler;
+            MinecraftClient.getInstance().openScreen(new InventoryScreen(playerInventory.player));
             PacketHandler.send(PacketDistributor.SERVER.noArg(), new SwitchInventoryTabPacket(SwitchInventoryTabPacket.Type.INVENTORY));
         }));
-        addButton(new PlayerInventoryTabButton(leftPos, topPos, 176, 27, 20, 22, 128, 0, 1, 3, 32, 0, SwitchInventoryTabPacket.Type.CALENDAR));
-        addButton(new PlayerInventoryTabButton(leftPos, topPos, 176 - 3, 50, 20 + 3, 22, 128 + 20, 0, 1, 3, 64, 0, SwitchInventoryTabPacket.Type.NUTRITION));
-        addButton(new PlayerInventoryTabButton(leftPos, topPos, 176, 73, 20, 22, 128, 0, 1, 3, 96, 0, SwitchInventoryTabPacket.Type.CLIMATE));
+        addButton(new PlayerInventoryTabButton(x, y, 176, 27, 20, 22, 128, 0, 1, 3, 32, 0, SwitchInventoryTabPacket.Type.CALENDAR));
+        addButton(new PlayerInventoryTabButton(x, y, 176 - 3, 50, 20 + 3, 22, 128 + 20, 0, 1, 3, 64, 0, SwitchInventoryTabPacket.Type.NUTRITION));
+        addButton(new PlayerInventoryTabButton(x, y, 176, 73, 20, 22, 128, 0, 1, 3, 96, 0, SwitchInventoryTabPacket.Type.CLIMATE));
     }
 }

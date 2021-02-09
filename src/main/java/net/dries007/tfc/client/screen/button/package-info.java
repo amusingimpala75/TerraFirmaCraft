@@ -4,10 +4,8 @@
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  */
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
+//@MethodsReturnNonnullByDefault
+//@ParametersAreNonnullByDefault
 package net.dries007.tfc.client.screen.button;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 
-import mcp.MethodsReturnNonnullByDefault;
