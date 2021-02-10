@@ -8,8 +8,7 @@ package net.dries007.tfc.common.tileentity;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.nbt.CompoundTag;
 
 public class FarmlandTileEntity extends TFCTileEntity
 {
@@ -20,7 +19,8 @@ public class FarmlandTileEntity extends TFCTileEntity
 
     public FarmlandTileEntity()
     {
-        this(TFCTileEntities.FARMLAND.get());
+        super(TFCTileEntities.FARMLAND);
+        nitrogen = phosphorous = potassium = 0;
     }
 
     protected FarmlandTileEntity(BlockEntityType<?> type)
@@ -31,21 +31,21 @@ public class FarmlandTileEntity extends TFCTileEntity
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT nbt)
+    public void fromTag(BlockState state, CompoundTag nbt)
     {
         nitrogen = nbt.getFloat("nitrogen");
         phosphorous = nbt.getFloat("phosphorous");
         potassium = nbt.getFloat("potassium");
-        super.load(state, nbt);
+        super.fromTag(state, nbt);
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT nbt)
+    public CompoundTag toTag(CompoundTag nbt)
     {
         nbt.putFloat("nitrogen", nitrogen);
         nbt.putFloat("phosphorous", phosphorous);
         nbt.putFloat("potassium", potassium);
-        return super.save(nbt);
+        return super.toTag(nbt);
     }
 
     public float getNitrogen()

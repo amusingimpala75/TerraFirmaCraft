@@ -9,9 +9,9 @@ package net.dries007.tfc.common.tileentity;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SnowBlock;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.NBTUtil;
-import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtHelper;
 
 public class SnowPileTileEntity extends TFCTileEntity
 {
@@ -19,14 +19,14 @@ public class SnowPileTileEntity extends TFCTileEntity
 
     public SnowPileTileEntity()
     {
-        this(TFCTileEntities.SNOW_PILE.get());
+        this(TFCTileEntities.SNOW_PILE);
     }
 
-    protected SnowPileTileEntity(TileEntityType<?> type)
+    protected SnowPileTileEntity(BlockEntityType<?> type)
     {
         super(type);
 
-        this.internalState = Blocks.AIR.defaultBlockState();
+        this.internalState = Blocks.AIR.getDefaultState();
     }
 
     public void setInternalState(BlockState state)
@@ -37,25 +37,25 @@ public class SnowPileTileEntity extends TFCTileEntity
 
     public BlockState getDestroyedState(BlockState prevState)
     {
-        int prevLayers = prevState.getValue(SnowBlock.LAYERS);
+        int prevLayers = prevState.get(SnowBlock.LAYERS);
         if (prevLayers == 1)
         {
             return internalState;
         }
-        return prevState.setValue(SnowBlock.LAYERS, prevLayers - 1);
+        return prevState.with(SnowBlock.LAYERS, prevLayers - 1);
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT nbt)
+    public void fromTag(BlockState state, CompoundTag nbt)
     {
-        internalState = NBTUtil.readBlockState(nbt.getCompound("internalState"));
-        super.load(state, nbt);
+        internalState = NbtHelper.toBlockState(nbt.getCompound("internalState"));
+        super.fromTag(state, nbt);
     }
 
     @Override
-    public CompoundNBT save(CompoundNBT nbt)
+    public CompoundTag toTag(CompoundTag nbt)
     {
-        nbt.put("internalState", NBTUtil.writeBlockState(internalState));
-        return super.save(nbt);
+        nbt.put("internalState", NbtHelper.fromBlockState(internalState));
+        return super.toTag(nbt);
     }
 }

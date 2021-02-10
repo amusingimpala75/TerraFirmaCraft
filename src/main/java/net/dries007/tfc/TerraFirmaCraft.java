@@ -11,6 +11,7 @@ import net.dries007.tfc.common.command.TFCCommands;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.minecraft.command.CommandSource;
+import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import net.minecraft.util.registry.Registry;
@@ -55,6 +56,9 @@ import net.dries007.tfc.world.surfacebuilder.TFCSurfaceBuilders;
 public final class TerraFirmaCraft implements ModInitializer {
     public static final String MOD_ID = "tfc";
     public static final String MOD_NAME = "TerraFirmaCraft";
+
+    //Please no :concern:
+    public static MinecraftServer cache;
 
     public static final Logger LOGGER = LogManager.getLogger();
 
@@ -109,7 +113,7 @@ public final class TerraFirmaCraft implements ModInitializer {
         TFCFluids.register();
         TFCRecipeSerializers.register();
         TFCSounds.register();
-        TFCTileEntities.TILE_ENTITIES.register(modEventBus);
+        TFCTileEntities.register();
 
         TFCBiomes.BIOMES.register(modEventBus);
         TFCFeatures.FEATURES.register(modEventBus);

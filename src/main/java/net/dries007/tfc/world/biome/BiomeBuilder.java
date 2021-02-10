@@ -12,9 +12,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.LongFunction;
 
-import net.minecraft.util.RegistryKey;
+import net.dries007.tfc.forgereplacements.world.BiomeType;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.biome.Biome;
-import net.minecraftforge.common.BiomeDictionary;
 
 import com.mojang.datafixers.util.Pair;
 import net.dries007.tfc.world.TFCChunkGenerator;
@@ -35,7 +35,7 @@ public class BiomeBuilder<V extends BiomeVariants>
     }
 
     private final Function<BiomeBuilder<V>, V> factory;
-    private final List<BiomeDictionary.Type> dictionaryTypes;
+    private final List<BiomeType> dictionaryTypes;
 
     private LongFunction<INoise2D> noiseFactory;
     private BiomeVariants.SmallGroup smallGroup;
@@ -59,7 +59,7 @@ public class BiomeBuilder<V extends BiomeVariants>
         volcanoBasaltHeight = 0;
     }
 
-    public BiomeBuilder<V> types(BiomeDictionary.Type... types)
+    public BiomeBuilder<V> types(BiomeType... types)
     {
         this.dictionaryTypes.addAll(Arrays.asList(types));
         return this;
@@ -96,7 +96,7 @@ public class BiomeBuilder<V extends BiomeVariants>
 
     public void registerTypes(RegistryKey<Biome> biome)
     {
-        dictionaryTypes.forEach(type -> BiomeDictionary.addTypes(biome, type));
+        dictionaryTypes.forEach(type -> BiomeType.addTypes(biome, type));
     }
 
     public V build()

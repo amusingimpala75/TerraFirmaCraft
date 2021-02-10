@@ -9,6 +9,7 @@
     "block.SnowBlockMixin",
     "entity.EntityTypeAccessor",
     "entity.item.FallingBlockEntityAccessor",
+    "fabric.MinecraftServerCache",
     "fabric.client.gui.ScreenAccessor",
     "fabric.world.WorldMixin",
     "fluid.FlowingFluidAccessor",

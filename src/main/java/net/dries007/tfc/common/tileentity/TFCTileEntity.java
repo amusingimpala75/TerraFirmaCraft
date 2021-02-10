@@ -6,22 +6,19 @@
 
 package net.dries007.tfc.common.tileentity;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.ClientConnection;
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.server.world.ServerChunkManager;
+import net.minecraft.server.world.ServerWorld;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import net.minecraft.block.BlockState;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SUpdateTileEntityPacket;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.server.ServerChunkProvider;
-import net.minecraft.world.server.ServerWorld;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class TFCTileEntity extends BlockEntity
 {
@@ -34,27 +31,27 @@ public abstract class TFCTileEntity extends BlockEntity
 
     @Nullable
     @Override
-    public SUpdateTileEntityPacket getUpdatePacket()
+    public BlockEntityUpdateS2CPacket toUpdatePacket()
     {
-        return new SUpdateTileEntityPacket(getBlockPos(), 1, save(new CompoundNBT()));
+        return new BlockEntityUpdateS2CPacket(getPos(), 1, toTag(new CompoundTag()));
     }
 
     @Override
-    public CompoundNBT getUpdateTag()
+    public CompoundTag toInitialChunkDataTag()
     {
-        return save(super.getUpdateTag());
+        return toTag(super.toInitialChunkDataTag());
     }
 
     @Override
-    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt)
+    public void onDataPacket(ClientConnection net, BlockEntityUpdateS2CPacket pkt)
     {
-        load(getBlockState(), pkt.getTag());
+        fromTag(getCachedState(), pkt.getCompoundTag());
     }
 
     @Override
-    public void handleUpdateTag(BlockState state, CompoundNBT nbt)
+    public void handleUpdateTag(BlockState state, CompoundTag nbt)
     {
-        load(state, nbt);
+        fromTag(state, nbt);
     }
 
     /**
@@ -64,11 +61,11 @@ public abstract class TFCTileEntity extends BlockEntity
      */
     public void markForBlockUpdate()
     {
-        if (level != null)
+        if (world != null)
         {
-            BlockState state = level.getBlockState(worldPosition);
-            level.sendBlockUpdated(worldPosition, state, state, 3);
-            setChanged();
+            BlockState state = world.getBlockState(pos);
+            world.updateListeners(pos, state, state, 3);
+            markDirty();
         }
     }
 
@@ -81,7 +78,7 @@ public abstract class TFCTileEntity extends BlockEntity
     public void markForSync()
     {
         sendVanillaUpdatePacket();
-        setChanged();
+        markDirty();
     }
 
     /**
@@ -90,21 +87,21 @@ public abstract class TFCTileEntity extends BlockEntity
      */
     protected void markDirtyFast()
     {
-        if (level != null)
+        if (world != null)
         {
-            getBlockState();
-            level.blockEntityChanged(worldPosition, this);
+            getCachedState();
+            world.markDirty(pos, this);
         }
     }
 
     protected void sendVanillaUpdatePacket()
     {
-        SUpdateTileEntityPacket packet = getUpdatePacket();
-        BlockPos pos = getBlockPos();
+        BlockEntityUpdateS2CPacket packet = toUpdatePacket();
+        BlockPos pos = getPos();
 
-        if (packet != null && level instanceof ServerWorld)
+        if (packet != null && world instanceof ServerWorld)
         {
-            ((ServerChunkProvider) level.getChunkSource()).chunkMap.getPlayers(new ChunkPos(pos), false).forEach(e -> e.connection.send(packet));
+            ((ServerChunkManager) world.getChunkManager()).threadedAnvilChunkStorage.getPlayersWatchingChunk(new ChunkPos(pos), false).forEach(e -> e.networkHandler.sendPacket(packet));
         }
     }
 }

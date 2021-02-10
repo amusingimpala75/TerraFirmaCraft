@@ -11,6 +11,9 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
+import net.minecraft.world.biome.source.BiomeAccess;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 import org.apache.commons.lang3.mutable.Mutable;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -30,7 +33,6 @@ import net.minecraft.world.biome.BiomeManager;
 import net.minecraft.world.biome.provider.BiomeProvider;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.chunk.ChunkSection;
-import net.minecraft.world.chunk.IChunk;
 import net.minecraft.world.gen.*;
 import net.minecraft.world.gen.feature.StructureFeature;
 import net.minecraft.world.gen.feature.structure.StructureManager;
@@ -125,7 +127,7 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
     }
 
     @Override
-    protected Codec<TFCChunkGenerator> codec()
+    protected Codec<TFCChunkGenerator> getCodec()
     {
         return CODEC;
     }
@@ -137,7 +139,7 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
     }
 
     @Override
-    public void createBiomes(Registry<Biome> biomeIdRegistry, IChunk chunkIn)
+    public void populateBiomes(Registry<Biome> biomeIdRegistry, Chunk chunkIn)
     {
         ((ChunkPrimer) chunkIn).setBiomes(new ColumnBiomeContainer(biomeIdRegistry, chunkIn.getPos(), biomeProvider));
     }
@@ -146,7 +148,7 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
      * Noop - carvers are done at the beginning of feature stage, so the carver is free to check adjacent chunks for information
      */
     @Override
-    public void applyCarvers(long worldSeed, BiomeManager biomeManagerIn, IChunk chunkIn, GenerationStage.Carving stage)
+    public void carve(long worldSeed, BiomeAccess biomeManagerIn, Chunk chunkIn, GenerationStep.Carver stage)
     {
         final ChunkPrimer chunk = (ChunkPrimer) chunkIn;
         final BiomeGenerationSettings settings = biomeSource.getNoiseBiome(chunk.getPos().x << 2, 0, chunk.getPos().z << 2).getGenerationSettings();

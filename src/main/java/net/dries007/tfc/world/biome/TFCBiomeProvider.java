@@ -11,15 +11,13 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryLookupCodec;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.provider.BiomeProvider;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -32,8 +30,11 @@ import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.dries007.tfc.world.chunkdata.ChunkDataProvider;
 import net.dries007.tfc.world.layer.LayerFactory;
 import net.dries007.tfc.world.layer.TFCLayerUtil;
+import net.minecraft.world.biome.source.BiomeArray;
+import net.minecraft.world.biome.source.BiomeSource;
+import org.jetbrains.annotations.Nullable;
 
-public class TFCBiomeProvider extends BiomeProvider implements ITFCBiomeProvider
+public class TFCBiomeProvider extends BiomeSource implements ITFCBiomeProvider
 {
     public static final Codec<TFCBiomeProvider> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         Codec.LONG.fieldOf("seed").forGetter(c -> c.seed),
@@ -42,7 +43,7 @@ public class TFCBiomeProvider extends BiomeProvider implements ITFCBiomeProvider
         Codec.INT.optionalFieldOf("spawn_center_z", 0).forGetter(c -> c.spawnCenterZ),
         LayerSettings.CODEC.forGetter(TFCBiomeProvider::getLayerSettings),
         ClimateSettings.CODEC.forGetter(c -> c.climateSettings),
-        RegistryLookupCodec.create(Registry.BIOME_REGISTRY).forGetter(c -> c.biomeRegistry)
+        RegistryLookupCodec.of(Registry.BIOME_KEY).forGetter(c -> c.biomeRegistry)
     ).apply(instance, TFCBiomeProvider::new));
 
     // Set from codec
@@ -100,7 +101,7 @@ public class TFCBiomeProvider extends BiomeProvider implements ITFCBiomeProvider
     }
 
     /**
-     * A version of {@link BiomeProvider#findBiomeHorizontal(int, int, int, int, Predicate, Random)} with a few modifications
+     * A version of {@link BiomeSource#locateBiome(int, int, int, int, Predicate, Random)} with a few modifications
      * - It does not query the climate layers - requiring less chunk data generation and is faster.
      * - It's slightly optimized for finding a random biome, and using mutable positions.
      */
@@ -129,19 +130,19 @@ public class TFCBiomeProvider extends BiomeProvider implements ITFCBiomeProvider
                 }
             }
         }
-        return mutablePos.immutable();
+        return mutablePos.toImmutable();
     }
 
     /**
-     * In {@link net.minecraft.world.biome.BiomeContainer}, we can see that the x, y, z positions are not absolute block coordinates.
+     * In {@link BiomeArray}, we can see that the x, y, z positions are not absolute block coordinates.
      * Rather, since MC now samples biomes once per 4x4x4 area basis, these are not accurate for our chunk data purposes
      * So, we need to make them accurate.
      */
     @Override
-    public Biome getNoiseBiome(int biomeCoordX, int biomeCoordY, int biomeCoordZ)
+    public Biome getBiomeForNoiseGen(int biomeCoordX, int biomeCoordY, int biomeCoordZ)
     {
         final ChunkPos chunkPos = new ChunkPos(biomeCoordX >> 2, biomeCoordZ >> 2);
-        final BlockPos pos = chunkPos.getWorldPosition();
+        final BlockPos pos = chunkPos.getStartPos();
         final ChunkData data = chunkDataProvider.get(chunkPos, ChunkData.Status.CLIMATE);
         final BiomeVariants variants = biomeLayer.get(biomeCoordX, biomeCoordZ);
         final BiomeTemperature temperature = calculateTemperature(data.getAverageTemp(pos));
@@ -206,7 +207,7 @@ public class TFCBiomeProvider extends BiomeProvider implements ITFCBiomeProvider
     }
 
     @Override
-    protected Codec<TFCBiomeProvider> codec()
+    protected Codec<TFCBiomeProvider> getCodec()
     {
         return CODEC;
     }
@@ -222,19 +223,19 @@ public class TFCBiomeProvider extends BiomeProvider implements ITFCBiomeProvider
         private static final MapCodec<LayerSettings> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.intRange(0, 100).optionalFieldOf("ocean_percent", 30).forGetter(LayerSettings::getOceanPercent),
             Codecs.POSITIVE_INT.optionalFieldOf("rock_layer_scale", 7).forGetter(LayerSettings::getRockLayerScale),
-            ResourceLocation.CODEC.listOf().fieldOf("rocks").forGetter(LayerSettings::getRocks)
+            Identifier.CODEC.listOf().fieldOf("rocks").forGetter(LayerSettings::getRocks)
         ).apply(instance, LayerSettings::new));
 
         private final int oceanPercent;
         private final int rockLayerScale;
-        private final List<ResourceLocation> rocks;
+        private final List<Identifier> rocks;
 
         public LayerSettings()
         {
             this(45, 7, Arrays.stream(Rock.Default.values()).map(rock -> Helpers.identifier(rock.name().toLowerCase())).collect(Collectors.toList()));
         }
 
-        public LayerSettings(int oceanPercent, int rockLayerScale, List<ResourceLocation> rocks)
+        public LayerSettings(int oceanPercent, int rockLayerScale, List<Identifier> rocks)
         {
             this.oceanPercent = oceanPercent;
             this.rockLayerScale = rockLayerScale;
@@ -251,7 +252,7 @@ public class TFCBiomeProvider extends BiomeProvider implements ITFCBiomeProvider
             return rockLayerScale;
         }
 
-        public List<ResourceLocation> getRocks()
+        public List<Identifier> getRocks()
         {
             return rocks;
         }

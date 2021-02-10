@@ -6,7 +6,7 @@
 
 package net.dries007.tfc.world.biome;
 
-import net.minecraft.util.RegistryKey;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.biome.Biome;
 
 /**
