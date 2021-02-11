@@ -6,17 +6,18 @@
 
 package net.dries007.tfc.world.layer;
 
-import net.minecraft.world.gen.INoiseRandom;
-import net.minecraft.world.gen.layer.traits.ICastleTransformer;
+import net.minecraft.world.biome.layer.type.CrossSamplingLayer;
+import net.minecraft.world.biome.layer.util.LayerRandomnessSource;
 
 import static net.dries007.tfc.world.layer.TFCLayerUtil.NULL_MARKER;
 import static net.dries007.tfc.world.layer.TFCLayerUtil.RIVER_MARKER;
 
-public enum RiverLayer implements ICastleTransformer
+public enum RiverLayer implements CrossSamplingLayer
 {
     INSTANCE;
 
-    public int apply(INoiseRandom context, int north, int east, int south, int west, int center)
+    @Override
+    public int sample(LayerRandomnessSource context, int north, int east, int south, int west, int center)
     {
         if (center != north || center != south || center != west || center != east)
         {

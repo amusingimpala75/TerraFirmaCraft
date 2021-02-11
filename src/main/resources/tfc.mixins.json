@@ -10,6 +10,7 @@
     "entity.EntityTypeAccessor",
     "entity.item.FallingBlockEntityAccessor",
     "fabric.MinecraftServerCache",
+    "fabric.block.AbstractBlockStateAccessor",
     "fabric.client.gui.ScreenAccessor",
     "fabric.world.WorldMixin",
     "fluid.FlowingFluidAccessor",

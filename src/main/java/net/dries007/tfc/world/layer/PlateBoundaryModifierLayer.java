@@ -6,20 +6,20 @@
 
 package net.dries007.tfc.world.layer;
 
-import net.minecraft.world.gen.INoiseRandom;
-import net.minecraft.world.gen.layer.traits.ICastleTransformer;
+import net.minecraft.world.biome.layer.type.CrossSamplingLayer;
+import net.minecraft.world.biome.layer.util.LayerRandomnessSource;
 
 import static net.dries007.tfc.world.layer.TFCLayerUtil.*;
 
 /**
  * Modifies various types of plate tectonic boundaries after initial assignment from plate layers
  */
-public enum PlateBoundaryModifierLayer implements ICastleTransformer
+public enum PlateBoundaryModifierLayer implements CrossSamplingLayer
 {
     INSTANCE;
 
     @Override
-    public int apply(INoiseRandom context, int north, int east, int south, int west, int center)
+    public int sample(LayerRandomnessSource context, int north, int east, int south, int west, int center)
     {
         // Expand ocean-continent diverging boundaries - create two types of areas, continental shelf, and oceanic diverging boundary
         if (center == OCEAN_CONTINENT_DIVERGING)

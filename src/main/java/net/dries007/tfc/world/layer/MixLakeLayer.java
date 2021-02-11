@@ -6,25 +6,25 @@
 
 package net.dries007.tfc.world.layer;
 
-import net.minecraft.world.gen.INoiseRandom;
-import net.minecraft.world.gen.area.IArea;
-import net.minecraft.world.gen.layer.traits.IAreaTransformer2;
-import net.minecraft.world.gen.layer.traits.IDimOffset0Transformer;
+import net.minecraft.world.biome.layer.type.MergingLayer;
+import net.minecraft.world.biome.layer.util.IdentityCoordinateTransformer;
+import net.minecraft.world.biome.layer.util.LayerRandomnessSource;
+import net.minecraft.world.biome.layer.util.LayerSampler;
 
 import static net.dries007.tfc.world.layer.TFCLayerUtil.LAKE_MARKER;
 
 /**
  * Mixes lakes into the standard biome layer
  */
-public enum MixLakeLayer implements IAreaTransformer2, IDimOffset0Transformer
+public enum MixLakeLayer implements MergingLayer, IdentityCoordinateTransformer
 {
     INSTANCE;
 
     @Override
-    public int applyPixel(INoiseRandom context, IArea mainArea, IArea lakeArea, int x, int z)
+    public int sample(LayerRandomnessSource context, LayerSampler mainArea, LayerSampler lakeArea, int x, int z)
     {
-        int mainValue = mainArea.get(getParentX(x), getParentY(z));
-        int lakeValue = lakeArea.get(getParentX(x), getParentY(z));
+        int mainValue = mainArea.sample(transformX(x), transformZ(z));
+        int lakeValue = lakeArea.sample(transformX(x), transformZ(z));
         if (lakeValue == LAKE_MARKER && TFCLayerUtil.hasLake(mainValue))
         {
             return TFCLayerUtil.lakeFor(mainValue);

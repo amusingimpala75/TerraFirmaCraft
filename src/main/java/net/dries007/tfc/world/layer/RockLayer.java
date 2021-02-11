@@ -6,10 +6,10 @@
 
 package net.dries007.tfc.world.layer;
 
-import net.minecraft.world.gen.INoiseRandom;
-import net.minecraft.world.gen.layer.traits.IAreaTransformer0;
+import net.minecraft.world.biome.layer.type.InitLayer;
+import net.minecraft.world.biome.layer.util.LayerRandomnessSource;
 
-public class RockLayer implements IAreaTransformer0
+public class RockLayer implements InitLayer
 {
     private final int totalRocks;
 
@@ -19,8 +19,8 @@ public class RockLayer implements IAreaTransformer0
     }
 
     @Override
-    public int applyPixel(INoiseRandom context, int x, int z)
+    public int sample(LayerRandomnessSource context, int x, int z)
     {
-        return context.nextRandom(totalRocks);
+        return context.nextInt(totalRocks);
     }
 }

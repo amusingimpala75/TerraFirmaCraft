@@ -12,11 +12,11 @@ import java.util.stream.Collectors;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.gen.feature.BlockStateFeatureConfig;
-import net.minecraft.world.gen.surfacebuilders.SurfaceBuilder;
-import net.minecraft.world.gen.surfacebuilders.SurfaceBuilderConfig;
+import net.minecraft.world.gen.feature.SingleStateFeatureConfig;
+import net.minecraft.world.gen.surfacebuilder.SurfaceBuilder;
+import net.minecraft.world.gen.surfacebuilder.TernarySurfaceConfig;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
@@ -42,21 +42,21 @@ public final class Codecs
      */
     @SuppressWarnings("deprecation")
     public static final Codec<BlockState> LENIENT_BLOCKSTATE = Codec.either(
-        nonDefaultedRegistryCodec(Registry.BLOCK).xmap(Block::defaultBlockState, BlockState::getBlock),
+        nonDefaultedRegistryCodec(Registry.BLOCK).xmap(Block::getDefaultState, BlockState::getBlock),
         BlockState.CODEC
     ).xmap(Helpers::resolveEither, Either::right);
 
     /**
      * Additional codecs for existing configs.
      */
-    public static final Codec<SurfaceBuilderConfig> LENIENT_SURFACE_BUILDER_CONFIG = RecordCodecBuilder.create(instance -> instance.group(
-        LENIENT_BLOCKSTATE.fieldOf("top_material").forGetter(SurfaceBuilderConfig::getTopMaterial),
-        LENIENT_BLOCKSTATE.fieldOf("under_material").forGetter(SurfaceBuilderConfig::getUnderMaterial)
-    ).apply(instance, (topMaterial, underMaterial) -> new SurfaceBuilderConfig(topMaterial, underMaterial, Blocks.AIR.defaultBlockState())));
+    public static final Codec<TernarySurfaceConfig> LENIENT_SURFACE_BUILDER_CONFIG = RecordCodecBuilder.create(instance -> instance.group(
+        LENIENT_BLOCKSTATE.fieldOf("top_material").forGetter(TernarySurfaceConfig::getTopMaterial),
+        LENIENT_BLOCKSTATE.fieldOf("under_material").forGetter(TernarySurfaceConfig::getUnderMaterial)
+    ).apply(instance, (topMaterial, underMaterial) -> new TernarySurfaceConfig(topMaterial, underMaterial, Blocks.AIR.getDefaultState())));
 
-    public static final Codec<SurfaceBuilderConfig> NOOP_SURFACE_BUILDER_CONFIG = Codec.unit(SurfaceBuilder.CONFIG_STONE);
+    public static final Codec<TernarySurfaceConfig> NOOP_SURFACE_BUILDER_CONFIG = Codec.unit(SurfaceBuilder.STONE_CONFIG);
 
-    public static final Codec<BlockStateFeatureConfig> LENIENT_BLOCK_STATE_FEATURE_CONFIG = LENIENT_BLOCKSTATE.fieldOf("state").xmap(BlockStateFeatureConfig::new, c -> c.state).codec();
+    public static final Codec<SingleStateFeatureConfig> LENIENT_BLOCK_STATE_FEATURE_CONFIG = LENIENT_BLOCKSTATE.fieldOf("state").xmap(SingleStateFeatureConfig::new, c -> c.state).codec();
 
 
     /**
@@ -64,8 +64,8 @@ public final class Codecs
      */
     public static <R> Codec<R> nonDefaultedRegistryCodec(Registry<R> registry)
     {
-        return ResourceLocation.CODEC.flatXmap(
-            id -> registry.getOptional(id).map(DataResult::success).orElseGet(() -> DataResult.error("Unknown registry entry: " + id + " for registry: " + registry.key())),
+        return Identifier.CODEC.flatXmap(
+            id -> registry.getOrEmpty(id).map(DataResult::success).orElseGet(() -> DataResult.error("Unknown registry entry: " + id + " for registry: " + registry.getKey())),
             value -> DataResult.success(registry.getKey(value))
         );
     }

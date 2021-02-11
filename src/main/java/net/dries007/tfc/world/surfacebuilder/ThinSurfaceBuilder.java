@@ -9,28 +9,28 @@ package net.dries007.tfc.world.surfacebuilder;
 import java.util.Random;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.util.Lazy;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.IChunk;
-import net.minecraft.world.gen.surfacebuilders.SurfaceBuilder;
-import net.minecraft.world.gen.surfacebuilders.SurfaceBuilderConfig;
-import net.minecraftforge.common.util.Lazy;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.gen.surfacebuilder.SurfaceBuilder;
+import net.minecraft.world.gen.surfacebuilder.TernarySurfaceConfig;
 
 import com.mojang.serialization.Codec;
 
-public class ThinSurfaceBuilder extends SurfaceBuilder<SurfaceBuilderConfig>
+public class ThinSurfaceBuilder extends SurfaceBuilder<TernarySurfaceConfig>
 {
-    public ThinSurfaceBuilder(Codec<SurfaceBuilderConfig> codec)
+    public ThinSurfaceBuilder(Codec<TernarySurfaceConfig> codec)
     {
         super(codec);
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public void apply(Random random, IChunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double noise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, SurfaceBuilderConfig config)
+    public void generate(Random random, Chunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double noise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, TernarySurfaceConfig config)
     {
         // Lazy because this queries a noise layer
-        Lazy<SurfaceBuilderConfig> underWaterConfig = Lazy.of(() -> TFCSurfaceBuilders.UNDERWATER.get().getUnderwaterConfig(x, z, seed));
+        Lazy<TernarySurfaceConfig> underWaterConfig = new Lazy(() -> TFCSurfaceBuilders.UNDERWATER.getUnderwaterConfig(x, z, seed));
 
         BlockState topState;
         BlockState underState = config.getUnderMaterial();
@@ -48,7 +48,8 @@ public class ThinSurfaceBuilder extends SurfaceBuilder<SurfaceBuilderConfig>
         {
             pos.set(localX, y, localZ);
             BlockState stateAt = chunkIn.getBlockState(pos);
-            if (stateAt.isAir(chunkIn, pos))
+            //if (stateAt.isAir(chunkIn, pos))
+            if (stateAt.isAir())
             {
                 // Reached air, reset surface depth
                 surfaceDepth = -1;

@@ -7,24 +7,25 @@
 package net.dries007.tfc.world.layer.traits;
 
 
-import net.minecraft.util.FastRandom;
-import net.minecraft.world.gen.IExtendedNoiseRandom;
-import net.minecraft.world.gen.ImprovedNoiseGenerator;
-import net.minecraft.world.gen.layer.traits.IPixelTransformer;
+import net.minecraft.util.math.noise.PerlinNoiseSampler;
+import net.minecraft.world.biome.layer.util.LayerOperator;
+import net.minecraft.world.biome.layer.util.LayerSampleContext;
+import net.minecraft.world.biome.source.SeedMixer;
 
-public class FastAreaContext implements IExtendedNoiseRandom<FastArea>
+@SuppressWarnings("Since15")
+public class FastAreaContext implements LayerSampleContext<FastArea>
 {
     private final long seed;
     private long rval;
 
     private static long mixSeed(long left, long right)
     {
-        long mixRight = FastRandom.next(right, right);
-        mixRight = FastRandom.next(mixRight, right);
-        mixRight = FastRandom.next(mixRight, right);
-        long mixLeft = FastRandom.next(left, mixRight);
-        mixLeft = FastRandom.next(mixLeft, mixRight);
-        return FastRandom.next(mixLeft, mixRight);
+        long mixRight = SeedMixer.mixSeed(right, right);
+        mixRight = SeedMixer.mixSeed(mixRight, right);
+        mixRight = SeedMixer.mixSeed(mixRight, right);
+        long mixLeft = SeedMixer.mixSeed(left, mixRight);
+        mixLeft = SeedMixer.mixSeed(mixLeft, mixRight);
+        return SeedMixer.mixSeed(mixLeft, mixRight);
     }
 
     public FastAreaContext(long seed, long seedModifier)
@@ -33,32 +34,32 @@ public class FastAreaContext implements IExtendedNoiseRandom<FastArea>
     }
 
     @Override
-    public void initRandom(long x, long z)
+    public void initSeed(long x, long z)
     {
         long value = this.seed;
-        value = FastRandom.next(value, x);
-        value = FastRandom.next(value, z);
-        value = FastRandom.next(value, x);
-        value = FastRandom.next(value, z);
+        value = SeedMixer.mixSeed(value, x);
+        value = SeedMixer.mixSeed(value, z);
+        value = SeedMixer.mixSeed(value, x);
+        value = SeedMixer.mixSeed(value, z);
         this.rval = value;
     }
 
     @Override
-    public FastArea createResult(IPixelTransformer pixelTransformer)
+    public FastArea createSampler(LayerOperator pixelTransformer)
     {
         return new FastArea(pixelTransformer, 256);
     }
 
     @Override
-    public int nextRandom(int bound)
+    public int nextInt(int bound)
     {
-        final int value = (int)Math.floorMod(rval >> 24, bound);
-        rval = FastRandom.next(rval, seed);
+        final int value = Math.floorMod(rval >> 24, bound);
+        rval = SeedMixer.mixSeed(rval, seed);
         return value;
     }
 
     @Override
-    public ImprovedNoiseGenerator getBiomeNoise()
+    public PerlinNoiseSampler getNoiseSampler()
     {
         throw new IllegalStateException("Go away");
     }

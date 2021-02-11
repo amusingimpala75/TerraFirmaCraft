@@ -11,32 +11,30 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
+import net.minecraft.structure.StructureManager;
+import net.minecraft.util.math.noise.NoiseSampler;
+import net.minecraft.util.math.noise.OctaveSimplexNoiseSampler;
+import net.minecraft.util.registry.DynamicRegistryManager;
+import net.minecraft.world.*;
+import net.minecraft.world.biome.GenerationSettings;
 import net.minecraft.world.biome.source.BiomeAccess;
+import net.minecraft.world.biome.source.BiomeSource;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ProtoChunk;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
+import net.minecraft.world.gen.chunk.ChunkGeneratorSettings;
+import net.minecraft.world.gen.feature.ConfiguredStructureFeature;
 import org.apache.commons.lang3.mutable.Mutable;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableObject;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.util.SharedSeedRandom;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.registry.DynamicRegistries;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.EmptyBlockReader;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorld;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeGenerationSettings;
-import net.minecraft.world.biome.BiomeManager;
-import net.minecraft.world.biome.provider.BiomeProvider;
-import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.chunk.ChunkSection;
 import net.minecraft.world.gen.*;
-import net.minecraft.world.gen.feature.StructureFeature;
-import net.minecraft.world.gen.feature.structure.StructureManager;
-import net.minecraft.world.gen.feature.template.TemplateManager;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
@@ -53,8 +51,8 @@ import net.dries007.tfc.world.surfacebuilder.TFCSurfaceBuilders;
 public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenerator
 {
     public static final Codec<TFCChunkGenerator> CODEC = RecordCodecBuilder.create(instance -> instance.group(
-        BiomeProvider.CODEC.fieldOf("biome_source").forGetter(c -> c.biomeSource),
-        DimensionSettings.CODEC.fieldOf("settings").forGetter(c -> () -> c.settings),
+        BiomeSource.CODEC.fieldOf("biome_source").forGetter(c -> c.biomeSource),
+        ChunkGeneratorSettings.CODEC.fieldOf("settings").forGetter(c -> c.settings),
         Codec.BOOL.fieldOf("flat_bedrock").forGetter(c -> c.flatBedrock),
         Codec.LONG.fieldOf("seed").forGetter(c -> c.seed)
     ).apply(instance, TFCChunkGenerator::new));
@@ -65,7 +63,7 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
     /**
      * This is the default instance used in the TFC preset, both on client and server
      */
-    public static TFCChunkGenerator createDefaultPreset(Supplier<DimensionSettings> dimensionSettings, Registry<Biome> biomeRegistry, long seed)
+    public static TFCChunkGenerator createDefaultPreset(Supplier<ChunkGeneratorSettings> dimensionSettings, Registry<Biome> biomeRegistry, long seed)
     {
         return new TFCChunkGenerator(new TFCBiomeProvider(seed, 8_000, 0, 0, new TFCBiomeProvider.LayerSettings(), new TFCBiomeProvider.ClimateSettings(), biomeRegistry), dimensionSettings, false, seed);
     }
@@ -74,20 +72,20 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
     private final Map<BiomeVariants, INoise2D> biomeHeightNoise;
     private final Map<BiomeVariants, INoise2D> biomeCarvingCenterNoise;
     private final Map<BiomeVariants, INoise2D> biomeCarvingHeightNoise;
-    private final INoiseGenerator surfaceDepthNoise;
+    private final NoiseSampler surfaceDepthNoise;
 
     private final ChunkDataProvider chunkDataProvider;
     private final ChunkBlockReplacer blockReplacer;
 
     // Properties set from codec
     private final TFCBiomeProvider biomeProvider;
-    private final DimensionSettings settings;
+    private final ChunkGeneratorSettings settings;
     private final boolean flatBedrock;
     private final long seed;
 
-    public TFCChunkGenerator(BiomeProvider biomeProvider, Supplier<DimensionSettings> settings, boolean flatBedrock, long seed)
+    public TFCChunkGenerator(BiomeSource biomeProvider, Supplier<ChunkGeneratorSettings> settings, boolean flatBedrock, long seed)
     {
-        super(biomeProvider, settings.get().structureSettings());
+        super(biomeProvider, settings.get().getStructuresConfig());
 
         if (!(biomeProvider instanceof TFCBiomeProvider))
         {
@@ -102,7 +100,7 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
         this.biomeCarvingCenterNoise = new HashMap<>();
         this.biomeCarvingHeightNoise = new HashMap<>();
 
-        final SharedSeedRandom seedGenerator = new SharedSeedRandom(seed);
+        final ChunkRandom seedGenerator = new ChunkRandom(seed);
         TFCBiomes.getVariants().forEach(variant -> {
             biomeHeightNoise.put(variant, variant.createNoiseLayer(seed));
             if (variant instanceof CarvingBiomeVariants)
@@ -112,7 +110,7 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
                 biomeCarvingHeightNoise.put(variant, carvingNoise.getSecond());
             }
         });
-        surfaceDepthNoise = new PerlinNoiseGenerator(seedGenerator, IntStream.rangeClosed(-3, 0)); // From vanilla
+        surfaceDepthNoise = new OctaveSimplexNoiseSampler(seedGenerator, IntStream.rangeClosed(-3, 0)); // From vanilla
 
         // Generators / Providers
         this.chunkDataProvider = new ChunkDataProvider(new ChunkDataGenerator(seed, seedGenerator, this.biomeProvider.getLayerSettings())); // Chunk data
@@ -141,7 +139,7 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
     @Override
     public void populateBiomes(Registry<Biome> biomeIdRegistry, Chunk chunkIn)
     {
-        ((ChunkPrimer) chunkIn).setBiomes(new ColumnBiomeContainer(biomeIdRegistry, chunkIn.getPos(), biomeProvider));
+        ((ProtoChunk) chunkIn).setBiomes(new ColumnBiomeContainer(biomeIdRegistry, chunkIn.getPos(), biomeProvider));
     }
 
     /**
@@ -150,27 +148,27 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
     @Override
     public void carve(long worldSeed, BiomeAccess biomeManagerIn, Chunk chunkIn, GenerationStep.Carver stage)
     {
-        final ChunkPrimer chunk = (ChunkPrimer) chunkIn;
-        final BiomeGenerationSettings settings = biomeSource.getNoiseBiome(chunk.getPos().x << 2, 0, chunk.getPos().z << 2).getGenerationSettings();
-        final BiomeManager biomeManager = biomeManagerIn.withDifferentSource(this.biomeSource);
-        final SharedSeedRandom random = new SharedSeedRandom();
+        final ProtoChunk chunk = (ProtoChunk) chunkIn;
+        final GenerationSettings settings = biomeSource.getBiomeForNoiseGen(chunk.getPos().x << 2, 0, chunk.getPos().z << 2).getGenerationSettings();
+        final BiomeAccess biomeManager = biomeManagerIn.withSource(this.biomeSource);
+        final ChunkRandom random = new ChunkRandom();
 
-        final BitSet liquidCarvingMask = chunk.getOrCreateCarvingMask(GenerationStage.Carving.LIQUID);
-        final BitSet airCarvingMask = chunk.getOrCreateCarvingMask(GenerationStage.Carving.AIR);
+        final BitSet liquidCarvingMask = chunk.getOrCreateCarvingMask(GenerationStep.Carver.LIQUID);
+        final BitSet airCarvingMask = chunk.getOrCreateCarvingMask(GenerationStep.Carver.AIR);
         final RockData rockData = chunkDataProvider.get(chunk.getPos(), ChunkData.Status.ROCKS).getRockData();
 
-        if (stage == GenerationStage.Carving.AIR)
+        if (stage == GenerationStep.Carver.AIR)
         {
             // In vanilla, air carvers fire first. We do water carvers first instead, to catch them with the water adjacency mask later
             // Pass in a null adjacency mask as liquid carvers do not need it
-            CarverHelpers.runCarversWithContext(worldSeed, chunk, biomeManager, settings, random, GenerationStage.Carving.LIQUID, airCarvingMask, liquidCarvingMask, rockData, null, getSeaLevel());
+            CarverHelpers.runCarversWithContext(worldSeed, chunk, biomeManager, settings, random, GenerationStep.Carver.LIQUID, airCarvingMask, liquidCarvingMask, rockData, null, getSeaLevel());
         }
         else
         {
             // During liquid carvers, we run air carvers instead.
             // Compute the adjacency mask here
             final BitSet waterAdjacencyMask = CarverHelpers.createWaterAdjacencyMask(chunk, getSeaLevel());
-            CarverHelpers.runCarversWithContext(worldSeed, chunk, biomeManager, settings, random, GenerationStage.Carving.AIR, airCarvingMask, liquidCarvingMask, rockData, waterAdjacencyMask, getSeaLevel());
+            CarverHelpers.runCarversWithContext(worldSeed, chunk, biomeManager, settings, random, GenerationStep.Carver.AIR, airCarvingMask, liquidCarvingMask, rockData, waterAdjacencyMask, getSeaLevel());
         }
     }
 
@@ -178,11 +176,11 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
      * This override just ignores strongholds conditionally as by default TFC does not generate them, but  {@link ChunkGenerator} hard codes them to generate.
      */
     @Override
-    public void createStructures(DynamicRegistries dynamicRegistry, StructureManager structureManager, IChunk chunk, TemplateManager templateManager, long seed)
+    public void setStructureStarts(DynamicRegistryManager dynamicRegistry, StructureAccessor structureManager, Chunk chunk, StructureManager templateManager, long seed)
     {
         final ChunkPos chunkPos = chunk.getPos();
-        final Biome biome = this.biomeSource.getNoiseBiome((chunkPos.x << 2) + 2, 0, (chunkPos.z << 2) + 2);
-        for (Supplier<StructureFeature<?, ?>> supplier : biome.getGenerationSettings().structures())
+        final Biome biome = this.biomeSource.getBiomeForNoiseGen((chunkPos.x << 2) + 2, 0, (chunkPos.z << 2) + 2);
+        for (Supplier<ConfiguredStructureFeature<?, ?>> supplier : biome.getGenerationSettings().getStructureFeatures())
         {
             ((ChunkGeneratorAccessor) this).invoke$createStructure(supplier.get(), dynamicRegistry, structureManager, chunk, templateManager, seed, chunkPos, biome);
         }
@@ -192,13 +190,13 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
      * Surface is done in make base, bedrock is added here then block replacements are ran.
      */
     @Override
-    public void buildSurfaceAndBedrock(WorldGenRegion world, IChunk chunkIn)
+    public void buildSurface(ChunkRegion world, Chunk chunkIn)
     {
-        final ChunkPrimer chunk = (ChunkPrimer) chunkIn;
+        final ProtoChunk chunk = (ProtoChunk) chunkIn;
         final ChunkPos chunkPos = chunk.getPos();
-        final SharedSeedRandom random = new SharedSeedRandom();
+        final ChunkRandom random = new ChunkRandom();
 
-        random.setBaseChunkSeed(chunkPos.x, chunkPos.z);
+        random.setTerrainSeed(chunkPos.x, chunkPos.z);
         makeBedrock(chunk, random);
 
         final ChunkData chunkData = chunkDataProvider.get(chunkPos, ChunkData.Status.ROCKS);
@@ -221,16 +219,16 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
      * This runs after biome generation. In order to do accurate surface placement, we don't use the already generated biome container, as the biome magnifier really sucks for definition on cliffs.
      */
     @Override
-    public void fillFromNoise(IWorld world, StructureManager structureManager, IChunk chunkIn)
+    public void populateNoise(WorldAccess world, StructureAccessor structureManager, Chunk chunkIn)
     {
         // Initialization
-        final ChunkPrimer chunk = (ChunkPrimer) chunkIn;
+        final ProtoChunk chunk = (ProtoChunk) chunkIn;
         final ChunkPos chunkPos = chunk.getPos();
-        final SharedSeedRandom random = new SharedSeedRandom();
-        final int chunkX = chunkPos.getMinBlockX(), chunkZ = chunkPos.getMinBlockZ();
+        final ChunkRandom random = new ChunkRandom();
+        final int chunkX = chunkPos.getStartX(), chunkZ = chunkPos.getStartZ();
         final BlockPos.Mutable pos = new BlockPos.Mutable();
 
-        random.setBaseChunkSeed(chunkPos.x, chunkPos.z);
+        random.setTerrainSeed(chunkPos.x, chunkPos.z);
 
         // The accurate version of biomes which we use for surface building
         // These are calculated during height generation in order to generate cliffs with harsh borders between biomes
@@ -258,8 +256,8 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
 
         final Mutable<Biome> mutableBiome = new MutableObject<>();
 
-        final BitSet airCarvingMask = chunk.getOrCreateCarvingMask(GenerationStage.Carving.AIR);
-        final BitSet liquidCarvingMask = chunk.getOrCreateCarvingMask(GenerationStage.Carving.LIQUID);
+        final BitSet airCarvingMask = chunk.getOrCreateCarvingMask(GenerationStep.Carver.AIR);
+        final BitSet liquidCarvingMask = chunk.getOrCreateCarvingMask(GenerationStep.Carver.LIQUID);
 
         for (int x = 0; x < 16; x++)
         {
@@ -335,15 +333,15 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
     }
 
     @Override
-    public int getBaseHeight(int x, int z, Heightmap.Type heightMapType)
+    public int getHeight(int x, int z, Heightmap.Type heightMapType)
     {
         return SEA_LEVEL;
     }
 
     @Override
-    public IBlockReader getBaseColumn(int x, int z)
+    public BlockView getColumnSample(int x, int z)
     {
-        return EmptyBlockReader.INSTANCE;
+        return EmptyBlockView.INSTANCE;
     }
 
     protected double calculateNoiseColumn(Object2DoubleMap<Biome> weightMap, Function<Biome, BiomeVariants> variantsAccessor, Function<BiomeVariants, BiomeVariants> variantsFilter, int x, int z, Mutable<Biome> mutableBiome)
@@ -437,14 +435,14 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
      * Fills the initial chunk based on the surface height noise
      * Batches block state modifications by chunk section
      */
-    protected void fillInitialChunkBlocks(ChunkPrimer chunk, int[] surfaceHeightMap)
+    protected void fillInitialChunkBlocks(ProtoChunk chunk, int[] surfaceHeightMap)
     {
         final BlockState fillerBlock = settings.getDefaultBlock();
         final BlockState fillerFluid = settings.getDefaultFluid();
 
         for (int sectionY = 0; sectionY < 16; sectionY++)
         {
-            final ChunkSection section = chunk.getOrCreateSection(sectionY);
+            final ChunkSection section = chunk.getSection(sectionY);
             for (int localY = 0; localY < 16; localY++)
             {
                 final int y = (sectionY << 4) | localY;
@@ -477,12 +475,12 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
 
     /**
      * Updates chunk height maps based on the initial surface height.
-     * This is split off of {@link TFCChunkGenerator#fillInitialChunkBlocks(ChunkPrimer, int[])} as that method exits early whenever it reaches the top layer.
+     * This is split off of {@link TFCChunkGenerator#fillInitialChunkBlocks(ProtoChunk, int[])} as that method exits early whenever it reaches the top layer.
      */
-    protected void updateInitialChunkHeightmaps(ChunkPrimer chunk, int[] surfaceHeightMap)
+    protected void updateInitialChunkHeightmaps(ProtoChunk chunk, int[] surfaceHeightMap)
     {
-        final Heightmap oceanFloor = chunk.getOrCreateHeightmapUnprimed(Heightmap.Type.OCEAN_FLOOR_WG);
-        final Heightmap worldSurface = chunk.getOrCreateHeightmapUnprimed(Heightmap.Type.WORLD_SURFACE_WG);
+        final Heightmap oceanFloor = chunk.getHeightmap(Heightmap.Type.OCEAN_FLOOR_WG);
+        final Heightmap worldSurface = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG);
 
         final BlockState fillerBlock = settings.getDefaultBlock();
         final BlockState fillerFluid = settings.getDefaultFluid();
@@ -494,13 +492,13 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
                 final int landHeight = surfaceHeightMap[x + 16 * z] - 1;
                 if (landHeight >= SEA_LEVEL)
                 {
-                    worldSurface.update(x, landHeight, z, fillerBlock);
-                    oceanFloor.update(x, landHeight, z, fillerBlock);
+                    worldSurface.trackUpdate(x, landHeight, z, fillerBlock);
+                    oceanFloor.trackUpdate(x, landHeight, z, fillerBlock);
                 }
                 else
                 {
-                    worldSurface.update(x, SEA_LEVEL, z, fillerBlock);
-                    oceanFloor.update(x, landHeight, z, fillerFluid);
+                    worldSurface.trackUpdate(x, SEA_LEVEL, z, fillerBlock);
+                    oceanFloor.trackUpdate(x, landHeight, z, fillerFluid);
                 }
             }
         }
@@ -509,13 +507,13 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
     /**
      * Applies noise level carvers to the initial chunk blocks.
      */
-    protected void carveInitialChunkBlocks(ChunkPrimer chunk, double[] carvingCenterMap, double[] carvingHeightMap, BitSet airCarvingMask, BitSet liquidCarvingMask)
+    protected void carveInitialChunkBlocks(ProtoChunk chunk, double[] carvingCenterMap, double[] carvingHeightMap, BitSet airCarvingMask, BitSet liquidCarvingMask)
     {
-        final Heightmap oceanFloor = chunk.getOrCreateHeightmapUnprimed(Heightmap.Type.OCEAN_FLOOR_WG);
-        final Heightmap worldSurface = chunk.getOrCreateHeightmapUnprimed(Heightmap.Type.WORLD_SURFACE_WG);
+        final Heightmap oceanFloor = chunk.getHeightmap(Heightmap.Type.OCEAN_FLOOR_WG);
+        final Heightmap worldSurface = chunk.getHeightmap(Heightmap.Type.WORLD_SURFACE_WG);
 
         final BlockState caveFluid = settings.getDefaultFluid();
-        final BlockState caveAir = Blocks.CAVE_AIR.defaultBlockState();
+        final BlockState caveAir = Blocks.CAVE_AIR.getDefaultState();
 
         for (int x = 0; x < 16; x++)
         {
@@ -529,7 +527,7 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
                     final int bottomHeight = (int) (carvingCenter - carvingHeight * 0.5f);
                     final int topHeight = (int) (carvingCenter + carvingHeight * 0.5f);
 
-                    ChunkSection section = chunk.getOrCreateSection(bottomHeight >> 4);
+                    ChunkSection section = chunk.getSection(bottomHeight >> 4);
                     int sectionY = bottomHeight >> 4;
 
                     for (int y = bottomHeight; y <= topHeight; y++)
@@ -552,12 +550,12 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
                         final int currentSectionY = y >> 4;
                         if (currentSectionY != sectionY)
                         {
-                            section = chunk.getOrCreateSection(currentSectionY);
+                            section = chunk.getSection(currentSectionY);
                             sectionY = currentSectionY;
                         }
                         section.setBlockState(x, y & 15, z, stateAt, false);
-                        worldSurface.update(x, y, z, stateAt);
-                        oceanFloor.update(x, y, z, stateAt);
+                        worldSurface.trackUpdate(x, y, z, stateAt);
+                        oceanFloor.trackUpdate(x, y, z, stateAt);
                     }
                 }
             }
@@ -567,7 +565,7 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
     /**
      * Builds surface, but based on a (older style) biome array as opposed to the noise based biome sampling used in vanilla
      */
-    protected void buildAccurateSurface(IWorld world, IChunk chunk, Biome[] accurateChunkBiomes, Random random)
+    protected void buildAccurateSurface(WorldAccess world, Chunk chunk, Biome[] accurateChunkBiomes, Random random)
     {
         final ChunkPos chunkPos = chunk.getPos();
         final ChunkData chunkData = chunkDataProvider.get(chunkPos, ChunkData.Status.EMPTY);
@@ -575,10 +573,10 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
         {
             for (int z = 0; z < 16; ++z)
             {
-                final int posX = chunkPos.getMinBlockX() + x;
-                final int posZ = chunkPos.getMinBlockZ() + z;
-                final int posY = chunk.getHeight(Heightmap.Type.WORLD_SURFACE_WG, x, z) + 1;
-                final double noise = surfaceDepthNoise.getSurfaceNoiseValue(posX * 0.0625, posZ * 0.0625, 0.0625, x * 0.0625) * 15;
+                final int posX = chunkPos.getStartX() + x;
+                final int posZ = chunkPos.getStartZ() + z;
+                final int posY = chunk.sampleHeightmap(Heightmap.Type.WORLD_SURFACE_WG, x, z) + 1;
+                final double noise = surfaceDepthNoise.sample(posX * 0.0625, posZ * 0.0625, 0.0625, x * 0.0625) * 15;
 
                 final Biome biome = accurateChunkBiomes[x + 16 * z];
                 TFCSurfaceBuilders.applySurfaceBuilderWithContext(biome.getGenerationSettings().getSurfaceBuilder().get(), world, random, chunkData, chunk, biome, posX, posZ, posY, noise, seed, settings.getDefaultBlock(), settings.getDefaultFluid(), getSeaLevel());
@@ -590,10 +588,10 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
      * Builds either a single flat layer of bedrock, or natural vanilla bedrock
      * Writes directly to the bottom chunk section for better efficiency
      */
-    protected void makeBedrock(ChunkPrimer chunk, Random random)
+    protected void makeBedrock(ProtoChunk chunk, Random random)
     {
-        final ChunkSection bottomSection = chunk.getOrCreateSection(0);
-        final BlockState bedrock = Blocks.BEDROCK.defaultBlockState();
+        final ChunkSection bottomSection = chunk.getSection(0);
+        final BlockState bedrock = Blocks.BEDROCK.getDefaultState();
 
         for (int x = 0; x < 16; x++)
         {

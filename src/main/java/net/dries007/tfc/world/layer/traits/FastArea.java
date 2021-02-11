@@ -10,23 +10,22 @@ import java.util.Arrays;
 
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.gen.area.IArea;
-import net.minecraft.world.gen.area.LazyArea;
-import net.minecraft.world.gen.layer.traits.IPixelTransformer;
+import net.minecraft.world.biome.layer.util.LayerOperator;
+import net.minecraft.world.biome.layer.util.LayerSampler;
 
 import it.unimi.dsi.fastutil.HashCommon;
 
 /**
- * A variant of {@link LazyArea} which implements a non-synchronized, lossy cache
+ * A variant of {@link net.minecraft.world.biome.layer.util.CachingLayerSampler} which implements a non-synchronized, lossy cache
  */
-public class FastArea implements IArea
+public class FastArea implements LayerSampler
 {
-    private final IPixelTransformer factory;
+    private final LayerOperator factory;
     private final long[] keys;
     private final int[] values;
     private final int mask;
 
-    public FastArea(IPixelTransformer factory, int maxCacheSize)
+    public FastArea(LayerOperator factory, int maxCacheSize)
     {
         maxCacheSize = MathHelper.smallestEncompassingPowerOfTwo(maxCacheSize);
 
@@ -39,9 +38,9 @@ public class FastArea implements IArea
     }
 
     @Override
-    public int get(int x, int z)
+    public int sample(int x, int z)
     {
-        final long key = ChunkPos.asLong(x, z);
+        final long key = ChunkPos.toLong(x, z);
         final int index = (int) HashCommon.mix(key) & mask;
         if (keys[index] == key)
         {

@@ -20,6 +20,7 @@ import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldAccess;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.DefaultBiomeCreator;
 
@@ -92,7 +93,7 @@ public final class TFCBiomes
 
     private static final Map<Biome, BiomeExtension> CACHED_EXTENSIONS = new FiniteLinkedHashMap<>(16); // Faster route from biome -> extension
 
-    public static BiomeExtension getExtensionOrThrow(World world, Biome biome)
+    public static BiomeExtension getExtensionOrThrow(WorldAccess world, Biome biome)
     {
         BiomeExtension extension = getExtension(world, biome);
         if (extension == null)

@@ -1,16 +1,16 @@
 package net.dries007.tfc.world.layer;
 
-import net.minecraft.world.gen.INoiseRandom;
-import net.minecraft.world.gen.layer.traits.ICastleTransformer;
+import net.minecraft.world.biome.layer.type.CrossSamplingLayer;
+import net.minecraft.world.biome.layer.util.LayerRandomnessSource;
 
 import static net.dries007.tfc.world.layer.TFCLayerUtil.*;
 
-public enum ForestEdgeLayer implements ICastleTransformer
+public enum ForestEdgeLayer implements CrossSamplingLayer
 {
     INSTANCE;
 
     @Override
-    public int apply(INoiseRandom context, int north, int east, int south, int west, int center)
+    public int sample(LayerRandomnessSource context, int north, int east, int south, int west, int center)
     {
         if (isFullForest(center))
         {

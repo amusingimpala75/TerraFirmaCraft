@@ -10,28 +10,28 @@ import java.util.Random;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.util.Lazy;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.IChunk;
-import net.minecraft.world.gen.surfacebuilders.SurfaceBuilder;
-import net.minecraft.world.gen.surfacebuilders.SurfaceBuilderConfig;
-import net.minecraftforge.common.util.Lazy;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.gen.surfacebuilder.SurfaceBuilder;
+import net.minecraft.world.gen.surfacebuilder.TernarySurfaceConfig;
 
 import com.mojang.serialization.Codec;
 
-public class NormalSurfaceBuilder extends SurfaceBuilder<SurfaceBuilderConfig>
+public class NormalSurfaceBuilder extends SurfaceBuilder<TernarySurfaceConfig>
 {
-    public NormalSurfaceBuilder(Codec<SurfaceBuilderConfig> codec)
+    public NormalSurfaceBuilder(Codec<TernarySurfaceConfig> codec)
     {
         super(codec);
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public void apply(Random random, IChunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double noise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, SurfaceBuilderConfig config)
+    public void generate(Random random, Chunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double noise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, TernarySurfaceConfig config)
     {
         // Lazy because this queries a noise layer
-        Lazy<SurfaceBuilderConfig> underWaterConfig = Lazy.of(() -> TFCSurfaceBuilders.UNDERWATER.get().getUnderwaterConfig(x, z, seed));
+        Lazy<TernarySurfaceConfig> underWaterConfig = new Lazy<>(() -> TFCSurfaceBuilders.UNDERWATER.getUnderwaterConfig(x, z, seed));
 
         BlockState topState;
         BlockState underState = config.getUnderMaterial();
@@ -58,7 +58,7 @@ public class NormalSurfaceBuilder extends SurfaceBuilder<SurfaceBuilderConfig>
                     surfaceDepth = maxSurfaceDepth;
                     if (maxSurfaceDepth <= 0)
                     {
-                        topState = Blocks.AIR.defaultBlockState();
+                        topState = Blocks.AIR.getDefaultState();
                         underState = defaultBlock;
                     }
                     else if (y < seaLevel - 1)

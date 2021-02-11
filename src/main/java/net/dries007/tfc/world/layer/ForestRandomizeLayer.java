@@ -1,20 +1,20 @@
 package net.dries007.tfc.world.layer;
 
-import net.minecraft.world.gen.INoiseRandom;
-import net.minecraft.world.gen.layer.traits.IC0Transformer;
+import net.minecraft.world.biome.layer.type.IdentitySamplingLayer;
+import net.minecraft.world.biome.layer.util.LayerRandomnessSource;
 
 import static net.dries007.tfc.world.layer.TFCLayerUtil.*;
 
-public enum ForestRandomizeLayer implements IC0Transformer
+public enum ForestRandomizeLayer implements IdentitySamplingLayer
 {
     INSTANCE;
 
     @Override
-    public int apply(INoiseRandom context, int value)
+    public int sample(LayerRandomnessSource context, int value)
     {
         if (value == FOREST_NONE)
         {
-            final int random = context.nextRandom(16);
+            final int random = context.nextInt(16);
             if (random <= 2)
             {
                 return FOREST_SPARSE;
@@ -26,7 +26,7 @@ public enum ForestRandomizeLayer implements IC0Transformer
         }
         else if (value == FOREST_SPARSE)
         {
-            final int random = context.nextRandom(7);
+            final int random = context.nextInt(7);
             if (random <= 3)
             {
                 return FOREST_NORMAL;
@@ -34,7 +34,7 @@ public enum ForestRandomizeLayer implements IC0Transformer
         }
         else if (value == FOREST_NORMAL || value == FOREST_OLD)
         {
-            final int random = context.nextRandom(24);
+            final int random = context.nextInt(24);
             if (random == 1 && value != FOREST_OLD)
             {
                 return FOREST_SPARSE;

@@ -13,11 +13,11 @@ import java.util.Random;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
-import net.minecraft.util.IntIdentityHashBiMap;
-import net.minecraft.world.gen.area.IArea;
-import net.minecraft.world.gen.area.IAreaFactory;
-import net.minecraft.world.gen.layer.SmoothLayer;
-import net.minecraft.world.gen.layer.ZoomLayer;
+import net.minecraft.util.collection.Int2ObjectBiMap;
+import net.minecraft.world.biome.layer.ScaleLayer;
+import net.minecraft.world.biome.layer.SmoothLayer;
+import net.minecraft.world.biome.layer.util.LayerFactory;
+import net.minecraft.world.biome.layer.util.LayerSampler;
 
 import net.dries007.tfc.util.IArtist;
 import net.dries007.tfc.world.biome.BiomeVariants;
@@ -111,7 +111,7 @@ public class TFCLayerUtil
     public static final int INLAND_MARKER;
     public static final int OCEAN_REEF_MARKER;
 
-    private static final IntIdentityHashBiMap<BiomeVariants> REGISTRY = new IntIdentityHashBiMap<>(32);
+    private static final Int2ObjectBiMap<BiomeVariants> REGISTRY = new Int2ObjectBiMap<>(32);
 
     static
     {
@@ -158,10 +158,10 @@ public class TFCLayerUtil
 
     public static BiomeVariants getFromLayerId(int id)
     {
-        return Objects.requireNonNull(REGISTRY.byId(id), "Layer ID = " + id + " was null!");
+        return Objects.requireNonNull(REGISTRY.get(id), "Layer ID = " + id + " was null!");
     }
 
-    public static IAreaFactory<FastArea> createOverworldBiomeLayer(long seed, TFCBiomeProvider.LayerSettings layerSettings, IArtist<ITypedAreaFactory<Plate>> plateArtist, IArtist<IAreaFactory<? extends IArea>> layerArtist)
+    public static LayerFactory<FastArea> createOverworldBiomeLayer(long seed, TFCBiomeProvider.LayerSettings layerSettings, IArtist<ITypedAreaFactory<Plate>> plateArtist, IArtist<LayerFactory<? extends LayerSampler>> layerArtist)
     {
         final Random random = new Random(seed);
         final Supplier<TypedAreaContext<Plate>> plateContext = () -> new TypedAreaContext<>(seed, random.nextLong());
@@ -177,7 +177,7 @@ public class TFCLayerUtil
         };
 
         ITypedAreaFactory<Plate> plateLayer;
-        IAreaFactory<FastArea> mainLayer, riverLayer, lakeLayer;
+        LayerFactory<FastArea> mainLayer, riverLayer, lakeLayer;
 
         // Tectonic Plates - generate plates and annotate border regions with converging / diverging boundaries
         plateLayer = new PlateGenerationLayer(new Cellular2D(random.nextInt()).spread(0.2f), layerSettings.getOceanPercent()).apply(plateContext.get());
@@ -187,59 +187,59 @@ public class TFCLayerUtil
 
         mainLayer = PlateBoundaryLayer.INSTANCE.run(layerContext.get(), plateLayer);
         layerArtist.draw("plate_boundary", 1, mainLayer);
-        mainLayer = SmoothLayer.INSTANCE.run(layerContext.get(), mainLayer);
+        mainLayer = SmoothLayer.INSTANCE.create(layerContext.get(), mainLayer);
         layerArtist.draw("plate_boundary", 2, mainLayer);
-        mainLayer = PlateBoundaryModifierLayer.INSTANCE.run(layerContext.get(), mainLayer);
+        mainLayer = PlateBoundaryModifierLayer.INSTANCE.create(layerContext.get(), mainLayer);
         layerArtist.draw("plate_boundary", 3, mainLayer);
 
         // Plates -> Biomes
-        mainLayer = PlateBiomeLayer.INSTANCE.run(layerContext.get(), mainLayer);
+        mainLayer = PlateBiomeLayer.INSTANCE.create(layerContext.get(), mainLayer);
         layerArtist.draw("biomes", 1, mainLayer);
 
         // Initial Biomes -> Lake Setup
-        lakeLayer = InlandLayer.INSTANCE.run(layerContext.get(), mainLayer);
+        lakeLayer = InlandLayer.INSTANCE.create(layerContext.get(), mainLayer);
         layerArtist.draw("lake", 1, lakeLayer);
-        lakeLayer = ZoomLayer.NORMAL.run(zoomLayerContext.apply(0), lakeLayer);
+        lakeLayer = ScaleLayer.NORMAL.create(zoomLayerContext.apply(0), lakeLayer);
         layerArtist.draw("lake", 2, lakeLayer);
 
         // Lakes
-        lakeLayer = AddLakesLayer.LARGE.run(layerContext.get(), lakeLayer);
+        lakeLayer = AddLakesLayer.LARGE.create(layerContext.get(), lakeLayer);
         layerArtist.draw("lake", 3, lakeLayer);
-        lakeLayer = ZoomLayer.NORMAL.run(zoomLayerContext.apply(1), lakeLayer);
+        lakeLayer = ScaleLayer.NORMAL.create(zoomLayerContext.apply(1), lakeLayer);
         layerArtist.draw("lake", 4, lakeLayer);
-        lakeLayer = AddLakesLayer.SMALL.run(layerContext.get(), lakeLayer);
+        lakeLayer = AddLakesLayer.SMALL.create(layerContext.get(), lakeLayer);
         layerArtist.draw("lake", 5, lakeLayer);
-        lakeLayer = ZoomLayer.NORMAL.run(zoomLayerContext.apply(2), lakeLayer);
+        lakeLayer = ScaleLayer.NORMAL.create(zoomLayerContext.apply(2), lakeLayer);
         layerArtist.draw("lake", 6, lakeLayer);
 
         // Biome level features - ocean borders, lakes, island chains, edge biomes, shores
         // Apply lakes back to biomes
-        mainLayer = OceanBorderLayer.INSTANCE.run(layerContext.get(), mainLayer);
+        mainLayer = OceanBorderLayer.INSTANCE.create(layerContext.get(), mainLayer);
         layerArtist.draw("biomes", 2, mainLayer);
-        mainLayer = ZoomLayer.NORMAL.run(zoomLayerContext.apply(0), mainLayer);
+        mainLayer = ScaleLayer.NORMAL.create(zoomLayerContext.apply(0), mainLayer);
         layerArtist.draw("biomes", 3, mainLayer);
-        mainLayer = ArchipelagoLayer.INSTANCE.run(layerContext.get(), mainLayer);
+        mainLayer = ArchipelagoLayer.INSTANCE.create(layerContext.get(), mainLayer);
         layerArtist.draw("biomes", 4, mainLayer);
-        mainLayer = ReefBorderLayer.INSTANCE.run(layerContext.get(), mainLayer);
+        mainLayer = ReefBorderLayer.INSTANCE.create(layerContext.get(), mainLayer);
         layerArtist.draw("biomes", 5, mainLayer);
-        mainLayer = ZoomLayer.NORMAL.run(zoomLayerContext.apply(1), mainLayer);
+        mainLayer = ScaleLayer.NORMAL.create(zoomLayerContext.apply(1), mainLayer);
         layerArtist.draw("biomes", 6, mainLayer);
-        mainLayer = EdgeBiomeLayer.INSTANCE.run(layerContext.get(), mainLayer);
+        mainLayer = EdgeBiomeLayer.INSTANCE.create(layerContext.get(), mainLayer);
         layerArtist.draw("biomes", 7, mainLayer);
-        mainLayer = ZoomLayer.NORMAL.run(zoomLayerContext.apply(2), mainLayer);
+        mainLayer = ScaleLayer.NORMAL.create(zoomLayerContext.apply(2), mainLayer);
         layerArtist.draw("biomes", 8, mainLayer);
-        mainLayer = MixLakeLayer.INSTANCE.run(layerContext.get(), mainLayer, lakeLayer);
+        mainLayer = MixLakeLayer.INSTANCE.create(layerContext.get(), mainLayer, lakeLayer);
         layerArtist.draw("biomes", 9, mainLayer);
-        mainLayer = ShoreLayer.INSTANCE.run(layerContext.get(), mainLayer);
+        mainLayer = ShoreLayer.INSTANCE.create(layerContext.get(), mainLayer);
         layerArtist.draw("biomes", 10, mainLayer);
 
         for (int i = 0; i < 4; i++)
         {
-            mainLayer = ZoomLayer.NORMAL.run(layerContext.get(), mainLayer);
+            mainLayer = ScaleLayer.NORMAL.create(layerContext.get(), mainLayer);
             layerArtist.draw("biomes", 11 + i, mainLayer);
         }
 
-        mainLayer = SmoothLayer.INSTANCE.run(layerContext.get(), mainLayer);
+        mainLayer = SmoothLayer.INSTANCE.create(layerContext.get(), mainLayer);
         layerArtist.draw("biomes", 15, mainLayer);
 
         // River Setup
@@ -251,73 +251,73 @@ public class TFCLayerUtil
         ).terraces(5);
 
         // River Noise
-        riverLayer = new FloatNoiseLayer(riverNoise).run(layerContext.get());
+        riverLayer = new FloatNoiseLayer(riverNoise).create(layerContext.get());
         layerArtist.draw("river", 1, riverLayer);
 
         for (int i = 0; i < 4; i++)
         {
-            riverLayer = ZoomLayer.NORMAL.run(layerContext.get(), riverLayer);
+            riverLayer = ScaleLayer.NORMAL.create(layerContext.get(), riverLayer);
             layerArtist.draw("river", 2 + i, riverLayer);
         }
 
         // River shape and modifications
-        riverLayer = RiverLayer.INSTANCE.run(layerContext.get(), riverLayer);
+        riverLayer = RiverLayer.INSTANCE.create(layerContext.get(), riverLayer);
         layerArtist.draw("river", 6, riverLayer);
-        riverLayer = RiverAcuteVertexLayer.INSTANCE.run(layerContext.get(), riverLayer);
+        riverLayer = RiverAcuteVertexLayer.INSTANCE.create(layerContext.get(), riverLayer);
         layerArtist.draw("river", 7, riverLayer);
-        riverLayer = ZoomLayer.NORMAL.run(layerContext.get(), riverLayer);
+        riverLayer = ScaleLayer.NORMAL.create(layerContext.get(), riverLayer);
         layerArtist.draw("river", 8, riverLayer);
-        riverLayer = SmoothLayer.INSTANCE.run(layerContext.get(), riverLayer);
+        riverLayer = SmoothLayer.INSTANCE.create(layerContext.get(), riverLayer);
         layerArtist.draw("river", 9, riverLayer);
 
         // Apply rivers
-        mainLayer = MixRiverLayer.INSTANCE.run(layerContext.get(), mainLayer, riverLayer);
+        mainLayer = MixRiverLayer.INSTANCE.create(layerContext.get(), mainLayer, riverLayer);
         layerArtist.draw("biomes", 16, mainLayer);
-        mainLayer = BiomeRiverWidenLayer.MEDIUM.run(layerContext.get(), mainLayer);
+        mainLayer = BiomeRiverWidenLayer.MEDIUM.create(layerContext.get(), mainLayer);
         layerArtist.draw("biomes", 17, mainLayer);
-        mainLayer = BiomeRiverWidenLayer.LOW.run(layerContext.get(), mainLayer);
+        mainLayer = BiomeRiverWidenLayer.LOW.create(layerContext.get(), mainLayer);
         layerArtist.draw("biomes", 18, mainLayer);
 
         return mainLayer;
     }
 
-    public static IAreaFactory<FastArea> createOverworldForestLayer(long seed, TFCBiomeProvider.LayerSettings settings, IArtist<IAreaFactory<? extends IArea>> artist)
+    public static LayerFactory<FastArea> createOverworldForestLayer(long seed, TFCBiomeProvider.LayerSettings settings, IArtist<LayerFactory<? extends LayerSampler>> artist)
     {
         final Random random = new Random(seed);
         final Supplier<FastAreaContext> layerContext = () -> new FastAreaContext(seed, random.nextLong());
 
-        IAreaFactory<FastArea> mainLayer;
+        LayerFactory<FastArea> mainLayer;
 
-        mainLayer = ForestInitLayer.INSTANCE.run(layerContext.get());
+        mainLayer = ForestInitLayer.INSTANCE.create(layerContext.get());
         artist.draw("forest", 1, mainLayer);
-        mainLayer = ForestRandomizeLayer.INSTANCE.run(layerContext.get(), mainLayer);
+        mainLayer = ForestRandomizeLayer.INSTANCE.create(layerContext.get(), mainLayer);
         artist.draw("forest", 2, mainLayer);
-        mainLayer = ZoomLayer.FUZZY.run(layerContext.get(), mainLayer);
+        mainLayer = ScaleLayer.FUZZY.create(layerContext.get(), mainLayer);
         artist.draw("forest", 3, mainLayer);
-        mainLayer = ForestRandomizeLayer.INSTANCE.run(layerContext.get(), mainLayer);
+        mainLayer = ForestRandomizeLayer.INSTANCE.create(layerContext.get(), mainLayer);
         artist.draw("forest", 4, mainLayer);
-        mainLayer = ZoomLayer.FUZZY.run(layerContext.get(), mainLayer);
+        mainLayer = ScaleLayer.FUZZY.create(layerContext.get(), mainLayer);
         artist.draw("forest", 5, mainLayer);
-        mainLayer = ZoomLayer.NORMAL.run(layerContext.get(), mainLayer);
+        mainLayer = ScaleLayer.NORMAL.create(layerContext.get(), mainLayer);
         artist.draw("forest", 6, mainLayer);
-        mainLayer = ForestEdgeLayer.INSTANCE.run(layerContext.get(), mainLayer);
+        mainLayer = ForestEdgeLayer.INSTANCE.create(layerContext.get(), mainLayer);
         artist.draw("forest", 7, mainLayer);
-        mainLayer = ForestRandomizeSmallLayer.INSTANCE.run(layerContext.get(), mainLayer);
+        mainLayer = ForestRandomizeSmallLayer.INSTANCE.create(layerContext.get(), mainLayer);
         artist.draw("forest", 8, mainLayer);
-        mainLayer = ZoomLayer.NORMAL.run(layerContext.get(), mainLayer);
+        mainLayer = ScaleLayer.NORMAL.create(layerContext.get(), mainLayer);
         artist.draw("forest", 9, mainLayer);
 
         return mainLayer;
     }
 
-    public static IAreaFactory<FastArea> createOverworldPlateTectonicInfoLayer(long seed, TFCBiomeProvider.LayerSettings layerSettings)
+    public static LayerFactory<FastArea> createOverworldPlateTectonicInfoLayer(long seed, TFCBiomeProvider.LayerSettings layerSettings)
     {
         final Random random = new Random(seed);
         final Supplier<TypedAreaContext<Plate>> plateContext = () -> new TypedAreaContext<>(seed, random.nextLong());
         final Supplier<FastAreaContext> layerContext = () -> new FastAreaContext(seed, random.nextLong());
 
         ITypedAreaFactory<Plate> plateLayer;
-        IAreaFactory<FastArea> mainLayer;
+        LayerFactory<FastArea> mainLayer;
 
         // Tectonic Plates - generate plates and annotate border regions with converging / diverging boundaries
         plateLayer = new PlateGenerationLayer(new Cellular2D(random.nextInt()).spread(0.2f), layerSettings.getOceanPercent()).apply(plateContext.get());
@@ -326,25 +326,25 @@ public class TFCLayerUtil
 
         for (int i = 0; i < 5; i++)
         {
-            mainLayer = ZoomLayer.NORMAL.run(layerContext.get(), mainLayer);
+            mainLayer = ScaleLayer.NORMAL.create(layerContext.get(), mainLayer);
         }
 
         return mainLayer;
     }
 
-    public static List<IAreaFactory<FastArea>> createOverworldRockLayers(long seed, TFCBiomeProvider.LayerSettings layerSettings)
+    public static List<LayerFactory<FastArea>> createOverworldRockLayers(long seed, TFCBiomeProvider.LayerSettings layerSettings)
     {
         final Random random = new Random(seed);
         final Supplier<FastAreaContext> contextFactory = () -> new FastAreaContext(seed, random.nextLong());
-        final List<IAreaFactory<FastArea>> completedLayers = new ArrayList<>(3);
+        final List<LayerFactory<FastArea>> completedLayers = new ArrayList<>(3);
 
-        IAreaFactory<FastArea> seedLayer;
+        LayerFactory<FastArea> seedLayer;
         int numRocks = layerSettings.getRocks().size();
 
         // Seed Areas
         for (int j = 0; j < 3; j++)
         {
-            seedLayer = new RockLayer(numRocks).run(contextFactory.get());
+            seedLayer = new RockLayer(numRocks).create(contextFactory.get());
 
             // The following results were obtained about the number of applications of this layer. (over 10 M samples each time)
             // None => 95.01% of adjacent pairs were equal (which lines up pretty good with theoretical predictions)
@@ -353,18 +353,18 @@ public class TFCLayerUtil
             // 3x => 99.54%
             // 4x => 99.55%
             // And thus we only apply once, as it's the best result to reduce adjacent pairs without too much effort / performance cost
-            seedLayer = new RandomizeNeighborsLayer(numRocks).run(contextFactory.get(), seedLayer);
+            seedLayer = new RandomizeNeighborsLayer(numRocks).create(contextFactory.get(), seedLayer);
 
             for (int i = 0; i < 2; i++)
             {
-                seedLayer = ExactZoomLayer.INSTANCE.run(contextFactory.get(), seedLayer);
-                seedLayer = ZoomLayer.NORMAL.run(contextFactory.get(), seedLayer);
-                seedLayer = SmoothLayer.INSTANCE.run(contextFactory.get(), seedLayer);
+                seedLayer = ExactZoomLayer.INSTANCE.create(contextFactory.get(), seedLayer);
+                seedLayer = ScaleLayer.NORMAL.create(contextFactory.get(), seedLayer);
+                seedLayer = SmoothLayer.INSTANCE.create(contextFactory.get(), seedLayer);
             }
 
             for (int i = 0; i < layerSettings.getRockLayerScale(); i++)
             {
-                seedLayer = ZoomLayer.NORMAL.run(contextFactory.get(), seedLayer);
+                seedLayer = ScaleLayer.NORMAL.create(contextFactory.get(), seedLayer);
             }
 
             completedLayers.add(seedLayer);
@@ -481,7 +481,6 @@ public class TFCLayerUtil
         return REGISTRY.add(variants);
     }
 
-    @SuppressWarnings("ConstantConditions")
     public static int registerDummy()
     {
         return REGISTRY.add(null);

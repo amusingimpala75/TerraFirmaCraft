@@ -6,8 +6,8 @@
 
 package net.dries007.tfc.world.layer;
 
-import net.minecraft.world.gen.INoiseRandom;
-import net.minecraft.world.gen.layer.traits.ICastleTransformer;
+import net.minecraft.world.biome.layer.type.CrossSamplingLayer;
+import net.minecraft.world.biome.layer.util.LayerRandomnessSource;
 
 import static net.dries007.tfc.world.layer.TFCLayerUtil.*;
 
@@ -15,12 +15,12 @@ import static net.dries007.tfc.world.layer.TFCLayerUtil.*;
  * Operates on the {@link TFCLayerUtil#OCEAN_REEF_MARKER} markers
  * Borders reef - land with ocean, and adds ocean to reef - deep ocean borders
  */
-public enum ReefBorderLayer implements ICastleTransformer
+public enum ReefBorderLayer implements CrossSamplingLayer
 {
     INSTANCE;
 
     @Override
-    public int apply(INoiseRandom context, int north, int east, int south, int west, int center)
+    public int sample(LayerRandomnessSource context, int north, int east, int south, int west, int center)
     {
         if (center == OCEAN_REEF_MARKER)
         {

@@ -8,12 +8,12 @@ package net.dries007.tfc.world.layer;
 
 import java.util.function.IntPredicate;
 
-import net.minecraft.world.gen.INoiseRandom;
-import net.minecraft.world.gen.layer.traits.ICastleTransformer;
+import net.minecraft.world.biome.layer.type.CrossSamplingLayer;
+import net.minecraft.world.biome.layer.util.LayerRandomnessSource;
 
 import static net.dries007.tfc.world.layer.TFCLayerUtil.RIVER;
 
-public enum BiomeRiverWidenLayer implements ICastleTransformer
+public enum BiomeRiverWidenLayer implements CrossSamplingLayer
 {
     MEDIUM(value -> TFCLayerUtil.isLow(value) || value == TFCLayerUtil.ROLLING_HILLS || value == TFCLayerUtil.CANYONS),
     LOW(TFCLayerUtil::isLow);
@@ -26,7 +26,7 @@ public enum BiomeRiverWidenLayer implements ICastleTransformer
     }
 
     @Override
-    public int apply(INoiseRandom context, int north, int east, int south, int west, int center)
+    public int sample(LayerRandomnessSource context, int north, int east, int south, int west, int center)
     {
         // The center must be non-river and expandable
         if (center != RIVER && expansion.test(center))

@@ -6,9 +6,9 @@
 
 package net.dries007.tfc.world.layer;
 
-import net.minecraft.world.gen.IExtendedNoiseRandom;
-import net.minecraft.world.gen.area.IAreaFactory;
-import net.minecraft.world.gen.layer.traits.IDimOffset1Transformer;
+import net.minecraft.world.biome.layer.util.LayerFactory;
+import net.minecraft.world.biome.layer.util.LayerSampleContext;
+import net.minecraft.world.biome.layer.util.NorthWestCoordinateTransformer;
 
 import net.dries007.tfc.world.layer.traits.FastArea;
 import net.dries007.tfc.world.layer.traits.ITypedAreaFactory;
@@ -16,7 +16,7 @@ import net.dries007.tfc.world.layer.traits.TypedArea;
 
 import static net.dries007.tfc.world.layer.TFCLayerUtil.*;
 
-public enum PlateBoundaryLayer implements IDimOffset1Transformer
+public enum PlateBoundaryLayer implements NorthWestCoordinateTransformer
 {
     INSTANCE;
 
@@ -25,30 +25,30 @@ public enum PlateBoundaryLayer implements IDimOffset1Transformer
     public static final float HIGH_ELEVATION = 0.66f;
     public static final float MID_ELEVATION = 0.33f;
 
-    public IAreaFactory<FastArea> run(IExtendedNoiseRandom<FastArea> context, ITypedAreaFactory<Plate> plateLayer)
+    public LayerFactory<FastArea> run(LayerSampleContext<FastArea> context, ITypedAreaFactory<Plate> plateLayer)
     {
         return () -> {
             TypedArea<Plate> area = plateLayer.make();
-            return context.createResult((x, z) -> {
-                context.initRandom(x, z);
+            return context.createSampler((x, z) -> {
+                context.initSeed(x, z);
                 return apply(context, area, x, z);
             });
         };
     }
 
     @SuppressWarnings("PointlessArithmeticExpression")
-    private int apply(IExtendedNoiseRandom<?> context, TypedArea<Plate> area, int x, int z)
+    private int apply(LayerSampleContext<?> context, TypedArea<Plate> area, int x, int z)
     {
         return apply(context,
-            area.get(getParentX(x + 1), getParentY(z + 0)),
-            area.get(getParentX(x + 2), getParentY(z + 1)),
-            area.get(getParentX(x + 1), getParentY(z + 2)),
-            area.get(getParentX(x + 0), getParentY(z + 1)),
-            area.get(getParentX(x + 1), getParentY(z + 1))
+            area.get(transformX(x + 1), transformZ(z + 0)),
+            area.get(transformX(x + 2), transformZ(z + 1)),
+            area.get(transformX(x + 1), transformZ(z + 2)),
+            area.get(transformX(x + 0), transformZ(z + 1)),
+            area.get(transformX(x + 1), transformZ(z + 1))
         );
     }
 
-    private int apply(IExtendedNoiseRandom<?> context, Plate north, Plate west, Plate south, Plate east, Plate center)
+    private int apply(LayerSampleContext<?> context, Plate north, Plate west, Plate south, Plate east, Plate center)
     {
         Plate boundary = null;
         int boundaryCount = 0;
@@ -60,7 +60,7 @@ public enum PlateBoundaryLayer implements IDimOffset1Transformer
         if (!west.equals(center))
         {
             boundaryCount++;
-            if (boundary == null || context.nextRandom(boundaryCount) == 0)
+            if (boundary == null || context.nextInt(boundaryCount) == 0)
             {
                 boundary = west;
             }
@@ -68,7 +68,7 @@ public enum PlateBoundaryLayer implements IDimOffset1Transformer
         if (!south.equals(center))
         {
             boundaryCount++;
-            if (boundary != null || context.nextRandom(boundaryCount) == 0)
+            if (boundary != null || context.nextInt(boundaryCount) == 0)
             {
                 boundary = south;
             }
@@ -76,7 +76,7 @@ public enum PlateBoundaryLayer implements IDimOffset1Transformer
         if (!east.equals(center))
         {
             boundaryCount++;
-            if (boundary != null || context.nextRandom(boundaryCount) == 0)
+            if (boundary != null || context.nextInt(boundaryCount) == 0)
             {
                 boundary = east;
             }

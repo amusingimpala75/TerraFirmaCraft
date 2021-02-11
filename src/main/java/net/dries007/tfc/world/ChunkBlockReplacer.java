@@ -15,11 +15,11 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ISeedReader;
+import net.minecraft.world.Heightmap;
+import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.chunk.ChunkSection;
-import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.chunk.ProtoChunk;
 
 import net.dries007.tfc.common.blocks.TFCBlocks;
 import net.dries007.tfc.common.blocks.soil.SandBlockType;
@@ -52,11 +52,11 @@ public class ChunkBlockReplacer
         Function<Rock.BlockType, IBlockReplacer> factory = rockType -> (rockData, x, y, z, rainfall, temperature, salty) -> {
             if (y < rockData.getRockHeight(x, z))
             {
-                return rockData.getBottomRock(x, z).getBlock(rockType).defaultBlockState();
+                return rockData.getBottomRock(x, z).getBlock(rockType).getDefaultState();
             }
             else
             {
-                return rockData.getTopRock(x, z).getBlock(rockType).defaultBlockState();
+                return rockData.getTopRock(x, z).getBlock(rockType).getDefaultState();
             }
         };
         register(Blocks.STONE, factory.apply(Rock.BlockType.RAW));
@@ -68,41 +68,40 @@ public class ChunkBlockReplacer
         register(Blocks.GRASS_BLOCK, new SoilBlockReplacer(SoilBlockType.GRASS));
 
         // Gravel -> surface material. Replace with rock type gravel
-        register(Blocks.GRAVEL, (rockData, x, y, z, rainfall, temperature, salty) -> rockData.getTopRock(x, z).getBlock(Rock.BlockType.GRAVEL).defaultBlockState());
+        register(Blocks.GRAVEL, (rockData, x, y, z, rainfall, temperature, salty) -> rockData.getTopRock(x, z).getBlock(Rock.BlockType.GRAVEL).getDefaultState());
 
         // Sand -> Desert sand layer. Replace with sand color from top rock layer
-        register(Blocks.SAND, (rockData, x, y, z, rainfall, temperature, salty) -> TFCBlocks.SAND.get(rockData.getTopRock(x, z).getDesertSandColor()).get().defaultBlockState());
+        register(Blocks.SAND, (rockData, x, y, z, rainfall, temperature, salty) -> TFCBlocks.SAND.get(rockData.getTopRock(x, z).getDesertSandColor()).getDefaultState());
 
         // Red Sand -> Beach sand layer. Replace with the beach sand color from top rock layer
-        register(Blocks.RED_SAND, (rockData, x, y, z, rainfall, temperature, salty) -> TFCBlocks.SAND.get(rockData.getTopRock(x, z).getBeachSandColor()).get().defaultBlockState());
+        register(Blocks.RED_SAND, (rockData, x, y, z, rainfall, temperature, salty) -> TFCBlocks.SAND.get(rockData.getTopRock(x, z).getBeachSandColor()).getDefaultState());
 
         // Red Sandstone -> Beach variant sand layer. If tropical, replace with pink sand.
         register(Blocks.RED_SANDSTONE, (rockData, x, y, z, rainfall, temperature, salty) -> {
             if (rainfall > 300f && temperature > 15f)
             {
-                return TFCBlocks.SAND.get(SandBlockType.PINK).get().defaultBlockState();
+                return TFCBlocks.SAND.get(SandBlockType.PINK).getDefaultState();
             }
             else if (rainfall > 300f)
             {
-                return TFCBlocks.SAND.get(SandBlockType.BLACK).get().defaultBlockState();
+                return TFCBlocks.SAND.get(SandBlockType.BLACK).getDefaultState();
             }
             else
             {
-                return TFCBlocks.SAND.get(rockData.getMidRock(x, z).getBeachSandColor()).get().defaultBlockState();
+                return TFCBlocks.SAND.get(rockData.getMidRock(x, z).getBeachSandColor()).getDefaultState();
             }
         });
 
         // Vanilla water -> Salt Water (Or Unchanged)
         final BlockState saltWater = TFCFluids.SALT_WATER.getSourceBlock();
-        final BlockState freshWater = Fluids.WATER.defaultFluidState().createLegacyBlock();
+        final BlockState freshWater = Fluids.WATER.getDefaultState().getBlockState();
         register(Blocks.WATER, (rockData, x, y, z, rainfall, temperature, salty) -> salty ? saltWater : freshWater);
     }
 
-    @SuppressWarnings("deprecation")
-    public void replace(ChunkPrimer chunk, ChunkData data, ISeedReader world)
+    public void replace(ProtoChunk chunk, ChunkData data, StructureWorldAccess world)
     {
-        final int xStart = chunk.getPos().getMinBlockX();
-        final int zStart = chunk.getPos().getMinBlockZ();
+        final int xStart = chunk.getPos().getStartX();
+        final int zStart = chunk.getPos().getStartZ();
         final RockData rockData = data.getRockData();
 
         for (int x = 0; x < 16; x++)
@@ -112,7 +111,7 @@ public class ChunkBlockReplacer
                 float temperature = data.getAverageTemp(x, z);
                 float rainfall = data.getRainfall(x, z);
 
-                final int maxY = chunk.getHeight(Heightmap.Type.WORLD_SURFACE_WG, x, z);
+                final int maxY = chunk.sampleHeightmap(Heightmap.Type.WORLD_SURFACE_WG, x, z);
 
                 mutablePos.set(xStart + x, 0, zStart + z);
                 final Biome biome = world.getBiome(mutablePos);
@@ -121,7 +120,7 @@ public class ChunkBlockReplacer
                 int y = 0;
                 for (int sectionY = 0; sectionY < 16 && y < maxY; sectionY++)
                 {
-                    final ChunkSection section = chunk.getOrCreateSection(sectionY);
+                    final ChunkSection section = chunk.getSection(sectionY);
                     for (int localY = 0; localY < 16 && y < maxY; localY++)
                     {
                         y = (sectionY << 4) | localY;
@@ -138,9 +137,9 @@ public class ChunkBlockReplacer
 
                                 // Since we operate on the chunk section directly, in order to trigger post processing (i.e. for grass) we need to mark it manually
                                 mutablePos.set(xStart + x, y, zStart + z);
-                                if (stateAt.hasPostProcess(chunk, mutablePos))
+                                if (stateAt.shouldPostProcess(chunk, mutablePos))
                                 {
-                                    chunk.markPosForPostprocessing(mutablePos);
+                                    chunk.markBlockForPostProcessing(mutablePos);
                                 }
                             }
                         }
@@ -154,7 +153,7 @@ public class ChunkBlockReplacer
     {
         if (replacements.containsKey(block))
         {
-            throw new IllegalStateException("Block " + block.getRegistryName() + " is already assigned to a replacement");
+            throw new IllegalStateException("Block " + block.getName() + " is already assigned to a replacement");
         }
         replacer.setSeed(seed);
         replacements.put(block, replacer);
