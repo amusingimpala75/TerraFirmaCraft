@@ -12,15 +12,15 @@ import java.util.stream.IntStream;
 import com.google.common.collect.ImmutableList;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.material.Material;
-import net.minecraft.util.SharedSeedRandom;
+import net.minecraft.block.Material;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.IWorld;
+import net.minecraft.util.math.noise.OctaveSimplexNoiseSampler;
+import net.minecraft.world.WorldAccess;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.IChunk;
-import net.minecraft.world.gen.PerlinNoiseGenerator;
-import net.minecraft.world.gen.surfacebuilders.SurfaceBuilderConfig;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.gen.ChunkRandom;
+import net.minecraft.world.gen.surfacebuilder.FrozenOceanSurfaceBuilder;
+import net.minecraft.world.gen.surfacebuilder.TernarySurfaceConfig;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.util.Climate;
@@ -28,30 +28,29 @@ import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.chunkdata.ChunkData;
 
 /**
- * Modified from {@link net.minecraft.world.gen.surfacebuilders.FrozenOceanSurfaceBuilder}
+ * Modified from {@link FrozenOceanSurfaceBuilder}
  */
-public class FrozenUnderwaterSurfaceBuilder extends SeededSurfaceBuilder<SurfaceBuilderConfig> implements IContextSurfaceBuilder<SurfaceBuilderConfig>
+public class FrozenUnderwaterSurfaceBuilder extends SeededSurfaceBuilder<TernarySurfaceConfig> implements IContextSurfaceBuilder<TernarySurfaceConfig>
 {
-    private PerlinNoiseGenerator icebergNoise;
-    private PerlinNoiseGenerator icebergRoofNoise;
+    private OctaveSimplexNoiseSampler icebergNoise;
+    private OctaveSimplexNoiseSampler icebergRoofNoise;
 
-    public FrozenUnderwaterSurfaceBuilder(Codec<SurfaceBuilderConfig> codec)
+    public FrozenUnderwaterSurfaceBuilder(Codec<TernarySurfaceConfig> codec)
     {
         super(codec);
     }
 
     @Override
-    public void apply(Random random, IChunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double noise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, SurfaceBuilderConfig config)
+    public void generate(Random random, Chunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double noise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, TernarySurfaceConfig config)
     {
         throw new UnsupportedOperationException("GlacierSurfaceBuilder must be used with a chunk generator which supports IContextSurfaceBuilder!");
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public void applyWithContext(IWorld worldIn, ChunkData chunkData, Random random, IChunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double surfaceNoise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, SurfaceBuilderConfig config)
+    public void applyWithContext(WorldAccess worldIn, ChunkData chunkData, Random random, Chunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double surfaceNoise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, TernarySurfaceConfig config)
     {
-        final BlockState packedIce = Blocks.PACKED_ICE.defaultBlockState();
-        final BlockState snowBlock = Blocks.SNOW_BLOCK.defaultBlockState();
+        final BlockState packedIce = Blocks.PACKED_ICE.getDefaultState();
+        final BlockState snowBlock = Blocks.SNOW_BLOCK.getDefaultState();
 
         double icebergMaxY = 0.0D;
         double icebergMinY = 0.0D;
@@ -61,7 +60,7 @@ public class FrozenUnderwaterSurfaceBuilder extends SeededSurfaceBuilder<Surface
 
         double thresholdTemperature = -1f;
         double cutoffTemperature = 3f;
-        double icebergValue = Math.min(Math.abs(surfaceNoise), icebergNoise.getValue(x * 0.1D, z * 0.1D, false) * 15.0D);
+        double icebergValue = Math.min(Math.abs(surfaceNoise), icebergNoise.sample(x * 0.1D, z * 0.1D, false) * 15.0D);
         icebergValue += (thresholdTemperature - maxAnnualTemperature) * 0.2f;
         if (maxAnnualTemperature > thresholdTemperature)
         {
@@ -69,7 +68,7 @@ public class FrozenUnderwaterSurfaceBuilder extends SeededSurfaceBuilder<Surface
         }
         if (icebergValue > 1.8D)
         {
-            final double icebergRoofValue = Math.abs(icebergRoofNoise.getValue(x * 0.09765625D, z * 0.09765625D, false));
+            final double icebergRoofValue = Math.abs(icebergRoofNoise.sample(x * 0.09765625D, z * 0.09765625D, false));
             final double maxIcebergRoofValue = Math.ceil(icebergRoofValue * 40.0D) + 14.0D;
 
             icebergMaxY = icebergValue * icebergValue * 1.2D;
@@ -91,7 +90,7 @@ public class FrozenUnderwaterSurfaceBuilder extends SeededSurfaceBuilder<Surface
 
         final int localX = x & 15;
         final int localZ = z & 15;
-        final SurfaceBuilderConfig underwaterConfig = TFCSurfaceBuilders.UNDERWATER.get().getUnderwaterConfig(x, z, seed);
+        final TernarySurfaceConfig underwaterConfig = TFCSurfaceBuilders.UNDERWATER.getUnderwaterConfig(x, z, seed);
 
         BlockState underState = underwaterConfig.getUnderMaterial();
         BlockState topState = underwaterConfig.getTopMaterial();
@@ -118,9 +117,9 @@ public class FrozenUnderwaterSurfaceBuilder extends SeededSurfaceBuilder<Surface
             {
                 surfaceFlag = -1;
             }
-            else if (!stateAt.is(defaultBlock.getBlock()))
+            else if (!stateAt.isOf(defaultBlock.getBlock()))
             {
-                if (stateAt.is(Blocks.PACKED_ICE) && currentSnowLayers <= maximumSnowLayers && y > minimumSnowY)
+                if (stateAt.isOf(Blocks.PACKED_ICE) && currentSnowLayers <= maximumSnowLayers && y > minimumSnowY)
                 {
                     chunkIn.setBlockState(mutablePos, snowBlock, false);
                     ++currentSnowLayers;
@@ -130,7 +129,7 @@ public class FrozenUnderwaterSurfaceBuilder extends SeededSurfaceBuilder<Surface
             {
                 if (normalSurfaceDepth <= 0)
                 {
-                    topState = Blocks.AIR.defaultBlockState();
+                    topState = Blocks.AIR.getDefaultState();
                     underState = defaultBlock;
                 }
                 else if (y >= seaLevel - 4 && y <= seaLevel + 1)
@@ -163,10 +162,10 @@ public class FrozenUnderwaterSurfaceBuilder extends SeededSurfaceBuilder<Surface
     }
 
     @Override
-    protected void initSeed(long seed)
+    protected void initSeed2(long seed)
     {
-        SharedSeedRandom random = new SharedSeedRandom(seed);
-        this.icebergNoise = new PerlinNoiseGenerator(random, IntStream.rangeClosed(-3, 0));
-        this.icebergRoofNoise = new PerlinNoiseGenerator(random, ImmutableList.of(0));
+        ChunkRandom random = new ChunkRandom(seed);
+        this.icebergNoise = new OctaveSimplexNoiseSampler(random, IntStream.rangeClosed(-3, 0));
+        this.icebergRoofNoise = new OctaveSimplexNoiseSampler(random, ImmutableList.of(0));
     }
 }

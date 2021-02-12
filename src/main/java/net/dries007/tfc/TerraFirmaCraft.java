@@ -115,10 +115,10 @@ public final class TerraFirmaCraft implements ModInitializer {
         TFCSounds.register();
         TFCTileEntities.register();
 
-        TFCBiomes.BIOMES.register(modEventBus);
-        TFCFeatures.FEATURES.register(modEventBus);
+        TFCBiomes.register();
+        TFCFeatures.register();
         TFCDecorators.DECORATORS.register(modEventBus);
-        TFCSurfaceBuilders.SURFACE_BUILDERS.register(modEventBus);
+        TFCSurfaceBuilders.register();
         TFCCarvers.CARVERS.register(modEventBus);
         TFCBlockStateProviderTypes.BLOCK_STATE_PROVIDER_TYPES.register(modEventBus);
         TFCBlockPlacers.BLOCK_PLACER_TYPES.register(modEventBus);

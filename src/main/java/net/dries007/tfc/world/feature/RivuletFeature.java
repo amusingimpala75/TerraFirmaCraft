@@ -13,36 +13,36 @@ import java.util.Set;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.util.Direction;
+import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MutableBoundingBox;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.gen.feature.BlockStateFeatureConfig;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.Heightmap;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.feature.Feature;
 
 import com.mojang.serialization.Codec;
+import net.minecraft.world.gen.feature.SingleStateFeatureConfig;
 
-public class RivuletFeature extends Feature<BlockStateFeatureConfig>
+public class RivuletFeature extends Feature<SingleStateFeatureConfig>
 {
-    public RivuletFeature(Codec<BlockStateFeatureConfig> codec)
+    public RivuletFeature(Codec<SingleStateFeatureConfig> codec)
     {
         super(codec);
     }
 
     @Override
-    public boolean place(ISeedReader world, ChunkGenerator generator, Random rand, BlockPos pos, BlockStateFeatureConfig config)
+    public boolean generate(StructureWorldAccess world, ChunkGenerator generator, Random rand, BlockPos pos, SingleStateFeatureConfig config)
     {
         final ChunkPos chunkPos = new ChunkPos(pos);
-        final MutableBoundingBox box = new MutableBoundingBox(chunkPos.getMinBlockX() - 14, chunkPos.getMinBlockZ() - 14, chunkPos.getMaxBlockX() + 14, chunkPos.getMaxBlockZ() + 14); // Leeway so we can check outside this box
+        final BlockBox box = new BlockBox(chunkPos.getStartX() - 14, chunkPos.getStartZ() - 14, chunkPos.getStartX() + 14, chunkPos.getStartZ() + 14); // Leeway so we can check outside this box
 
         // Basic pathfinding down the slope
         final Set<BlockPos> chosen = new HashSet<>();
         final LinkedList<BlockPos> branches = new LinkedList<>();
 
-        final BlockPos startPos = new BlockPos(pos.getX(), world.getHeight(Heightmap.Type.WORLD_SURFACE_WG, pos.getX(), pos.getZ()), pos.getZ());
+        final BlockPos startPos = new BlockPos(pos.getX(), world.getTopY(Heightmap.Type.WORLD_SURFACE_WG, pos.getX(), pos.getZ()), pos.getZ());
         final BlockPos.Mutable mutablePos = new BlockPos.Mutable();
         branches.add(startPos);
 
@@ -68,15 +68,15 @@ public class RivuletFeature extends Feature<BlockStateFeatureConfig>
                 Direction chosenDirection = null;
                 int chosenHeight = 0;
                 int possibleDirections = 0;
-                for (Direction direction : Direction.Plane.HORIZONTAL)
+                for (Direction direction : Direction.Type.HORIZONTAL)
                 {
                     // Check positions in each direction
-                    mutablePos.setWithOffset(lastPos, direction);
-                    if (!box.isInside(mutablePos))
+                    mutablePos.set(lastPos, direction);
+                    if (!box.contains(mutablePos))
                     {
                         continue; // Outside of the bounding box, skip!
                     }
-                    final int height = world.getHeight(Heightmap.Type.WORLD_SURFACE_WG, mutablePos.getX(), mutablePos.getZ());
+                    final int height = world.getTopY(Heightmap.Type.WORLD_SURFACE_WG, mutablePos.getX(), mutablePos.getZ());
                     if (height <= mutablePos.getY())
                     {
                         // Check that the block below is solid
@@ -108,10 +108,10 @@ public class RivuletFeature extends Feature<BlockStateFeatureConfig>
                     }
 
                     // One direction, so proceed
-                    mutablePos.setWithOffset(lastPos, chosenDirection).setY(chosenHeight);
+                    mutablePos.set(lastPos, chosenDirection).setY(chosenHeight);
                     if (!chosen.contains(mutablePos))
                     {
-                        lastPos = mutablePos.immutable();
+                        lastPos = mutablePos.toImmutable();
                         chosen.add(lastPos);
                     }
                     else
@@ -126,17 +126,17 @@ public class RivuletFeature extends Feature<BlockStateFeatureConfig>
         if (!chosen.isEmpty())
         {
             // We have found a path and can generate a magma rivulet
-            final BlockState air = Blocks.AIR.defaultBlockState();
+            final BlockState air = Blocks.AIR.getDefaultState();
             for (BlockPos chosenPos : chosen)
             {
                 // At each position, break the top block, and replace two blocks underneath with magma
                 // The recorded positions are one above the topmost block due to how getHeight works
-                mutablePos.setWithOffset(chosenPos, Direction.DOWN);
-                setBlock(world, mutablePos, air);
+                mutablePos.set(chosenPos, Direction.DOWN);
+                setBlockState(world, mutablePos, air);
                 mutablePos.move(Direction.DOWN);
-                setBlock(world, mutablePos, config.state);
+                setBlockState(world, mutablePos, config.state);
                 mutablePos.move(Direction.DOWN);
-                setBlock(world, mutablePos, config.state);
+                setBlockState(world, mutablePos, config.state);
             }
             return true;
         }

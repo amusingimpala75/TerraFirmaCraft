@@ -13,21 +13,21 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.state.StateContainer;
-import net.minecraft.util.Direction;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.state.StateManager;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.IWorldReader;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
 
 import net.dries007.tfc.common.TFCTags;
 import net.dries007.tfc.common.fluids.FluidProperty;
 import net.dries007.tfc.common.fluids.IFluidLoggable;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.WorldView;
 
-public abstract class KelpTreeBlock extends FacingBlock implements IFluidLoggable
+public abstract class KelpTreeBlock extends ConnectingBlock implements IFluidLoggable
 {
     public static KelpTreeBlock create(AbstractBlock.Settings builder, FluidProperty fluid)
     {
@@ -44,89 +44,89 @@ public abstract class KelpTreeBlock extends FacingBlock implements IFluidLoggabl
     protected KelpTreeBlock(AbstractBlock.Settings builder)
     {
         super(0.3125F, builder);
-        registerDefaultState(stateDefinition.any().setValue(NORTH, Boolean.FALSE).setValue(EAST, Boolean.FALSE).setValue(SOUTH, Boolean.FALSE).setValue(WEST, Boolean.FALSE).setValue(UP, Boolean.FALSE).setValue(DOWN, Boolean.FALSE).setValue(getFluidProperty(), getFluidProperty().keyFor(Fluids.EMPTY)));
+        setDefaultState(getStateManager().getDefaultState().with(NORTH, Boolean.FALSE).with(EAST, Boolean.FALSE).with(SOUTH, Boolean.FALSE).with(WEST, Boolean.FALSE).with(UP, Boolean.FALSE).with(DOWN, Boolean.FALSE).with(getFluidProperty(), getFluidProperty().keyFor(Fluids.EMPTY)));
     }
 
     @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context)
+    public BlockState getPlacementState(ItemPlacementContext context)
     {
-        return getStateForPlacement(context.getLevel(), context.getClickedPos());
+        return getStateForPlacement(context.getWorld(), context.getBlockPos());
     }
 
-    public BlockState getStateForPlacement(IBlockReader world, BlockPos pos)
+    public BlockState getStateForPlacement(BlockView world, BlockPos pos)
     {
-        Block downBlock = world.getBlockState(pos.below()).getBlock();
-        Block upBlock = world.getBlockState(pos.above()).getBlock();
+        Block downBlock = world.getBlockState(pos.down()).getBlock();
+        Block upBlock = world.getBlockState(pos.up()).getBlock();
         Block northBlock = world.getBlockState(pos.north()).getBlock();
         Block eastBlock = world.getBlockState(pos.east()).getBlock();
         Block southBlock = world.getBlockState(pos.south()).getBlock();
         Block westBlock = world.getBlockState(pos.west()).getBlock();
-        return defaultBlockState()
-            .setValue(DOWN, downBlock.is(TFCTags.Blocks.KELP_TREE) || downBlock.is(TFCTags.Blocks.SEA_BUSH_PLANTABLE_ON))
-            .setValue(UP, upBlock.is(TFCTags.Blocks.KELP_TREE))
-            .setValue(NORTH, northBlock.is(TFCTags.Blocks.KELP_TREE))
-            .setValue(EAST, eastBlock.is(TFCTags.Blocks.KELP_TREE))
-            .setValue(SOUTH, southBlock.is(TFCTags.Blocks.KELP_TREE))
-            .setValue(WEST, westBlock.is(TFCTags.Blocks.KELP_TREE));
+        return getDefaultState()
+            .with(DOWN, downBlock.isIn(TFCTags.Blocks.KELP_TREE) || downBlock.isIn(TFCTags.Blocks.SEA_BUSH_PLANTABLE_ON))
+            .with(UP, upBlock.isIn(TFCTags.Blocks.KELP_TREE))
+            .with(NORTH, northBlock.isIn(TFCTags.Blocks.KELP_TREE))
+            .with(EAST, eastBlock.isIn(TFCTags.Blocks.KELP_TREE))
+            .with(SOUTH, southBlock.isIn(TFCTags.Blocks.KELP_TREE))
+            .with(WEST, westBlock.isIn(TFCTags.Blocks.KELP_TREE));
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos)
+    public BlockState getStateForNeighborUpdate(BlockState stateIn, Direction facing, BlockState facingState, WorldAccess worldIn, BlockPos currentPos, BlockPos facingPos)
     {
-        if (!stateIn.canSurvive(worldIn, currentPos))
+        if (!stateIn.canPlaceAt(worldIn, currentPos))
         {
-            worldIn.getBlockTicks().scheduleTick(currentPos, this, 1);
+            worldIn.getBlockTickScheduler().schedule(currentPos, this, 1);
             updateFluid(worldIn, stateIn, currentPos);
             return stateIn;
         }
         else
         {
             updateFluid(worldIn, stateIn, currentPos);
-            boolean flag = facingState.is(TFCTags.Blocks.KELP_TREE) || (facing == Direction.DOWN && facingState.is(TFCTags.Blocks.SEA_BUSH_PLANTABLE_ON));
-            return stateIn.setValue(PROPERTY_BY_DIRECTION.get(facing), flag);
+            boolean flag = facingState.isIn(TFCTags.Blocks.KELP_TREE) || (facing == Direction.DOWN && facingState.isIn(TFCTags.Blocks.SEA_BUSH_PLANTABLE_ON));
+            return stateIn.with(FACING_PROPERTIES.get(facing), flag);
         }
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public void tick(BlockState state, ServerWorld worldIn, BlockPos pos, Random rand)
+    public void scheduledTick(BlockState state, ServerWorld worldIn, BlockPos pos, Random rand)
     {
-        if (!state.canSurvive(worldIn, pos))
+        if (!state.canPlaceAt(worldIn, pos))
         {
-            worldIn.destroyBlock(pos, true);
+            worldIn.breakBlock(pos, true);
         }
     }
 
     @Override
-    public void playerWillDestroy(World worldIn, BlockPos pos, BlockState state, PlayerEntity player)
+    public void onBreak(World worldIn, BlockPos pos, BlockState state, PlayerEntity player)
     {
         updateFluid(worldIn, state, pos);
     }
 
     /**
-     * {@link ChorusPlantBlock#canSurvive}
+     * {@link ChorusPlantBlock#canPlaceAt(BlockState, WorldView, BlockPos)}
      */
     @Override
     @SuppressWarnings("deprecation")
-    public boolean canSurvive(BlockState state, IWorldReader worldIn, BlockPos pos)
+    public boolean canPlaceAt(BlockState state, WorldView worldIn, BlockPos pos)
     {
-        BlockState belowState = worldIn.getBlockState(pos.below());
-        for (Direction direction : Direction.Plane.HORIZONTAL)
+        BlockState belowState = worldIn.getBlockState(pos.down());
+        for (Direction direction : Direction.Type.HORIZONTAL)
         {
-            BlockPos relativePos = pos.relative(direction);
-            if (worldIn.getBlockState(relativePos).getBlock().is(TFCTags.Blocks.KELP_BRANCH))
+            BlockPos relativePos = pos.offset(direction);
+            if (worldIn.getBlockState(relativePos).getBlock().isIn(TFCTags.Blocks.KELP_BRANCH))
             {
 
-                Block below = worldIn.getBlockState(relativePos.below()).getBlock();
-                if (below.is(TFCTags.Blocks.KELP_BRANCH) || below.is(TFCTags.Blocks.SEA_BUSH_PLANTABLE_ON))
+                Block below = worldIn.getBlockState(relativePos.down()).getBlock();
+                if (below.isIn(TFCTags.Blocks.KELP_BRANCH) || below.isIn(TFCTags.Blocks.SEA_BUSH_PLANTABLE_ON))
                 {
                     return true;
                 }
             }
         }
         Block blockIn = belowState.getBlock();
-        return blockIn.is(TFCTags.Blocks.KELP_BRANCH) || blockIn.is(TFCTags.Blocks.SEA_BUSH_PLANTABLE_ON);
+        return blockIn.isIn(TFCTags.Blocks.KELP_BRANCH) || blockIn.isIn(TFCTags.Blocks.SEA_BUSH_PLANTABLE_ON);
     }
 
     @Override
@@ -137,19 +137,19 @@ public abstract class KelpTreeBlock extends FacingBlock implements IFluidLoggabl
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder)
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder)
     {
-        super.createBlockStateDefinition(builder);
+        super.appendProperties(builder);
         builder.add(getFluidProperty());
         builder.add(NORTH, EAST, SOUTH, WEST, UP, DOWN);
     }
 
-    private void updateFluid(IWorld world, BlockState state, BlockPos pos)
+    private void updateFluid(WorldAccess world, BlockState state, BlockPos pos)
     {
-        final Fluid containedFluid = state.getValue(getFluidProperty()).getFluid();
+        final Fluid containedFluid = state.get(getFluidProperty()).getFluid();
         if (containedFluid != Fluids.EMPTY)
         {
-            world.getLiquidTicks().scheduleTick(pos, containedFluid, containedFluid.getTickDelay(world));
+            world.getFluidTickScheduler().schedule(pos, containedFluid, containedFluid.getTickRate(world));
         }
     }
 }

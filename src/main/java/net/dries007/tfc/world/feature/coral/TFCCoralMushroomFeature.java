@@ -9,28 +9,28 @@ package net.dries007.tfc.world.feature.coral;
 import java.util.Random;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.gen.feature.NoFeatureConfig;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.gen.feature.DefaultFeatureConfig;
 
 import com.mojang.serialization.Codec;
 
 public class TFCCoralMushroomFeature extends TFCCoralFeature
 {
-    public TFCCoralMushroomFeature(Codec<NoFeatureConfig> codec)
+    public TFCCoralMushroomFeature(Codec<DefaultFeatureConfig> codec)
     {
         super(codec);
     }
 
     @Override
-    protected boolean placeFeature(IWorld world, Random rand, BlockPos pos, BlockState state)
+    protected boolean placeFeature(WorldAccess world, Random rand, BlockPos pos, BlockState state)
     {
         int i = rand.nextInt(3) + 3;
         int j = rand.nextInt(3) + 3;
         int k = rand.nextInt(3) + 3;
         int l = rand.nextInt(3) + 1;
-        BlockPos.Mutable mutablePos = pos.mutable();
+        BlockPos.Mutable mutablePos = pos.mutableCopy();
 
         for (int x = 0; x <= j; ++x)
         {

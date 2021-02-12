@@ -229,4 +229,6 @@ public final class TFCBiomes
             BiomeType.addTypes(key, BiomeType.CONIFEROUS);
         }
     }
+
+    public static void register() {}
 }

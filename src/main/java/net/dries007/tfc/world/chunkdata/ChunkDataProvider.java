@@ -7,13 +7,13 @@
 package net.dries007.tfc.world.chunkdata;
 
 import com.google.common.annotations.VisibleForTesting;
+import net.dries007.tfc.TerraFirmaCraft;
+import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.chunk.AbstractChunkProvider;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.server.ServerChunkProvider;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.chunk.ChunkManager;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 
 /**
  * This acts as a bridge between the {@link ChunkGenerator}, TFC's chunk data caches and tracking, and the {@link IChunkDataGenerator}.
@@ -26,15 +26,15 @@ public final class ChunkDataProvider
      */
     public static ChunkDataProvider getOrThrow()
     {
-        return getOrThrow(ServerLifecycleHooks.getCurrentServer().overworld());
+        return getOrThrow(TerraFirmaCraft.cache.getOverworld());
     }
 
-    public static ChunkDataProvider getOrThrow(IWorld world)
+    public static ChunkDataProvider getOrThrow(WorldAccess world)
     {
-        AbstractChunkProvider chunkProvider = world.getChunkSource();
-        if (chunkProvider instanceof ServerChunkProvider)
+        ChunkManager chunkProvider = world.getChunkManager();
+        if (chunkProvider instanceof ServerChunkManager)
         {
-            return getOrThrow(((ServerChunkProvider) chunkProvider).getGenerator());
+            return getOrThrow(((ServerChunkManager) chunkProvider).getChunkGenerator());
         }
         throw new IllegalStateException("Tried to access ChunkDataProvider but no ServerChunkProvider was found on world: " + world);
     }

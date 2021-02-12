@@ -10,19 +10,20 @@ import java.util.List;
 import java.util.Random;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
+import net.minecraft.structure.Structure;
+import net.minecraft.structure.StructureManager;
+import net.minecraft.structure.StructurePlacementData;
+import net.minecraft.structure.processor.BlockIgnoreStructureProcessor;
+import net.minecraft.tag.BlockTags;
+import net.minecraft.util.BlockMirror;
+import net.minecraft.util.BlockRotation;
+import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.MutableBoundingBox;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.IServerWorld;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.gen.feature.template.BlockIgnoreStructureProcessor;
-import net.minecraft.world.gen.feature.template.PlacementSettings;
-import net.minecraft.world.gen.feature.template.Template;
-import net.minecraft.world.gen.feature.template.TemplateManager;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.ServerWorldAccess;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.WorldAccess;
 
 import net.dries007.tfc.mixin.world.gen.feature.template.TemplateAccessor;
 
@@ -32,30 +33,29 @@ import net.dries007.tfc.mixin.world.gen.feature.template.TemplateAccessor;
  */
 public final class TreeHelpers
 {
-    private static final Rotation[] ROTATION_VALUES = Rotation.values();
-    private static final Mirror[] MIRROR_VALUES = Mirror.values();
+    private static final BlockRotation[] ROTATION_VALUES = BlockRotation.values();
+    private static final BlockMirror[] MIRROR_VALUES = BlockMirror.values();
 
     /**
-     * A variant of {@link Template#placeInWorld(IServerWorld, BlockPos, PlacementSettings, Random)} that is much simpler and faster for use in tree generation
+     * A variant of {@link net.minecraft.structure.Structure#place(ServerWorldAccess, BlockPos, StructurePlacementData, Random)} that is much simpler and faster for use in tree generation
      * Allows replacing leaves and air blocks
      */
-    @SuppressWarnings("deprecation")
-    public static void placeTemplate(Template template, PlacementSettings placementIn, IWorld worldIn, BlockPos pos)
+    public static void placeTemplate(Structure template, StructurePlacementData placementIn, WorldAccess worldIn, BlockPos pos)
     {
-        List<Template.BlockInfo> transformedBlockInfos = placementIn.getRandomPalette(((TemplateAccessor) template).accessor$getPalettes(), pos).blocks();
-        MutableBoundingBox boundingBox = placementIn.getBoundingBox();
-        for (Template.BlockInfo blockInfo : Template.processBlockInfos(worldIn, pos, pos, placementIn, transformedBlockInfos, template))
+        List<Structure.StructureBlockInfo> transformedBlockInfos = placementIn.getRandomBlockInfos(((TemplateAccessor) template).accessor$getPalettes(), pos).getAll();
+        BlockBox boundingBox = placementIn.getBoundingBox();
+        for (Structure.StructureBlockInfo blockInfo : Structure.process(worldIn, pos, pos, placementIn, transformedBlockInfos))
         {
             BlockPos posAt = blockInfo.pos;
-            if (boundingBox == null || boundingBox.isInside(posAt))
+            if (boundingBox == null || boundingBox.contains(posAt))
             {
                 BlockState stateAt = worldIn.getBlockState(posAt);
-                if (stateAt.isAir(worldIn, posAt) || BlockTags.LEAVES.contains(stateAt.getBlock()))
+                //if (stateAt.isAir(worldIn, posAt) || BlockTags.LEAVES.contains(stateAt.getBlock()))
+                if (stateAt.isAir() || BlockTags.LEAVES.contains(stateAt.getBlock()))
                 {
                     // No world, can't rotate with world context
-                    @SuppressWarnings("deprecation")
                     BlockState stateReplace = blockInfo.state.mirror(placementIn.getMirror()).rotate(placementIn.getRotation());
-                    worldIn.setBlock(posAt, stateReplace, 2);
+                    worldIn.setBlockState(posAt, stateReplace, 2);
                 }
             }
         }
@@ -67,7 +67,7 @@ public final class TreeHelpers
      * @param pos The center position of the trunk
      * @return The height of the trunk placed
      */
-    public static int placeTrunk(ISeedReader world, BlockPos pos, Random random, PlacementSettings settings, TrunkConfig trunk)
+    public static int placeTrunk(StructureWorldAccess world, BlockPos pos, Random random, StructurePlacementData settings, TrunkConfig trunk)
     {
         final int height = trunk.getHeight(random);
         final BlockPos.Mutable mutablePos = new BlockPos.Mutable();
@@ -80,16 +80,16 @@ public final class TreeHelpers
                     mutablePos.set(x, y, z);
                     transformMutable(mutablePos, settings.getMirror(), settings.getRotation());
                     mutablePos.move(pos);
-                    world.setBlock(mutablePos, trunk.state, 3);
+                    world.setBlockState(mutablePos, trunk.state, 3);
                 }
             }
         }
         return height;
     }
 
-    public static TemplateManager getTemplateManager(ISeedReader worldIn)
+    public static StructureManager getTemplateManager(StructureWorldAccess worldIn)
     {
-        return worldIn.getLevel().getServer().getStructureManager();
+        return worldIn.toServerWorld().getServer().getStructureManager();
     }
 
     /**
@@ -97,12 +97,12 @@ public final class TreeHelpers
      * Applies a random rotation and mirror
      * Has a bounding box constrained by the given chunk and surrounding chunks to not cause cascading chunk loading
      */
-    public static PlacementSettings getPlacementSettings(ChunkPos chunkPos, Random random)
+    public static StructurePlacementData getPlacementSettings(ChunkPos chunkPos, Random random)
     {
-        return new PlacementSettings()
-            .setBoundingBox(new MutableBoundingBox(chunkPos.getMinBlockX() - 16, 0, chunkPos.getMinBlockZ() - 16, chunkPos.getMaxBlockX() + 16, 256, chunkPos.getMaxBlockZ() + 16))
+        return new StructurePlacementData()
+            .setBoundingBox(new BlockBox(chunkPos.getStartX() - 16, 0, chunkPos.getStartZ() - 16, chunkPos.getEndX() + 16, 256, chunkPos.getStartZ() + 16))
             .setRandom(random)
-            .addProcessor(BlockIgnoreStructureProcessor.STRUCTURE_AND_AIR)
+            .addProcessor(BlockIgnoreStructureProcessor.IGNORE_AIR_AND_STRUCTURE_BLOCKS)
             .setRotation(randomRotation(random))
             .setMirror(randomMirror(random));
     }
@@ -110,15 +110,15 @@ public final class TreeHelpers
     /**
      * Given a width of a specific parity, return the transformation of the chosen center position.
      */
-    public static BlockPos transformCenter(BlockPos size, PlacementSettings settings)
+    public static BlockPos transformCenter(BlockPos size, StructurePlacementData settings)
     {
         return transform(new BlockPos((size.getX() - 1) / 2, 0, (size.getZ() - 1) / 2), settings.getMirror(), settings.getRotation());
     }
 
     /**
-     * {@link Template#transform(BlockPos, Mirror, Rotation, BlockPos)} but simplified
+     * {@link Structure#transformAround(Vec3d, BlockMirror, BlockRotation, BlockPos)} but simplified
      */
-    public static BlockPos transform(BlockPos pos, Mirror mirrorIn, Rotation rotationIn)
+    public static BlockPos transform(BlockPos pos, BlockMirror mirrorIn, BlockRotation rotationIn)
     {
         int posX = pos.getX();
         int posZ = pos.getZ();
@@ -148,9 +148,9 @@ public final class TreeHelpers
     }
 
     /**
-     * {@link Template#transform(BlockPos, Mirror, Rotation, BlockPos)} but simplified, and works with mutable positions
+     * {@link Structure#transformAround(Vec3d, BlockMirror, BlockRotation, BlockPos)} but simplified, and works with mutable positions
      */
-    public static void transformMutable(BlockPos.Mutable pos, Mirror mirrorIn, Rotation rotationIn)
+    public static void transformMutable(BlockPos.Mutable pos, BlockMirror mirrorIn, BlockRotation rotationIn)
     {
         switch (mirrorIn)
         {
@@ -175,12 +175,12 @@ public final class TreeHelpers
         }
     }
 
-    private static Rotation randomRotation(Random random)
+    private static BlockRotation randomRotation(Random random)
     {
         return ROTATION_VALUES[random.nextInt(ROTATION_VALUES.length)];
     }
 
-    private static Mirror randomMirror(Random random)
+    private static BlockMirror randomMirror(Random random)
     {
         return MIRROR_VALUES[random.nextInt(MIRROR_VALUES.length)];
     }

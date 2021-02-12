@@ -10,8 +10,8 @@ import java.util.Random;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.gen.ChunkGenerator;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.feature.Feature;
 
 import com.mojang.serialization.Codec;
@@ -24,7 +24,7 @@ public class SoilDiscFeature extends Feature<SoilDiscConfig>
     }
 
     @Override
-    public boolean place(ISeedReader world, ChunkGenerator generator, Random random, BlockPos pos, SoilDiscConfig config)
+    public boolean generate(StructureWorldAccess world, ChunkGenerator generator, Random random, BlockPos pos, SoilDiscConfig config)
     {
         boolean placed = false;
         final int radius = config.getRadius(random);
@@ -46,7 +46,7 @@ public class SoilDiscFeature extends Feature<SoilDiscConfig>
                         final BlockState stateReplacement = config.getState(stateAt);
                         if (stateReplacement != null)
                         {
-                            world.setBlock(mutablePos, stateReplacement, 2);
+                            world.setBlockState(mutablePos, stateReplacement, 2);
                             placed = true;
                         }
                     }

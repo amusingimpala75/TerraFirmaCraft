@@ -40,7 +40,6 @@ public final class Codecs
      * In the former case, the default state will be used.
      * When serializing, this will always use the right side, which serializes to the state based codec.
      */
-    @SuppressWarnings("deprecation")
     public static final Codec<BlockState> LENIENT_BLOCKSTATE = Codec.either(
         nonDefaultedRegistryCodec(Registry.BLOCK).xmap(Block::getDefaultState, BlockState::getBlock),
         BlockState.CODEC
@@ -66,7 +65,7 @@ public final class Codecs
     {
         return Identifier.CODEC.flatXmap(
             id -> registry.getOrEmpty(id).map(DataResult::success).orElseGet(() -> DataResult.error("Unknown registry entry: " + id + " for registry: " + registry.getKey())),
-            value -> DataResult.success(registry.getKey(value))
+            value -> DataResult.success(registry.getId(value))
         );
     }
 
@@ -117,7 +116,7 @@ public final class Codecs
     }
 
     /**
-     * Like {@link Helpers#mapKeyListCodec(Codec)} but for a injective map k -> v
+     * Like {@link Helpers# mapKeyListCodec(Codec)} but for a injective map k -> v
      *
      * @param codec A codec for each key, value element.
      */

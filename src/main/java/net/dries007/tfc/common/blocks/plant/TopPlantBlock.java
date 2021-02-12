@@ -11,13 +11,12 @@ import java.util.function.Supplier;
 
 import net.minecraft.block.*;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.tags.BlockTags;
+import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorldReader;
-import net.minecraftforge.common.ForgeHooks;
+import net.minecraft.world.BlockView;
+import net.minecraft.world.WorldView;
 
 import net.dries007.tfc.config.TFCConfig;
 
@@ -34,30 +33,30 @@ public class TopPlantBlock extends AbstractPlantStemBlock
     @Override
     public void randomTick(BlockState state, ServerWorld worldIn, BlockPos pos, Random random)
     {
-        if (state.getValue(AGE) < 25 && ForgeHooks.onCropsGrowPre(worldIn, pos.relative(growthDirection), worldIn.getBlockState(pos.relative(growthDirection)), random.nextDouble() < TFCConfig.SERVER.plantGrowthChance.get()))
+        if (state.get(AGE) < 25 && ForgeHooks.onCropsGrowPre(worldIn, pos.offset(growthDirection), worldIn.getBlockState(pos.offset(growthDirection)), random.nextDouble() < TFCConfig.SERVER.plantGrowthChance.get()))
         {
-            BlockPos blockpos = pos.relative(growthDirection);
-            if (canGrowInto(worldIn.getBlockState(blockpos)))
+            BlockPos blockpos = pos.offset(growthDirection);
+            if (chooseStemState(worldIn.getBlockState(blockpos)))
             {
-                worldIn.setBlockAndUpdate(blockpos, state.cycle(AGE));
+                worldIn.setBlockState(blockpos, state.cycle(AGE));
                 ForgeHooks.onCropsGrowPost(worldIn, blockpos, worldIn.getBlockState(blockpos));
             }
         }
     }
 
     @Override // lifted from AbstractPlantBlock to add leaves to it
-    public boolean canSurvive(BlockState state, IWorldReader worldIn, BlockPos pos)
+    public boolean canPlaceAt(BlockState state, WorldView worldIn, BlockPos pos)
     {
-        BlockPos blockpos = pos.relative(growthDirection.getOpposite());
+        BlockPos blockpos = pos.offset(growthDirection.getOpposite());
         BlockState blockstate = worldIn.getBlockState(blockpos);
         Block block = blockstate.getBlock();
-        if (!canAttachToBlock(block))
+        if (!canAttachTo(block))
         {
             return false;
         }
         else
         {
-            return block == getHeadBlock() || block == getBodyBlock() || blockstate.is(BlockTags.LEAVES) || blockstate.isFaceSturdy(worldIn, blockpos, growthDirection);
+            return block == getPlant() || block == getStem() || blockstate.isIn(BlockTags.LEAVES) || blockstate.isSideSolidFullSquare(worldIn, blockpos, growthDirection);
         }
     }
 
@@ -68,7 +67,7 @@ public class TopPlantBlock extends AbstractPlantStemBlock
     }
 
     @Override
-    public boolean isValidBonemealTarget(IBlockReader worldIn, BlockPos pos, BlockState state, boolean isClient)
+    public boolean isFertilizable(BlockView worldIn, BlockPos pos, BlockState state, boolean isClient)
     {
         return false;
     }
@@ -82,6 +81,6 @@ public class TopPlantBlock extends AbstractPlantStemBlock
     @Override
     protected boolean chooseStemState(BlockState state)
     {
-        return PlantBlockHelper.isValidGrowthState(state);
+        return VineLogic.isValidForWeepingStem(state);
     }
 }

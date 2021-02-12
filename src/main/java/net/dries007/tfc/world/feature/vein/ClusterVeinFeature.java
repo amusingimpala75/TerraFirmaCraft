@@ -8,8 +8,8 @@ package net.dries007.tfc.world.feature.vein;
 
 import java.util.Random;
 
+import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MutableBoundingBox;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.world.noise.INoise3D;
@@ -29,9 +29,9 @@ public class ClusterVeinFeature extends VeinFeature<VeinConfig, ClusterVeinFeatu
     }
 
     @Override
-    protected MutableBoundingBox getBoundingBox(VeinConfig config)
+    protected BlockBox getBoundingBox(VeinConfig config)
     {
-        return new MutableBoundingBox(-config.getSize(), -config.getSize(), -config.getSize(), config.getSize(), config.getSize(), config.getSize());
+        return new BlockBox(-config.getSize(), -config.getSize(), -config.getSize(), config.getSize(), config.getSize(), config.getSize());
     }
 
     @Override

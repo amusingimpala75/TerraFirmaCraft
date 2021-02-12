@@ -12,26 +12,25 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.IChunk;
-import net.minecraft.world.gen.surfacebuilders.SurfaceBuilder;
-import net.minecraft.world.gen.surfacebuilders.SurfaceBuilderConfig;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.gen.surfacebuilder.SurfaceBuilder;
+import net.minecraft.world.gen.surfacebuilder.TernarySurfaceConfig;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.world.noise.INoise2D;
 import net.dries007.tfc.world.noise.OpenSimplex2D;
 
-public class UnderwaterSurfaceBuilder extends SeededSurfaceBuilder<SurfaceBuilderConfig>
+public class UnderwaterSurfaceBuilder extends SeededSurfaceBuilder<TernarySurfaceConfig>
 {
     private INoise2D variantNoise;
 
-    public UnderwaterSurfaceBuilder(Codec<SurfaceBuilderConfig> codec)
+    public UnderwaterSurfaceBuilder(Codec<TernarySurfaceConfig> codec)
     {
         super(codec);
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public void apply(Random random, IChunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double noise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, SurfaceBuilderConfig config)
+    public void generate(Random random, Chunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double noise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, TernarySurfaceConfig config)
     {
         // Use underwater config for all locations
         // Otherwise this is identical to normal surface builder
@@ -62,7 +61,7 @@ public class UnderwaterSurfaceBuilder extends SeededSurfaceBuilder<SurfaceBuilde
                     surfaceDepth = maxSurfaceDepth;
                     if (maxSurfaceDepth <= 0)
                     {
-                        topState = Blocks.AIR.defaultBlockState();
+                        topState = Blocks.AIR.getDefaultState();
                         underState = defaultBlock;
                     }
                     else if (y < seaLevel - 1)
@@ -87,15 +86,15 @@ public class UnderwaterSurfaceBuilder extends SeededSurfaceBuilder<SurfaceBuilde
         }
     }
 
-    public SurfaceBuilderConfig getUnderwaterConfig(int x, int z, long seed)
+    public TernarySurfaceConfig getUnderwaterConfig(int x, int z, long seed)
     {
-        initNoise(seed);
+        initSeed(seed);
         float variantValue = variantNoise.noise(x, z);
-        return variantValue > 0 ? SurfaceBuilder.CONFIG_FULL_SAND : SurfaceBuilder.CONFIG_GRAVEL;
+        return variantValue > 0 ? SurfaceBuilder.SAND_SAND_UNDERWATER_CONFIG : SurfaceBuilder.GRAVEL_CONFIG;
     }
 
     @Override
-    public void initSeed(long seed)
+    public void initSeed2(long seed)
     {
         variantNoise = new OpenSimplex2D(seed).octaves(2).spread(0.015f);
     }

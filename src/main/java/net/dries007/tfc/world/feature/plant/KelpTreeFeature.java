@@ -9,50 +9,50 @@ package net.dries007.tfc.world.feature.plant;
 import java.util.Random;
 
 import net.minecraft.fluid.Fluid;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.gen.feature.BlockStateFeatureConfig;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.Heightmap;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.feature.Feature;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.common.TFCTags;
 import net.dries007.tfc.common.blocks.plant.KelpTreeFlowerBlock;
 import net.dries007.tfc.common.fluids.IFluidLoggable;
+import net.minecraft.world.gen.feature.SingleStateFeatureConfig;
 
-public class KelpTreeFeature extends Feature<BlockStateFeatureConfig>
+public class KelpTreeFeature extends Feature<SingleStateFeatureConfig>
 {
-    public KelpTreeFeature(Codec<BlockStateFeatureConfig> codec)
+    public KelpTreeFeature(Codec<SingleStateFeatureConfig> codec)
     {
         super(codec);
     }
 
     @Override
-    public boolean place(ISeedReader world, ChunkGenerator generator, Random rand, BlockPos pos, BlockStateFeatureConfig config)
+    public boolean generate(StructureWorldAccess world, ChunkGenerator generator, Random rand, BlockPos pos, SingleStateFeatureConfig config)
     {
-        pos = world.getHeightmapPos(Heightmap.Type.OCEAN_FLOOR_WG, pos);
+        pos = world.getTopPosition(Heightmap.Type.OCEAN_FLOOR_WG, pos);
         BlockPos.Mutable mutablePos = new BlockPos.Mutable();
         boolean placedAny = false;
         for (int i = 0; i < 20; i++)
         {
-            mutablePos.setWithOffset(pos, rand.nextInt(10) - rand.nextInt(10), 0, rand.nextInt(10) - rand.nextInt(10));
-            if (!world.isWaterAt(mutablePos) || world.getBlockState(mutablePos).getBlock() instanceof IFluidLoggable)
+            mutablePos.set(pos, rand.nextInt(10) - rand.nextInt(10), 0, rand.nextInt(10) - rand.nextInt(10));
+            if (!world.isWater(mutablePos) || world.getBlockState(mutablePos).getBlock() instanceof IFluidLoggable)
                 continue;
             mutablePos.move(Direction.DOWN);
-            if (!world.getBlockState(mutablePos).is(TFCTags.Blocks.SEA_BUSH_PLANTABLE_ON))
+            if (!world.getBlockState(mutablePos).isIn(TFCTags.Blocks.SEA_BUSH_PLANTABLE_ON))
                 continue;
             mutablePos.move(Direction.UP);
             for (int j = 0; j < 4; j++)
             {
                 mutablePos.move(Direction.UP);
                 //horrendously inefficient check but whatever
-                if (world.getBlockState(mutablePos).getBlock() instanceof IFluidLoggable || !world.isWaterAt(pos))
+                if (world.getBlockState(mutablePos).getBlock() instanceof IFluidLoggable || !world.isWater(pos))
                     break;
             }
             mutablePos.move(Direction.DOWN, 4);
-            Fluid fluid = world.getFluidState(mutablePos).getType();
+            Fluid fluid = world.getFluidState(mutablePos).getFluid();
             KelpTreeFlowerBlock flower = (KelpTreeFlowerBlock) config.state.getBlock();
             if (!flower.getFluidProperty().canContain(fluid))
                 return false;

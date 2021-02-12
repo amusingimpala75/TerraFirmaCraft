@@ -6,13 +6,13 @@
 
 package net.dries007.tfc.world.feature;
 
-import net.minecraft.world.gen.feature.IFeatureConfig;
+import net.minecraft.world.gen.feature.FeatureConfig;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.dries007.tfc.common.types.Rock;
 
-public class BoulderConfig implements IFeatureConfig
+public class BoulderConfig implements FeatureConfig
 {
     public static final Codec<BoulderConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         Rock.BlockType.CODEC.fieldOf("base_type").forGetter(c -> c.baseType),

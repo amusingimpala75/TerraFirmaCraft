@@ -8,17 +8,16 @@ package net.dries007.tfc.world.feature.tree;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
-import net.minecraft.world.gen.feature.IFeatureConfig;
+import net.minecraft.world.gen.feature.FeatureConfig;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.dries007.tfc.world.Codecs;
 
-public class ForestConfig implements IFeatureConfig
+public class ForestConfig implements FeatureConfig
 {
     public static final Codec<ForestConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         Entry.CODEC.listOf().fieldOf("entries").forGetter(c -> c.entries)
@@ -59,10 +58,10 @@ public class ForestConfig implements IFeatureConfig
         private final BlockState leaves;
         private final BlockState twig;
         private final BlockState fallen_leaves;
-        private final Supplier<ConfiguredFeature<?, ?>> treeFeature;
-        private final Optional<Supplier<ConfiguredFeature<?, ?>>> oldGrowthFeature;
+        private final ConfiguredFeature<?, ?> treeFeature;
+        private final Optional<ConfiguredFeature<?, ?>> oldGrowthFeature;
 
-        public Entry(float minRainfall, float maxRainfall, float minAverageTemp, float maxAverageTemp, BlockState log, BlockState leaves, BlockState twig, BlockState fallen_leaves, Supplier<ConfiguredFeature<?, ?>> treeFeature, Optional<Supplier<ConfiguredFeature<?, ?>>> oldGrowthFeature)
+        public Entry(float minRainfall, float maxRainfall, float minAverageTemp, float maxAverageTemp, BlockState log, BlockState leaves, BlockState twig, BlockState fallen_leaves, ConfiguredFeature<?, ?> treeFeature, Optional<ConfiguredFeature<?, ?>> oldGrowthFeature)
         {
             this.minRainfall = minRainfall;
             this.maxRainfall = maxRainfall;
@@ -98,12 +97,12 @@ public class ForestConfig implements IFeatureConfig
 
         public ConfiguredFeature<?, ?> getFeature()
         {
-            return treeFeature.get();
+            return treeFeature;
         }
 
         public ConfiguredFeature<?, ?> getOldGrowthFeature()
         {
-            return oldGrowthFeature.orElse(treeFeature).get();
+            return oldGrowthFeature.orElse(treeFeature);
         }
 
         public BlockState getLog()

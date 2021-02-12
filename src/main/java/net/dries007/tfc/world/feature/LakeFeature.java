@@ -10,38 +10,37 @@ import java.util.Random;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.material.Material;
+import net.minecraft.block.Material;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.SectionPos;
-import net.minecraft.world.ISeedReader;
+import net.minecraft.util.math.ChunkSectionPos;
 import net.minecraft.world.LightType;
-import net.minecraft.world.gen.ChunkGenerator;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
+import net.minecraft.world.gen.feature.DefaultFeatureConfig;
 import net.minecraft.world.gen.feature.Feature;
-import net.minecraft.world.gen.feature.NoFeatureConfig;
-import net.minecraft.world.gen.feature.structure.Structure;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.common.blocks.soil.IDirtBlock;
+import net.minecraft.world.gen.feature.StructureFeature;
 
 /**
- * This is a big copy pasta from {@link net.minecraft.world.gen.feature.LakesFeature} with the following changes:
+ * This is a big copy pasta from {@link net.minecraft.world.gen.feature.LakeFeature} with the following changes:
  * - It only works with water, since this is going to be used primarily for surface lakes
  * - It handles TFC dirt / grass transformations correctly
  */
-public class LakeFeature extends Feature<NoFeatureConfig>
+public class LakeFeature extends Feature<DefaultFeatureConfig>
 {
-    public LakeFeature(Codec<NoFeatureConfig> codec)
+    public LakeFeature(Codec<DefaultFeatureConfig> codec)
     {
         super(codec);
     }
 
     @Override
-    @SuppressWarnings("ALL")
-    public boolean place(ISeedReader worldIn, ChunkGenerator chunkGenerator, Random random, BlockPos pos, NoFeatureConfig config)
+    public boolean generate(StructureWorldAccess worldIn, ChunkGenerator chunkGenerator, Random random, BlockPos pos, DefaultFeatureConfig config)
     {
-        while (pos.getY() > 5 && worldIn.isEmptyBlock(pos))
+        while (pos.getY() > 5 && worldIn.isAir(pos))
         {
-            pos = pos.below();
+            pos = pos.down();
         }
 
         if (pos.getY() <= 4)
@@ -50,8 +49,8 @@ public class LakeFeature extends Feature<NoFeatureConfig>
         }
         else
         {
-            pos = pos.below(4);
-            if (worldIn.startsForFeature(SectionPos.of(pos), Structure.VILLAGE).findAny().isPresent())
+            pos = pos.down(4);
+            if (worldIn.getStructures(ChunkSectionPos.from(pos), StructureFeature.VILLAGE).findAny().isPresent())
             {
                 return false;
             }
@@ -97,13 +96,13 @@ public class LakeFeature extends Feature<NoFeatureConfig>
                             boolean flag = !noise[(x * 16 + z) * 8 + y] && (x < 15 && noise[((x + 1) * 16 + z) * 8 + y] || x > 0 && noise[((x - 1) * 16 + z) * 8 + y] || z < 15 && noise[(x * 16 + z + 1) * 8 + y] || z > 0 && noise[(x * 16 + (z - 1)) * 8 + y] || y < 7 && noise[(x * 16 + z) * 8 + y + 1] || y > 0 && noise[(x * 16 + z) * 8 + (y - 1)]);
                             if (flag)
                             {
-                                Material material = worldIn.getBlockState(pos.offset(x, y, z)).getMaterial();
+                                Material material = worldIn.getBlockState(pos.add(x, y, z)).getMaterial();
                                 if (y >= 4 && material.isLiquid())
                                 {
                                     return false;
                                 }
 
-                                if (y < 4 && !material.isSolid() && !worldIn.getBlockState(pos.offset(x, y, z)).is(Blocks.WATER))
+                                if (y < 4 && !material.isSolid() && !worldIn.getBlockState(pos.add(x, y, z)).isOf(Blocks.WATER))
                                 {
                                     return false;
                                 }
@@ -120,7 +119,7 @@ public class LakeFeature extends Feature<NoFeatureConfig>
                         {
                             if (noise[(x * 16 + z) * 8 + y])
                             {
-                                worldIn.setBlock(pos.offset(x, y, z), y >= 4 ? Blocks.AIR.defaultBlockState() : Blocks.WATER.defaultBlockState(), 2);
+                                worldIn.setBlockState(pos.add(x, y, z), y >= 4 ? Blocks.AIR.getDefaultState() : Blocks.WATER.getDefaultState(), 2);
                             }
                         }
                     }
@@ -134,13 +133,13 @@ public class LakeFeature extends Feature<NoFeatureConfig>
                         {
                             if (noise[(x * 16 + z) * 8 + y])
                             {
-                                BlockPos dirtPos = pos.offset(x, y - 1, z);
+                                BlockPos dirtPos = pos.add(x, y - 1, z);
                                 BlockState dirtState = worldIn.getBlockState(dirtPos);
-                                if (dirtState.getBlock() instanceof IDirtBlock && worldIn.getBrightness(LightType.SKY, pos.offset(x, y, z)) > 0)
+                                if (dirtState.getBlock() instanceof IDirtBlock && worldIn.getLightLevel(LightType.SKY, pos.add(x, y, z)) > 0)
                                 {
                                     BlockState grassState = ((IDirtBlock) dirtState.getBlock()).getGrass();
-                                    worldIn.setBlock(dirtPos, grassState, 2);
-                                    worldIn.getBlockTicks().scheduleTick(dirtPos, grassState.getBlock(), 0);
+                                    worldIn.setBlockState(dirtPos, grassState, 2);
+                                    worldIn.getBlockTickScheduler().schedule(dirtPos, grassState.getBlock(), 0);
                                 }
                             }
                         }

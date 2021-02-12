@@ -8,17 +8,18 @@ package net.dries007.tfc.world.feature;
 
 import java.util.Random;
 
+import net.dries007.tfc.mixin.fabric.world.IcebergFeatureAccessor;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.material.Material;
+import net.minecraft.block.Material;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.gen.feature.BlockStateFeatureConfig;
+import net.minecraft.world.WorldAccess;
 import net.minecraft.world.gen.feature.IcebergFeature;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.common.blocks.TFCBlocks;
+import net.minecraft.world.gen.feature.SingleStateFeatureConfig;
 
 /**
  * This is a modified version which overrides two functions which only handle vanilla water blocks
@@ -26,13 +27,13 @@ import net.dries007.tfc.common.blocks.TFCBlocks;
  */
 public class TFCIcebergFeature extends IcebergFeature
 {
-    public TFCIcebergFeature(Codec<BlockStateFeatureConfig> codec)
+    public TFCIcebergFeature(Codec<SingleStateFeatureConfig> codec)
     {
         super(codec);
     }
 
     @Override
-    public void carve(int int1_, int yDiff, BlockPos pos, IWorld worldIn, boolean placeWater, double double_, BlockPos pos1, int int2_, int int_)
+    public void carve(int int1_, int yDiff, BlockPos pos, WorldAccess worldIn, boolean placeWater, double double_, BlockPos pos1, int int2_, int int_)
     {
         int i = int1_ + 1 + int2_ / 3;
         int j = Math.min(int1_ - 3, 3) + int_ / 2 - 1;
@@ -41,21 +42,21 @@ public class TFCIcebergFeature extends IcebergFeature
         {
             for (int l = -i; l < i; ++l)
             {
-                double d0 = this.signedDistanceEllipse(k, l, pos1, i, j, double_);
+                double d0 = ((IcebergFeatureAccessor) this).call$method_13424(k, l, pos1, i, j, double_);
                 if (d0 < 0.0D)
                 {
-                    BlockPos blockpos = pos.offset(k, yDiff, l);
+                    BlockPos blockpos = pos.add(k, yDiff, l);
                     Block block = worldIn.getBlockState(blockpos).getBlock();
-                    if (this.isIcebergBlock(block) || block == Blocks.SNOW_BLOCK)
+                    if (((IcebergFeatureAccessor)this).call$isSnowyOrIcy(block) || block == Blocks.SNOW_BLOCK)
                     {
                         if (placeWater)
                         {
-                            this.setBlock(worldIn, blockpos, TFCBlocks.SALT_WATER.get().defaultBlockState());
+                            this.setBlockState(worldIn, blockpos, TFCBlocks.SALT_WATER.getDefaultState());
                         }
                         else
                         {
-                            this.setBlock(worldIn, blockpos, Blocks.AIR.defaultBlockState());
-                            this.removeFloatingSnowLayer(worldIn, blockpos);
+                            this.setBlockState(worldIn, blockpos, Blocks.AIR.getDefaultState());
+                            ((IcebergFeatureAccessor)this).call$clearSnowAbove(worldIn, blockpos);
                         }
                     }
                 }
@@ -64,20 +65,20 @@ public class TFCIcebergFeature extends IcebergFeature
     }
 
     @Override
-    public void setIcebergBlock(BlockPos pos, IWorld worldIn, Random random, int int_, int int1_, boolean boolean_, boolean boolean1_, BlockState state)
+    public void method_13425(BlockPos pos, WorldAccess worldIn, Random random, int int_, int int1_, boolean boolean_, boolean boolean1_, BlockState state)
     {
         BlockState blockstate = worldIn.getBlockState(pos);
-        if (blockstate.getMaterial() == Material.AIR || blockstate.is(Blocks.SNOW_BLOCK) || blockstate.is(Blocks.ICE) || blockstate.is(TFCBlocks.SALT_WATER.get()))
+        if (blockstate.getMaterial() == Material.AIR || blockstate.isOf(Blocks.SNOW_BLOCK) || blockstate.isOf(Blocks.ICE) || blockstate.isOf(TFCBlocks.SALT_WATER))
         {
             boolean flag = !boolean_ || random.nextDouble() > 0.05D;
             int i = boolean_ ? 3 : 2;
-            if (boolean1_ && !blockstate.is(TFCBlocks.SALT_WATER.get()) && (double) int_ <= (double) random.nextInt(Math.max(1, int1_ / i)) + (double) int1_ * 0.6D && flag)
+            if (boolean1_ && !blockstate.isOf(TFCBlocks.SALT_WATER) && (double) int_ <= (double) random.nextInt(Math.max(1, int1_ / i)) + (double) int1_ * 0.6D && flag)
             {
-                this.setBlock(worldIn, pos, Blocks.SNOW_BLOCK.defaultBlockState());
+                this.setBlockState(worldIn, pos, Blocks.SNOW_BLOCK.getDefaultState());
             }
             else
             {
-                this.setBlock(worldIn, pos, state);
+                this.setBlockState(worldIn, pos, state);
             }
         }
     }

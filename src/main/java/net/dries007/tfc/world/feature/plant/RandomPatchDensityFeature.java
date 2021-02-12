@@ -9,32 +9,32 @@ package net.dries007.tfc.world.feature.plant;
 import java.util.Random;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.gen.feature.BlockClusterFeatureConfig;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.Heightmap;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.feature.Feature;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.common.blocks.TFCBlockStateProperties;
 import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.dries007.tfc.world.chunkdata.ForestType;
+import net.minecraft.world.gen.feature.RandomPatchFeatureConfig;
 
 //only use this with TFC plants (it sets the AGE property)
-public class RandomPatchDensityFeature extends Feature<BlockClusterFeatureConfig>
+public class RandomPatchDensityFeature extends Feature<RandomPatchFeatureConfig>
 {
-    public RandomPatchDensityFeature(Codec<BlockClusterFeatureConfig> codec)
+    public RandomPatchDensityFeature(Codec<RandomPatchFeatureConfig> codec)
     {
         super(codec);
     }
 
     //unused: project, canReplace
     @Override
-    public boolean place(ISeedReader world, ChunkGenerator generator, Random rand, BlockPos pos, BlockClusterFeatureConfig config)
+    public boolean generate(StructureWorldAccess world, ChunkGenerator generator, Random rand, BlockPos pos, RandomPatchFeatureConfig config)
     {
-        BlockState blockstate = config.stateProvider.getState(rand, pos);
+        BlockState blockstate = config.stateProvider.getBlockState(rand, pos);
         int i = 0;
         BlockPos.Mutable mutablePos = new BlockPos.Mutable();
         ChunkData data = ChunkData.get(world, mutablePos);
@@ -45,12 +45,12 @@ public class RandomPatchDensityFeature extends Feature<BlockClusterFeatureConfig
         int tries = Math.min((int) (config.tries * density), 128);
         for (int j = 0; j < tries; ++j)
         {
-            mutablePos.setWithOffset(world.getHeightmapPos(Heightmap.Type.WORLD_SURFACE_WG, pos), rand.nextInt(config.xspread + 1) - rand.nextInt(config.xspread + 1), -1, rand.nextInt(config.zspread + 1) - rand.nextInt(config.zspread + 1));
+            mutablePos.set(world.getTopPosition(Heightmap.Type.WORLD_SURFACE_WG, pos), rand.nextInt(config.spreadX + 1) - rand.nextInt(config.spreadX + 1), -1, rand.nextInt(config.spreadZ + 1) - rand.nextInt(config.spreadZ + 1));
             BlockState state = world.getBlockState(mutablePos);
             mutablePos.move(Direction.UP);
-            if ((world.isEmptyBlock(mutablePos) && blockstate.canSurvive(world, mutablePos) && (config.whitelist.isEmpty() || config.whitelist.contains(state.getBlock())) && !config.blacklist.contains(state)))
+            if ((world.isAir(mutablePos) && blockstate.canPlaceAt(world, mutablePos) && (config.whitelist.isEmpty() || config.whitelist.contains(state.getBlock())) && !config.blacklist.contains(state)))
             {
-                config.blockPlacer.place(world, mutablePos, blockstate.setValue(TFCBlockStateProperties.AGE_3, rand.nextInt(4)), rand); //randomize age
+                config.blockPlacer.generate(world, mutablePos, blockstate.with(TFCBlockStateProperties.AGE_3, rand.nextInt(4)), rand); //randomize age
                 ++i;
             }
         }

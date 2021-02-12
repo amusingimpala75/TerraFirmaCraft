@@ -8,16 +8,16 @@ package net.dries007.tfc.world.feature.tree;
 
 import java.util.Random;
 
+import net.minecraft.structure.Structure;
+import net.minecraft.structure.StructureManager;
+import net.minecraft.structure.StructurePlacementData;
+import net.minecraft.structure.processor.BlockRotStructureProcessor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.feature.template.IntegrityProcessor;
-import net.minecraft.world.gen.feature.template.PlacementSettings;
-import net.minecraft.world.gen.feature.template.Template;
-import net.minecraft.world.gen.feature.template.TemplateManager;
 
 import com.mojang.serialization.Codec;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 
 public class OverlayTreeFeature extends TreeFeature<OverlayTreeConfig>
 {
@@ -27,14 +27,14 @@ public class OverlayTreeFeature extends TreeFeature<OverlayTreeConfig>
     }
 
     @Override
-    public boolean place(ISeedReader worldIn, ChunkGenerator generator, Random random, BlockPos pos, OverlayTreeConfig config)
+    public boolean generate(StructureWorldAccess worldIn, ChunkGenerator generator, Random random, BlockPos pos, OverlayTreeConfig config)
     {
         final ChunkPos chunkPos = new ChunkPos(pos);
         final BlockPos.Mutable mutablePos = new BlockPos.Mutable().set(pos);
-        final TemplateManager manager = TreeHelpers.getTemplateManager(worldIn);
-        final PlacementSettings settings = TreeHelpers.getPlacementSettings(chunkPos, random);
-        final Template structureBase = manager.getOrCreate(config.base);
-        final Template structureOverlay = manager.getOrCreate(config.overlay);
+        final StructureManager manager = TreeHelpers.getTemplateManager(worldIn);
+        final StructurePlacementData settings = TreeHelpers.getPlacementSettings(chunkPos, random);
+        final Structure structureBase = manager.getStructureOrBlank(config.base);
+        final Structure structureOverlay = manager.getStructureOrBlank(config.overlay);
 
         if (!isValidLocation(worldIn, mutablePos) || !isAreaClear(worldIn, mutablePos, config.radius, 3))
         {
@@ -47,7 +47,7 @@ public class OverlayTreeFeature extends TreeFeature<OverlayTreeConfig>
         });
 
         TreeHelpers.placeTemplate(structureBase, settings, worldIn, mutablePos.subtract(TreeHelpers.transformCenter(structureBase.getSize(), settings)));
-        settings.addProcessor(new IntegrityProcessor(config.overlayIntegrity));
+        settings.addProcessor(new BlockRotStructureProcessor(config.overlayIntegrity));
         TreeHelpers.placeTemplate(structureOverlay, settings, worldIn, mutablePos.subtract(TreeHelpers.transformCenter(structureOverlay.getSize(), settings)));
         return true;
     }

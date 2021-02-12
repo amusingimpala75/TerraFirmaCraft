@@ -9,28 +9,28 @@ package net.dries007.tfc.world.feature;
 import java.util.Random;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.gen.ChunkGenerator;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.feature.Feature;
-import net.minecraft.world.gen.feature.LiquidsConfig;
 
 import com.mojang.serialization.Codec;
+import net.minecraft.world.gen.feature.SpringFeatureConfig;
 
 /**
  * A cleaned up version of {@link net.minecraft.world.gen.feature.SpringFeature}
  */
-public class SpringFeature extends Feature<LiquidsConfig>
+public class SpringFeature extends Feature<SpringFeatureConfig>
 {
-    public SpringFeature(Codec<LiquidsConfig> codec)
+    public SpringFeature(Codec<SpringFeatureConfig> codec)
     {
         super(codec);
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public boolean place(ISeedReader worldIn, ChunkGenerator generator, Random random, BlockPos pos, LiquidsConfig config)
+    public boolean generate(StructureWorldAccess worldIn, ChunkGenerator generator, Random random, BlockPos pos, SpringFeatureConfig config)
     {
         final BlockPos.Mutable mutablePos = new BlockPos.Mutable().set(pos).move(0, 1, 0);
         final BlockState stateAbove = worldIn.getBlockState(mutablePos);
@@ -60,8 +60,8 @@ public class SpringFeature extends Feature<LiquidsConfig>
 
                     if (rockCount == config.rockCount && holeCount == config.holeCount)
                     {
-                        worldIn.setBlock(pos, config.state.createLegacyBlock(), 2);
-                        worldIn.getLiquidTicks().scheduleTick(pos, config.state.getType(), 0);
+                        worldIn.setBlockState(pos, config.state.getBlockState(), 2);
+                        worldIn.getFluidTickScheduler().schedule(pos, config.state.getFluid(), 0);
                         return true;
                     }
                 }

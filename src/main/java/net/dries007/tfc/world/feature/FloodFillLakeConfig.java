@@ -15,15 +15,14 @@ import net.minecraft.block.BlockState;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.gen.feature.IFeatureConfig;
+import net.minecraft.world.gen.feature.FeatureConfig;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.dries007.tfc.world.Codecs;
 
-public class FloodFillLakeConfig implements IFeatureConfig
+public class FloodFillLakeConfig implements FeatureConfig
 {
-    @SuppressWarnings("deprecation")
     public static final Codec<FloodFillLakeConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         Codecs.LENIENT_BLOCKSTATE.fieldOf("state").forGetter(FloodFillLakeConfig::getState),
         Codecs.nonDefaultedRegistryCodec(Registry.FLUID).listOf().fieldOf("replace_fluids").forGetter(c -> new ArrayList<>(c.replaceFluids)),

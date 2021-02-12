@@ -7,13 +7,13 @@
 package net.dries007.tfc.world.feature.plant;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.world.gen.feature.IFeatureConfig;
+import net.minecraft.world.gen.feature.FeatureConfig;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.dries007.tfc.world.Codecs;
 
-public class VineConfig implements IFeatureConfig
+public class VineConfig implements FeatureConfig
 {
     public static final Codec<VineConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         Codecs.LENIENT_BLOCKSTATE.fieldOf("state").forGetter(VineConfig::getState),

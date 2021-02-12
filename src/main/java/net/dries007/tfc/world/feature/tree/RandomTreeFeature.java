@@ -8,16 +8,16 @@ package net.dries007.tfc.world.feature.tree;
 
 import java.util.Random;
 
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.structure.Structure;
+import net.minecraft.structure.StructureManager;
+import net.minecraft.structure.StructurePlacementData;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.feature.template.PlacementSettings;
-import net.minecraft.world.gen.feature.template.Template;
-import net.minecraft.world.gen.feature.template.TemplateManager;
+import net.minecraft.world.StructureWorldAccess;
 
 import com.mojang.serialization.Codec;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 
 public class RandomTreeFeature extends TreeFeature<RandomTreeConfig>
 {
@@ -27,14 +27,14 @@ public class RandomTreeFeature extends TreeFeature<RandomTreeConfig>
     }
 
     @Override
-    public boolean place(ISeedReader worldIn, ChunkGenerator generator, Random random, BlockPos pos, RandomTreeConfig config)
+    public boolean generate(StructureWorldAccess worldIn, ChunkGenerator generator, Random random, BlockPos pos, RandomTreeConfig config)
     {
         final ChunkPos chunkPos = new ChunkPos(pos);
         final BlockPos.Mutable mutablePos = new BlockPos.Mutable().set(pos);
-        final TemplateManager manager = TreeHelpers.getTemplateManager(worldIn);
-        final PlacementSettings settings = TreeHelpers.getPlacementSettings(chunkPos, random);
-        final ResourceLocation structureId = config.structureNames.get(random.nextInt(config.structureNames.size()));
-        final Template structure = manager.getOrCreate(structureId);
+        final StructureManager manager = TreeHelpers.getTemplateManager(worldIn);
+        final StructurePlacementData settings = TreeHelpers.getPlacementSettings(chunkPos, random);
+        final Identifier structureId = config.structureNames.get(random.nextInt(config.structureNames.size()));
+        final Structure structure = manager.getStructureOrBlank(structureId);
 
         if (!isValidLocation(worldIn, mutablePos) || !isAreaClear(worldIn, mutablePos, config.radius, 2))
         {

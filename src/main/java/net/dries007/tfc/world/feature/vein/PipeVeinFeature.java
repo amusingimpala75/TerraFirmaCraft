@@ -8,7 +8,7 @@ package net.dries007.tfc.world.feature.vein;
 
 import java.util.Random;
 
-import net.minecraft.util.math.MutableBoundingBox;
+import net.minecraft.util.math.BlockBox;
 
 import com.mojang.serialization.Codec;
 
@@ -20,9 +20,9 @@ public class PipeVeinFeature extends VeinFeature<PipeVeinConfig, Vein>
     }
 
     @Override
-    protected MutableBoundingBox getBoundingBox(PipeVeinConfig config)
+    protected BlockBox getBoundingBox(PipeVeinConfig config)
     {
-        return new MutableBoundingBox(-config.getRadius(), -config.getSize(), -config.getRadius(), config.getRadius(), config.getSize(), config.getRadius());
+        return new BlockBox(-config.getRadius(), -config.getSize(), -config.getRadius(), config.getRadius(), config.getSize(), config.getRadius());
     }
 
     @Override

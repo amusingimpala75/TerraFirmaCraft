@@ -12,6 +12,7 @@
     "fabric.MinecraftServerCache",
     "fabric.block.AbstractBlockStateAccessor",
     "fabric.client.gui.ScreenAccessor",
+    "fabric.world.IcebergFeatureAccessor",
     "fabric.world.WorldMixin",
     "fluid.FlowingFluidAccessor",
     "fluid.FlowingFluidMixin",

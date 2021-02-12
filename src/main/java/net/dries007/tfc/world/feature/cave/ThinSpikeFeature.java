@@ -10,8 +10,8 @@ import java.util.Random;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.gen.ChunkGenerator;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.feature.Feature;
 
 import com.mojang.serialization.Codec;
@@ -25,7 +25,7 @@ public class ThinSpikeFeature extends Feature<ThinSpikeConfig>
     }
 
     @Override
-    public boolean place(ISeedReader world, ChunkGenerator generator, Random rand, BlockPos pos, ThinSpikeConfig config)
+    public boolean generate(StructureWorldAccess world, ChunkGenerator generator, Random rand, BlockPos pos, ThinSpikeConfig config)
     {
         final BlockState spike = config.getState();
         final BlockPos.Mutable mutablePos = new BlockPos.Mutable();
@@ -33,18 +33,18 @@ public class ThinSpikeFeature extends Feature<ThinSpikeConfig>
 
         for (int attempt = 0; attempt < config.getTries(); attempt++)
         {
-            mutablePos.setWithOffset(pos, rand.nextInt(config.getRadius()) - rand.nextInt(config.getRadius()), rand.nextInt(config.getRadius() - rand.nextInt(config.getRadius())), rand.nextInt(config.getRadius()) - rand.nextInt(config.getRadius()));
+            mutablePos.set(pos, rand.nextInt(config.getRadius()) - rand.nextInt(config.getRadius()), rand.nextInt(config.getRadius() - rand.nextInt(config.getRadius())), rand.nextInt(config.getRadius()) - rand.nextInt(config.getRadius()));
             // Move upwards to find a suitable spot
             for (int i = 0; i < 7; i++)
             {
                 mutablePos.move(0, 1, 0);
-                if (!world.isEmptyBlock(mutablePos))
+                if (!world.isAir(mutablePos))
                 {
                     mutablePos.move(0, -1, 0);
                     break;
                 }
             }
-            if (spike.canSurvive(world, mutablePos) && world.isEmptyBlock(mutablePos))
+            if (spike.canPlaceAt(world, mutablePos) && world.isAir(mutablePos))
             {
                 placeSpike(world, mutablePos, spike, rand, config);
                 placedAny = true;
@@ -53,21 +53,21 @@ public class ThinSpikeFeature extends Feature<ThinSpikeConfig>
         return placedAny;
     }
 
-    private void placeSpike(ISeedReader world, BlockPos.Mutable mutablePos, BlockState spike, Random rand, ThinSpikeConfig config)
+    private void placeSpike(StructureWorldAccess world, BlockPos.Mutable mutablePos, BlockState spike, Random rand, ThinSpikeConfig config)
     {
         final int height = config.getHeight(rand);
         for (int i = 0; i < height; i++)
         {
-            setBlock(world, mutablePos, spike);
+            setBlockState(world, mutablePos, spike);
             mutablePos.move(0, -1, 0);
-            if (!world.isEmptyBlock(mutablePos))
+            if (!world.isAir(mutablePos))
             {
                 // Make the previous state the tip, and exit
-                setBlock(world, mutablePos.move(0, 1, 0), spike.setValue(ThinSpikeBlock.TIP, true));
+                setBlockState(world, mutablePos.move(0, 1, 0), spike.with(ThinSpikeBlock.TIP, true));
                 return;
             }
         }
         // Add the tip
-        setBlock(world, mutablePos, spike.setValue(ThinSpikeBlock.TIP, true));
+        setBlockState(world, mutablePos, spike.with(ThinSpikeBlock.TIP, true));
     }
 }

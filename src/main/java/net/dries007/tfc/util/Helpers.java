@@ -320,12 +320,12 @@ public final class Helpers
         return new BlockPos(x + (i & 15), y + (i >> 16 & yMask), z + (i >> 8 & 15));
     }
 
-    public static BlockState getStateForPlacementWithFluid(IWorldReader world, BlockPos pos, BlockState state)
+    public static BlockState getStateForPlacementWithFluid(WorldView world, BlockPos pos, BlockState state)
     {
         FluidState fluid = world.getFluidState(pos);
         if (state.getBlock() instanceof IFluidLoggable)
         {
-            return ((IFluidLoggable) state.getBlock()).getStateWithFluid(state, fluid.getType());
+            return ((IFluidLoggable) state.getBlock()).getStateWithFluid(state, fluid.getFluid());
         }
         return state;
     }

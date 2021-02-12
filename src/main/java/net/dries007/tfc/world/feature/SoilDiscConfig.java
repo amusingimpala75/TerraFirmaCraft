@@ -8,18 +8,18 @@ package net.dries007.tfc.world.feature;
 
 import java.util.Map;
 import java.util.Random;
-import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.gen.feature.IFeatureConfig;
+import net.minecraft.world.gen.feature.FeatureConfig;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.dries007.tfc.world.Codecs;
+import org.jetbrains.annotations.Nullable;
 
-public class SoilDiscConfig implements IFeatureConfig
+public class SoilDiscConfig implements FeatureConfig
 {
     @SuppressWarnings("deprecation")
     public static final Codec<SoilDiscConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(

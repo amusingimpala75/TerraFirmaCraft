@@ -9,12 +9,10 @@ package net.dries007.tfc.world.feature.cave;
 import java.util.Random;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.gen.feature.NoFeatureConfig;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.gen.feature.DefaultFeatureConfig;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.util.Climate;
@@ -23,7 +21,7 @@ import net.dries007.tfc.world.chunkdata.ChunkDataProvider;
 
 public class LargeCaveSpikesFeature extends CaveSpikesFeature
 {
-    public LargeCaveSpikesFeature(Codec<NoFeatureConfig> codec)
+    public LargeCaveSpikesFeature(Codec<DefaultFeatureConfig> codec)
     {
         super(codec);
     }
@@ -31,7 +29,8 @@ public class LargeCaveSpikesFeature extends CaveSpikesFeature
     /**
      * Much larger spikes, calls to the smaller spikes on the outsides
      */
-    public void place(ISeedReader worldIn, BlockPos pos, BlockState spike, BlockState raw, Direction direction, Random rand)
+    @Override
+    public void place(StructureWorldAccess worldIn, BlockPos pos, BlockState spike, BlockState raw, Direction direction, Random rand)
     {
         BlockPos.Mutable mutablePos = new BlockPos.Mutable();
         int height = 6 + rand.nextInt(11);
@@ -49,7 +48,7 @@ public class LargeCaveSpikesFeature extends CaveSpikesFeature
             {
                 for (int z = -radius; z <= radius; z++)
                 {
-                    mutablePos.set(pos).move(x, y * direction.getStepY(), z);
+                    mutablePos.set(pos).move(x, y * direction.getOffsetY(), z);
                     float actualRadius = ((x * x) + (z * z)) / radiusSquared;
                     if (actualRadius < 0.7)
                     {
@@ -63,7 +62,7 @@ public class LargeCaveSpikesFeature extends CaveSpikesFeature
                     else if (actualRadius < 0.85 && rand.nextBoolean())
                     {
                         // Only fill in if continuing downwards
-                        if (worldIn.getBlockState(mutablePos.offset(0, -direction.getStepY(), 0)) == raw)
+                        if (worldIn.getBlockState(mutablePos.add(0, -direction.getOffsetY(), 0)) == raw)
                         {
                             replaceBlockWithoutFluid(worldIn, mutablePos, raw);
                         }

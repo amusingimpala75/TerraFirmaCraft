@@ -8,16 +8,16 @@ package net.dries007.tfc.world.feature.tree;
 
 import java.util.Random;
 
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.structure.Structure;
+import net.minecraft.structure.StructureManager;
+import net.minecraft.structure.StructurePlacementData;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.feature.template.PlacementSettings;
-import net.minecraft.world.gen.feature.template.Template;
-import net.minecraft.world.gen.feature.template.TemplateManager;
+import net.minecraft.world.StructureWorldAccess;
 
 import com.mojang.serialization.Codec;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 
 public class StackedTreeFeature extends TreeFeature<StackedTreeConfig>
 {
@@ -27,12 +27,12 @@ public class StackedTreeFeature extends TreeFeature<StackedTreeConfig>
     }
 
     @Override
-    public boolean place(ISeedReader worldIn, ChunkGenerator chunkGenerator, Random random, BlockPos pos, StackedTreeConfig config)
+    public boolean generate(StructureWorldAccess worldIn, ChunkGenerator chunkGenerator, Random random, BlockPos pos, StackedTreeConfig config)
     {
         final ChunkPos chunkPos = new ChunkPos(pos);
         final BlockPos.Mutable mutablePos = new BlockPos.Mutable().set(pos);
-        final TemplateManager manager = TreeHelpers.getTemplateManager(worldIn);
-        final PlacementSettings settings = TreeHelpers.getPlacementSettings(chunkPos, random);
+        final StructureManager manager = TreeHelpers.getTemplateManager(worldIn);
+        final StructurePlacementData settings = TreeHelpers.getPlacementSettings(chunkPos, random);
 
         if (!isValidLocation(worldIn, mutablePos) || !isAreaClear(worldIn, mutablePos, config.radius, 2))
         {
@@ -49,8 +49,8 @@ public class StackedTreeFeature extends TreeFeature<StackedTreeConfig>
             int layerCount = layer.getCount(random);
             for (int i = 0; i < layerCount; i++)
             {
-                final ResourceLocation structureId = layer.templates.get(random.nextInt(layer.templates.size()));
-                final Template structure = manager.getOrCreate(structureId);
+                final Identifier structureId = layer.templates.get(random.nextInt(layer.templates.size()));
+                final Structure structure = manager.getStructureOrBlank(structureId);
                 TreeHelpers.placeTemplate(structure, settings, worldIn, mutablePos.subtract(TreeHelpers.transformCenter(structure.getSize(), settings)));
                 mutablePos.move(0, structure.getSize().getY(), 0);
             }

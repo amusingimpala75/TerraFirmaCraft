@@ -9,9 +9,9 @@ package net.dries007.tfc.world.surfacebuilder;
 import java.util.Random;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.world.IWorld;
+import net.minecraft.world.WorldAccess;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.IChunk;
+import net.minecraft.world.chunk.Chunk;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.world.biome.BiomeVariants;
@@ -31,7 +31,7 @@ public class VolcanoesSurfaceBuilder extends SeededSurfaceBuilder<ParentedSurfac
     }
 
     @Override
-    public void applyWithContext(IWorld worldIn, ChunkData chunkData, Random random, IChunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double noise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, ParentedSurfaceBuilderConfig config)
+    public void applyWithContext(WorldAccess worldIn, ChunkData chunkData, Random random, Chunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double noise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, ParentedSurfaceBuilderConfig config)
     {
         final BiomeVariants variants = TFCBiomes.getExtensionOrThrow(worldIn, biomeIn).getVariants();
         if (variants.isVolcanic())
@@ -43,7 +43,7 @@ public class VolcanoesSurfaceBuilder extends SeededSurfaceBuilder<ParentedSurfac
             final double heightNoise = noise * 2f + startHeight;
             if (value < variants.getVolcanoChance() && easing > 0.7f && heightNoise > variants.getVolcanoBasaltHeight())
             {
-                TFCSurfaceBuilders.applySurfaceBuilder(TFCSurfaceBuilders.NORMAL.get(), random, chunkIn, biomeIn, x, z, startHeight, noise, defaultBlock, defaultFluid, seaLevel, seed, TFCSurfaceBuilders.BASALT_CONFIG.get());
+                TFCSurfaceBuilders.applySurfaceBuilder(TFCSurfaceBuilders.NORMAL, random, chunkIn, biomeIn, x, z, startHeight, noise, defaultBlock, defaultFluid, seaLevel, seed, TFCSurfaceBuilders.BASALT_CONFIG.get());
                 return;
             }
         }
@@ -51,13 +51,13 @@ public class VolcanoesSurfaceBuilder extends SeededSurfaceBuilder<ParentedSurfac
     }
 
     @Override
-    public void apply(Random random, IChunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double noise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, ParentedSurfaceBuilderConfig config)
+    public void generate(Random random, Chunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double noise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, ParentedSurfaceBuilderConfig config)
     {
         throw new UnsupportedOperationException("VolcanoesSurfaceBuilder must be used with a chunk generator which supports IContextSurfaceBuilder!");
     }
 
     @Override
-    protected void initSeed(long seed)
+    protected void initSeed2(long seed)
     {
         cellNoise = VolcanoNoise.cellNoise(seed);
     }

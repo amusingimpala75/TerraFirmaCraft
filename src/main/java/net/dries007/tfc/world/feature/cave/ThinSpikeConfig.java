@@ -9,13 +9,13 @@ package net.dries007.tfc.world.feature.cave;
 import java.util.Random;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.world.gen.feature.IFeatureConfig;
+import net.minecraft.world.gen.feature.FeatureConfig;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.dries007.tfc.world.Codecs;
 
-public class ThinSpikeConfig implements IFeatureConfig
+public class ThinSpikeConfig implements FeatureConfig
 {
     public static final Codec<ThinSpikeConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         Codecs.LENIENT_BLOCKSTATE.fieldOf("state").forGetter(ThinSpikeConfig::getState),

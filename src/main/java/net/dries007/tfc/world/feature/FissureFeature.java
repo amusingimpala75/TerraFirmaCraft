@@ -10,36 +10,35 @@ import java.util.*;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.feature.BlockStateFeatureConfig;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.feature.Feature;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.common.types.Rock;
 import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.dries007.tfc.world.chunkdata.ChunkDataProvider;
+import net.minecraft.world.gen.feature.SingleStateFeatureConfig;
 
-// todo: need to reduce the frequency with which fissures are able to spawn next to eachother.
-public class FissureFeature extends Feature<BlockStateFeatureConfig>
+// todo: need to reduce the frequency with which fissures are able to spawn next to each other.
+public class FissureFeature extends Feature<SingleStateFeatureConfig>
 {
-    @SuppressWarnings("unused")
-    public FissureFeature(Codec<BlockStateFeatureConfig> configFactoryIn)
+    public FissureFeature(Codec<SingleStateFeatureConfig> configFactoryIn)
     {
         super(configFactoryIn);
     }
 
     @Override
-    public boolean place(ISeedReader worldIn, ChunkGenerator generator, Random rand, BlockPos startPos, BlockStateFeatureConfig config)
+    public boolean generate(StructureWorldAccess worldIn, ChunkGenerator generator, Random rand, BlockPos startPos, SingleStateFeatureConfig config)
     {
-        final BlockPos pos = startPos.below(); // start slightly below the surface
+        final BlockPos pos = startPos.down(); // start slightly below the surface
         final ChunkDataProvider provider = ChunkDataProvider.getOrThrow(generator);
         final ChunkData data = provider.get(pos, ChunkData.Status.ROCKS);
         final Rock bottomRock = data.getRockData().getBottomRock(pos.getX(), pos.getZ());
-        final BlockState rockState = bottomRock.getBlock(Rock.BlockType.RAW).defaultBlockState();
+        final BlockState rockState = bottomRock.getBlock(Rock.BlockType.RAW).getDefaultState();
 
         int depth = 2 + rand.nextInt(3);
         int radius = 1 + rand.nextInt(2);
@@ -49,7 +48,7 @@ public class FissureFeature extends Feature<BlockStateFeatureConfig>
         {
             for (BlockPos clear : clearPositions)
             {
-                setBlock(worldIn, clear.above(y), Blocks.AIR.defaultBlockState());
+                setBlockState(worldIn, clear.up(y), Blocks.AIR.getDefaultState());
             }
         }
 
@@ -101,7 +100,7 @@ public class FissureFeature extends Feature<BlockStateFeatureConfig>
         Set<BlockPos> blocks = new HashSet<>();
         for (int y = 0; y < depth; y++)
         {
-            BlockPos centerHeight = center.below(y);
+            BlockPos centerHeight = center.down(y);
             double rSq = Math.pow(radius, 2);
             for (int x = -radius + centerHeight.getX(); x <= +radius + centerHeight.getX(); x++)
             {
@@ -121,7 +120,7 @@ public class FissureFeature extends Feature<BlockStateFeatureConfig>
                                     while (off < maxOffset && random.nextFloat() < 0.35f)
                                     {
                                         off++;
-                                        blocks.add(b.relative(facing));
+                                        blocks.add(b.offset(facing));
                                     }
                                 }
                             }
@@ -132,9 +131,9 @@ public class FissureFeature extends Feature<BlockStateFeatureConfig>
         }
         // Now, let's make a "tunnel" all way down so this is gonna look a bit more like a fissure
         int tunnelDepth = depth + 20 + random.nextInt(60);
-        int tunnelY = center.below(tunnelDepth).getY();
+        int tunnelY = center.down(tunnelDepth).getY();
         if (tunnelY < 20) tunnelY = 20;
-        BlockPos tunnelPos = center.below(depth);
+        BlockPos tunnelPos = center.down(depth);
         blocks.add(tunnelPos);
         radius = 8;
         while (tunnelPos.getY() > tunnelY)
@@ -142,45 +141,45 @@ public class FissureFeature extends Feature<BlockStateFeatureConfig>
             int value = random.nextInt(8); // 50% down, 12.5% each side
             if (value < 1)
             {
-                tunnelPos = tunnelPos.relative(Direction.NORTH);
+                tunnelPos = tunnelPos.offset(Direction.NORTH);
             }
             else if (value < 2)
             {
-                tunnelPos = tunnelPos.relative(Direction.SOUTH);
+                tunnelPos = tunnelPos.offset(Direction.SOUTH);
             }
             else if (value < 3)
             {
-                tunnelPos = tunnelPos.relative(Direction.EAST);
+                tunnelPos = tunnelPos.offset(Direction.EAST);
             }
             else if (value < 4)
             {
-                tunnelPos = tunnelPos.relative(Direction.WEST);
+                tunnelPos = tunnelPos.offset(Direction.WEST);
             }
             else
             {
-                tunnelPos = tunnelPos.below();
+                tunnelPos = tunnelPos.down();
             }
             // Keep it under control
             if (tunnelPos.getX() > center.getX() + radius)
             {
-                tunnelPos = tunnelPos.offset(-1, 0, 0);
+                tunnelPos = tunnelPos.add(-1, 0, 0);
             }
             if (tunnelPos.getX() < center.getX() - radius)
             {
-                tunnelPos = tunnelPos.offset(1, 0, 0);
+                tunnelPos = tunnelPos.add(1, 0, 0);
             }
             if (tunnelPos.getZ() > center.getZ() + radius)
             {
-                tunnelPos = tunnelPos.offset(0, 0, -1);
+                tunnelPos = tunnelPos.add(0, 0, -1);
             }
             if (tunnelPos.getZ() < center.getZ() - radius)
             {
-                tunnelPos = tunnelPos.offset(0, 0, 1);
+                tunnelPos = tunnelPos.add(0, 0, 1);
             }
             blocks.add(tunnelPos);
-            for (Direction horiz : Direction.Plane.HORIZONTAL)
+            for (Direction horiz : Direction.Type.HORIZONTAL)
             {
-                blocks.add(tunnelPos.relative(horiz));
+                blocks.add(tunnelPos.offset(horiz));
             }
         }
         return blocks;
@@ -188,18 +187,18 @@ public class FissureFeature extends Feature<BlockStateFeatureConfig>
 
     // A bit smarter fill, try to not fill the "insides" with rock
     // Needs more tweaking
-    private void smartFill(IWorld worldIn, BlockPos pos, Set<BlockPos> fillBlockPos, BlockState rock, BlockState fillBlock)
+    private void smartFill(WorldAccess worldIn, BlockPos pos, Set<BlockPos> fillBlockPos, BlockState rock, BlockState fillBlock)
     {
-        setBlock(worldIn, pos, fillBlock);
+        setBlockState(worldIn, pos, fillBlock);
         for (Direction facing : Direction.values())
         {
             if (facing == Direction.UP) continue;
-            if (worldIn.getBlockState(pos.relative(facing)) == fillBlock) continue;
-            BlockPos rockPos = pos.relative(facing);
+            if (worldIn.getBlockState(pos.offset(facing)) == fillBlock) continue;
+            BlockPos rockPos = pos.offset(facing);
             int filledBlocks = 0;
             for (Direction facing2 : Direction.values())
             {
-                BlockPos facingPos = rockPos.relative(facing2);
+                BlockPos facingPos = rockPos.offset(facing2);
                 if (fillBlockPos.contains(facingPos))
                 {
                     filledBlocks++;
@@ -207,11 +206,11 @@ public class FissureFeature extends Feature<BlockStateFeatureConfig>
             }
             if (filledBlocks < 3)
             {
-                setBlock(worldIn, rockPos, rock);
+                setBlockState(worldIn, rockPos, rock);
             }
             else
             {
-                setBlock(worldIn, rockPos, fillBlock);
+                setBlockState(worldIn, rockPos, fillBlock);
             }
         }
     }

@@ -8,16 +8,16 @@ package net.dries007.tfc.world.feature.plant;
 
 import java.util.Random;
 
-import net.minecraft.block.AbstractTopPlantBlock;
+import net.minecraft.block.AbstractPlantStemBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.Heightmap;
+import net.minecraft.world.Heightmap;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.feature.Feature;
 
 import com.mojang.serialization.Codec;
@@ -32,22 +32,23 @@ public class TFCKelpFeature extends Feature<TallPlantConfig>
         super(codec);
     }
 
-    public boolean place(ISeedReader world, ChunkGenerator generator, Random rand, BlockPos pos, TallPlantConfig config)
+    @Override
+    public boolean generate(StructureWorldAccess world, ChunkGenerator generator, Random rand, BlockPos pos, TallPlantConfig config)
     {
-        if (!((TFCKelpTopBlock) (config.getHeadState().getBlock())).getFluidProperty().canContain(world.getBlockState(pos).getFluidState().getType()))
+        if (!((TFCKelpTopBlock) (config.getHeadState().getBlock())).getFluidProperty().canContain(world.getBlockState(pos).getFluidState().getFluid()))
             return false;
         BlockPos.Mutable mutablePos = new BlockPos.Mutable();
         boolean placedAny = false;
         int radius = config.getRadius();
         for (int i = 0; i < config.getTries(); i++)
         {
-            mutablePos.setWithOffset(pos, rand.nextInt(radius) - rand.nextInt(radius), 0, rand.nextInt(radius) - rand.nextInt(radius));
-            mutablePos.set(world.getHeightmapPos(Heightmap.Type.OCEAN_FLOOR, mutablePos));
+            mutablePos.set(pos, rand.nextInt(radius) - rand.nextInt(radius), 0, rand.nextInt(radius) - rand.nextInt(radius));
+            mutablePos.set(world.getTopPosition(Heightmap.Type.OCEAN_FLOOR, mutablePos));
             mutablePos.move(Direction.DOWN);
-            if (!world.getBlockState(mutablePos).is(TFCTags.Blocks.SEA_BUSH_PLANTABLE_ON))
+            if (!world.getBlockState(mutablePos).isIn(TFCTags.Blocks.SEA_BUSH_PLANTABLE_ON))
                 return false;
             mutablePos.move(Direction.UP);
-            if (world.isWaterAt(mutablePos) && !(world.getBlockState(mutablePos).getBlock() instanceof IFluidLoggable))
+            if (world.isWater(mutablePos) && !(world.getBlockState(mutablePos).getBlock() instanceof IFluidLoggable))
             {
                 placeColumn(world, rand, mutablePos, rand.nextInt(config.getMaxHeight() - config.getMinHeight()) + config.getMinHeight(), 17, 25, getWetBlock(world, mutablePos, config.getBodyState()), getWetBlock(world, mutablePos, config.getHeadState()));
                 placedAny = true;
@@ -56,31 +57,31 @@ public class TFCKelpFeature extends Feature<TallPlantConfig>
         return placedAny;
     }
 
-    public static void placeColumn(IWorld world, Random rand, BlockPos.Mutable mutablePos, int height, int minAge, int maxAge, BlockState body, BlockState head)
+    public static void placeColumn(WorldAccess world, Random rand, BlockPos.Mutable mutablePos, int height, int minAge, int maxAge, BlockState body, BlockState head)
     {
         for (int i = 1; i <= height; ++i)
         {
-            if (world.isWaterAt(mutablePos) && body.canSurvive(world, mutablePos))
+            if (world.isWater(mutablePos) && body.canPlaceAt(world, mutablePos))
             {
-                if (i == height || !world.isWaterAt(mutablePos.above()))
+                if (i == height || !world.isWater(mutablePos.up()))
                 {
-                    if (!world.getBlockState(mutablePos.below()).is(head.getBlock()))
-                        world.setBlock(mutablePos, head.setValue(AbstractTopPlantBlock.AGE, MathHelper.nextInt(rand, minAge, maxAge)), 16);
+                    if (!world.getBlockState(mutablePos.down()).isOf(head.getBlock()))
+                        world.setBlockState(mutablePos, head.with(AbstractPlantStemBlock.AGE, MathHelper.nextInt(rand, minAge, maxAge)), 16);
                     return;
                 }
-                world.setBlock(mutablePos, body, 16);
+                world.setBlockState(mutablePos, body, 16);
             }
             mutablePos.move(Direction.UP);
         }
     }
 
-    private static BlockState getWetBlock(IWorld world, BlockPos pos, BlockState state)
+    private static BlockState getWetBlock(WorldAccess world, BlockPos pos, BlockState state)
     {
         if (state.getBlock() instanceof IFluidLoggable)
         {
             IFluidLoggable block = (IFluidLoggable) state.getBlock();
-            BlockState setState = block.getStateWithFluid(state, world.getFluidState(pos).getType());
-            if (setState.getValue(block.getFluidProperty()).getFluid() != Fluids.EMPTY)
+            BlockState setState = block.getStateWithFluid(state, world.getFluidState(pos).getFluid());
+            if (setState.get(block.getFluidProperty()).getFluid() != Fluids.EMPTY)
                 return setState;
         }
         return state;

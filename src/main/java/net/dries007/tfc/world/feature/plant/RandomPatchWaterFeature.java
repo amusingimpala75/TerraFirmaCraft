@@ -9,41 +9,41 @@ package net.dries007.tfc.world.feature.plant;
 import java.util.Random;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.gen.ChunkGenerator;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.gen.feature.BlockClusterFeatureConfig;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.Heightmap;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.feature.Feature;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.common.TFCTags;
 import net.dries007.tfc.common.fluids.IFluidLoggable;
+import net.minecraft.world.gen.feature.RandomPatchFeatureConfig;
 
-public class RandomPatchWaterFeature extends Feature<BlockClusterFeatureConfig>
+public class RandomPatchWaterFeature extends Feature<RandomPatchFeatureConfig>
 {
-    public RandomPatchWaterFeature(Codec<BlockClusterFeatureConfig> codec)
+    public RandomPatchWaterFeature(Codec<RandomPatchFeatureConfig> codec)
     {
         super(codec);
     }
 
     //unused: project, canReplace
     @Override
-    public boolean place(ISeedReader world, ChunkGenerator generator, Random rand, BlockPos pos, BlockClusterFeatureConfig config)
+    public boolean generate(StructureWorldAccess world, ChunkGenerator generator, Random rand, BlockPos pos, RandomPatchFeatureConfig config)
     {
-        BlockState blockstate = config.stateProvider.getState(rand, pos);
+        BlockState blockstate = config.stateProvider.getBlockState(rand, pos);
         int i = 0;
         BlockPos.Mutable mutablePos = new BlockPos.Mutable();
 
         for (int j = 0; j < config.tries; ++j)
         {
-            mutablePos.setWithOffset(world.getHeightmapPos(Heightmap.Type.OCEAN_FLOOR_WG, pos), rand.nextInt(config.xspread + 1) - rand.nextInt(config.xspread + 1), rand.nextInt(config.yspread + 1) - rand.nextInt(config.yspread + 1) - 1, rand.nextInt(config.zspread + 1) - rand.nextInt(config.zspread + 1));
+            mutablePos.set(world.getTopPosition(Heightmap.Type.OCEAN_FLOOR_WG, pos), rand.nextInt(config.spreadX + 1) - rand.nextInt(config.spreadX + 1), rand.nextInt(config.spreadY + 1) - rand.nextInt(config.spreadY + 1) - 1, rand.nextInt(config.spreadZ + 1) - rand.nextInt(config.spreadZ + 1));
             BlockState state = world.getBlockState(mutablePos);
             mutablePos.move(Direction.UP);
-            if ((world.isWaterAt(mutablePos)) && !(world.getBlockState(mutablePos).getBlock() instanceof IFluidLoggable) && state.is(TFCTags.Blocks.SEA_BUSH_PLANTABLE_ON) && (config.whitelist.isEmpty() || config.whitelist.contains(state.getBlock())) && !config.blacklist.contains(state))
+            if ((world.isWater(mutablePos)) && !(world.getBlockState(mutablePos).getBlock() instanceof IFluidLoggable) && state.isIn(TFCTags.Blocks.SEA_BUSH_PLANTABLE_ON) && (config.whitelist.isEmpty() || config.whitelist.contains(state.getBlock())) && !config.blacklist.contains(state))
             {
-                config.blockPlacer.place(world, mutablePos, blockstate, rand);
+                config.blockPlacer.generate(world, mutablePos, blockstate, rand);
                 ++i;
             }
         }

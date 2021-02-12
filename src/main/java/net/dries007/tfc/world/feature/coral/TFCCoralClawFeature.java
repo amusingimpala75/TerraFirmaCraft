@@ -12,23 +12,23 @@ import java.util.Random;
 
 import com.google.common.collect.Lists;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.Direction;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.gen.feature.NoFeatureConfig;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.gen.feature.DefaultFeatureConfig;
 
 import com.mojang.serialization.Codec;
 
 public class TFCCoralClawFeature extends TFCCoralFeature
 {
-    public TFCCoralClawFeature(Codec<NoFeatureConfig> codec)
+    public TFCCoralClawFeature(Codec<DefaultFeatureConfig> codec)
     {
         super(codec);
     }
 
     @Override
-    protected boolean placeFeature(IWorld world, Random rand, BlockPos blockPos_, BlockState state)
+    protected boolean placeFeature(WorldAccess world, Random rand, BlockPos blockPos_, BlockState state)
     {
         if (!placeCoralBlock(world, rand, blockPos_, state))
         {
@@ -36,14 +36,14 @@ public class TFCCoralClawFeature extends TFCCoralFeature
         }
         else
         {
-            Direction direction = Direction.Plane.HORIZONTAL.getRandomDirection(rand);
+            Direction direction = Direction.Type.HORIZONTAL.random(rand);
             int directionTries = rand.nextInt(2) + 2;
-            List<Direction> dirs = Lists.newArrayList(direction, direction.getClockWise(), direction.getCounterClockWise());
+            List<Direction> dirs = Lists.newArrayList(direction, direction.rotateYClockwise(), direction.rotateYCounterclockwise());
             Collections.shuffle(dirs, rand);
 
             for (Direction d : dirs.subList(0, directionTries))
             {
-                BlockPos.Mutable mutablePos = blockPos_.mutable();
+                BlockPos.Mutable mutablePos = blockPos_.mutableCopy();
                 int j = rand.nextInt(2) + 1;
                 mutablePos.move(d);
                 int k;

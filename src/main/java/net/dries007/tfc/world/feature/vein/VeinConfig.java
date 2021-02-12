@@ -11,23 +11,22 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.FastRandom;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.gen.feature.IFeatureConfig;
+import net.minecraft.world.biome.source.SeedMixer;
+import net.minecraft.world.gen.feature.FeatureConfig;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.dries007.tfc.util.collections.IWeighted;
 import net.dries007.tfc.world.Codecs;
+import org.jetbrains.annotations.Nullable;
 
-public class VeinConfig implements IFeatureConfig
+public class VeinConfig implements FeatureConfig
 {
-    @SuppressWarnings("deprecation")
     public static final MapCodec<VeinConfig> MAP_CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
         Codecs.mapKeyListCodec(Codec.mapPair(
             Registry.BLOCK.listOf().fieldOf("stone"),
@@ -68,11 +67,11 @@ public class VeinConfig implements IFeatureConfig
         this.minY = minY;
         this.maxY = maxY;
         this.salt = salt.orElseGet(() -> {
-            long seed = FastRandom.next(size, Float.floatToIntBits(density));
-            seed = FastRandom.next(seed, minY);
-            seed = FastRandom.next(seed, maxY);
-            seed = FastRandom.next(seed, rarity);
-            seed = FastRandom.next(seed, rarity);
+            long seed = SeedMixer.mixSeed(size, Float.floatToIntBits(density));
+            seed = SeedMixer.mixSeed(seed, minY);
+            seed = SeedMixer.mixSeed(seed, maxY);
+            seed = SeedMixer.mixSeed(seed, rarity);
+            seed = SeedMixer.mixSeed(seed, rarity);
             return seed;
         });
     }

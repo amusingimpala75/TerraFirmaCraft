@@ -11,23 +11,23 @@ import java.util.Random;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.ISeedReader;
-import net.minecraft.world.gen.ChunkGenerator;
+import net.minecraft.world.StructureWorldAccess;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
+import net.minecraft.world.gen.feature.DefaultFeatureConfig;
 import net.minecraft.world.gen.feature.Feature;
-import net.minecraft.world.gen.feature.NoFeatureConfig;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.world.noise.Metaballs3D;
 
-public class DebugMetaballsFeature extends Feature<NoFeatureConfig>
+public class DebugMetaballsFeature extends Feature<DefaultFeatureConfig>
 {
-    public DebugMetaballsFeature(Codec<NoFeatureConfig> codec)
+    public DebugMetaballsFeature(Codec<DefaultFeatureConfig> codec)
     {
         super(codec);
     }
 
     @Override
-    public boolean place(ISeedReader world, ChunkGenerator generator, Random random, BlockPos pos, NoFeatureConfig config)
+    public boolean generate(StructureWorldAccess world, ChunkGenerator generator, Random random, BlockPos pos, DefaultFeatureConfig config)
     {
         ChunkPos chunkPos = new ChunkPos(pos);
         if ((chunkPos.x & 1) == 0 && (chunkPos.z & 1) == 0)
@@ -43,7 +43,7 @@ public class DebugMetaballsFeature extends Feature<NoFeatureConfig>
                         mutablePos.set(pos).move(x - 8, y + 200, z - 8);
                         if (noise.noise(x - 16, y - 16, z - 16) > 0.5f)
                         {
-                            world.setBlock(mutablePos, Blocks.IRON_BLOCK.defaultBlockState(), 3);
+                            world.setBlockState(mutablePos, Blocks.IRON_BLOCK.getDefaultState(), 3);
                         }
                     }
                 }
