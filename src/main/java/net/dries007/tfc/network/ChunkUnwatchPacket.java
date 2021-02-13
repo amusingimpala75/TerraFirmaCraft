@@ -8,7 +8,7 @@ package net.dries007.tfc.network;
 
 import java.util.function.Supplier;
 
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraftforge.fml.network.NetworkEvent;
 
@@ -28,13 +28,13 @@ public class ChunkUnwatchPacket
         this.chunkZ = pos.z;
     }
 
-    public ChunkUnwatchPacket(PacketBuffer buffer)
+    public ChunkUnwatchPacket(PacketByteBuf buffer)
     {
         this.chunkX = buffer.readVarInt();
         this.chunkZ = buffer.readVarInt();
     }
 
-    void encode(PacketBuffer buffer)
+    void encode(PacketByteBuf buffer)
     {
         buffer.writeVarInt(chunkX);
         buffer.writeVarInt(chunkZ);

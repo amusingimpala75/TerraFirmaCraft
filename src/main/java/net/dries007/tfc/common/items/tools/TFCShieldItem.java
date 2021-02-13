@@ -6,33 +6,33 @@
 
 package net.dries007.tfc.common.items.tools;
 
-import net.minecraft.item.IItemTier;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ShieldItem;
+import net.minecraft.item.ToolMaterial;
 
 public class TFCShieldItem extends ShieldItem
 {
-    private final IItemTier tier;
+    private final ToolMaterial tier;
 
-    public TFCShieldItem(IItemTier tier, Properties builder)
+    public TFCShieldItem(ToolMaterial tier, Settings builder)
     {
-        super(builder.defaultDurability(tier.getUses()));
+        super(builder.maxDamage(tier.getDurability()));
         this.tier = tier;
     }
 
-    public IItemTier getTier()
+    public ToolMaterial getTier()
     {
         return this.tier;
     }
 
     @Override
-    public int getEnchantmentValue()
+    public int getEnchantability()
     {
-        return this.tier.getEnchantmentValue();
+        return this.tier.getEnchantability();
     }
 
     @Override
-    public boolean isValidRepairItem(ItemStack toRepair, ItemStack repair)
+    public boolean canRepair(ItemStack toRepair, ItemStack repair)
     {
         return false;
     }

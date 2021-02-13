@@ -6,14 +6,14 @@
 
 package net.dries007.tfc.world.layer;
 
-import net.minecraft.world.gen.INoiseRandom;
+import net.minecraft.world.biome.layer.util.LayerRandomnessSource;
 
 import net.dries007.tfc.world.layer.traits.ITypedAreaTransformer1;
 import net.dries007.tfc.world.layer.traits.ITypedNoiseRandom;
 import net.dries007.tfc.world.layer.traits.TypedArea;
 
 /**
- * Modified version of {@link net.minecraft.world.gen.layer.ZoomLayer} for {@link TypedArea}
+ * Modified version of {@link net.minecraft.world.biome.layer.ScaleLayer} for {@link TypedArea}
  */
 public abstract class TypedZoomLayer<A> implements ITypedAreaTransformer1<A>
 {
@@ -22,7 +22,7 @@ public abstract class TypedZoomLayer<A> implements ITypedAreaTransformer1<A>
         return new TypedZoomLayer<A>()
         {
             @Override
-            protected A pick(INoiseRandom context, A first, A second, A third, A fourth)
+            protected A pick(LayerRandomnessSource context, A first, A second, A third, A fourth)
             {
                 if (second.equals(third) && third.equals(fourth))
                 {
@@ -73,21 +73,21 @@ public abstract class TypedZoomLayer<A> implements ITypedAreaTransformer1<A>
         return new TypedZoomLayer<A>()
         {
             @Override
-            protected A pick(INoiseRandom context, A first, A second, A third, A fourth)
+            protected A pick(LayerRandomnessSource context, A first, A second, A third, A fourth)
             {
                 return TypedZoomLayer.pickRandom(context, first, second, third, fourth);
             }
         };
     }
 
-    private static <A> A pickRandom(INoiseRandom context, A first, A second)
+    private static <A> A pickRandom(LayerRandomnessSource context, A first, A second)
     {
-        return context.nextRandom(2) == 0 ? first : second;
+        return context.nextInt(2) == 0 ? first : second;
     }
 
-    private static <A> A pickRandom(INoiseRandom context, A first, A second, A third, A fourth)
+    private static <A> A pickRandom(LayerRandomnessSource context, A first, A second, A third, A fourth)
     {
-        int choice = context.nextRandom(4);
+        int choice = context.nextInt(4);
         switch (choice)
         {
             case 0:
@@ -103,13 +103,13 @@ public abstract class TypedZoomLayer<A> implements ITypedAreaTransformer1<A>
     }
 
     @Override
-    public int getParentX(int x)
+    public int transformX(int x)
     {
         return x >> 1;
     }
 
     @Override
-    public int getParentY(int z)
+    public int transformZ(int z)
     {
         return z >> 1;
     }
@@ -117,8 +117,8 @@ public abstract class TypedZoomLayer<A> implements ITypedAreaTransformer1<A>
     @Override
     public A apply(ITypedNoiseRandom<A> context, TypedArea<A> area, int x, int z)
     {
-        A baseValue = area.get(getParentX(x), getParentY(z));
-        context.initRandom((x >> 1) << 1, (z >> 1) << 1);
+        A baseValue = area.get(transformX(x), transformZ(z));
+        context.initSeed((x >> 1) << 1, (z >> 1) << 1);
         int xOffset = x & 1;
         int zOffset = z & 1;
         if (xOffset == 0 && zOffset == 0)
@@ -127,26 +127,26 @@ public abstract class TypedZoomLayer<A> implements ITypedAreaTransformer1<A>
         }
         else
         {
-            A valuePlusZ = area.get(getParentX(x), getParentY(z + 1));
+            A valuePlusZ = area.get(transformX(x), transformZ(z + 1));
             if (xOffset == 0)
             {
                 return pickRandom(context, baseValue, valuePlusZ);
             }
             else
             {
-                A valuePlusX = area.get(getParentX(x + 1), getParentY(z));
+                A valuePlusX = area.get(transformX(x + 1), transformZ(z));
                 if (zOffset == 0)
                 {
                     return pickRandom(context, baseValue, valuePlusX);
                 }
                 else
                 {
-                    A valuePlusBoth = area.get(getParentX(x + 1), getParentY(z + 1));
+                    A valuePlusBoth = area.get(transformX(x + 1), transformZ(z + 1));
                     return pick(context, baseValue, valuePlusX, valuePlusZ, valuePlusBoth);
                 }
             }
         }
     }
 
-    protected abstract A pick(INoiseRandom context, A first, A second, A third, A fourth);
+    protected abstract A pick(LayerRandomnessSource context, A first, A second, A third, A fourth);
 }

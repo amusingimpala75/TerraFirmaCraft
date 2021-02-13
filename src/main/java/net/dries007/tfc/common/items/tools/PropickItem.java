@@ -6,11 +6,11 @@
 
 package net.dries007.tfc.common.items.tools;
 
-import net.minecraft.item.IItemTier;
+import net.minecraft.item.ToolMaterial;
 
 public class PropickItem extends TFCToolItem
 {
-    public PropickItem(IItemTier tier, float attackDamageMultiplier, float attackSpeed, Properties builder)
+    public PropickItem(ToolMaterial tier, float attackDamageMultiplier, float attackSpeed, Settings builder)
     {
         super(tier, attackDamageMultiplier, attackSpeed, builder);
     }

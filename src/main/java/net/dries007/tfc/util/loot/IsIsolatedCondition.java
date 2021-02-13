@@ -9,12 +9,12 @@ package net.dries007.tfc.util.loot;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
-import net.minecraft.loot.ILootSerializer;
-import net.minecraft.loot.LootConditionType;
-import net.minecraft.loot.LootContext;
-import net.minecraft.loot.conditions.ILootCondition;
+import net.minecraft.loot.condition.LootCondition;
+import net.minecraft.loot.condition.LootConditionType;
+import net.minecraft.loot.context.LootContext;
+import net.minecraft.util.JsonSerializer;
 
-public class IsIsolatedCondition implements ILootCondition
+public class IsIsolatedCondition implements LootCondition
 {
     public static final IsIsolatedCondition INSTANCE = new IsIsolatedCondition();
 
@@ -29,16 +29,16 @@ public class IsIsolatedCondition implements ILootCondition
     @Override
     public boolean test(LootContext context)
     {
-        return context.hasParam(TFCLoot.ISOLATED);
+        return context.hasParameter(TFCLoot.ISOLATED);
     }
 
-    public static class Serializer implements ILootSerializer<IsIsolatedCondition>
+    public static class Serializer implements JsonSerializer<IsIsolatedCondition>
     {
         @Override
-        public void serialize(JsonObject json, IsIsolatedCondition condition, JsonSerializationContext context) {}
+        public void toJson(JsonObject json, IsIsolatedCondition condition, JsonSerializationContext context) {}
 
         @Override
-        public IsIsolatedCondition deserialize(JsonObject json, JsonDeserializationContext context)
+        public IsIsolatedCondition fromJson(JsonObject json, JsonDeserializationContext context)
         {
             return IsIsolatedCondition.INSTANCE;
         }

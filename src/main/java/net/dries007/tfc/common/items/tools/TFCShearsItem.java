@@ -6,17 +6,17 @@
 
 package net.dries007.tfc.common.items.tools;
 
-import net.minecraft.item.IItemTier;
 import net.minecraft.item.ShearsItem;
+import net.minecraft.item.ToolMaterial;
 
 /**
  * Extends vanilla shears to add durability
  */
 public class TFCShearsItem extends ShearsItem
 {
-    public TFCShearsItem(IItemTier tier, Properties builder)
+    public TFCShearsItem(ToolMaterial tier, Settings builder)
     {
-        super(builder.defaultDurability(tier.getUses()));
+        super(builder.maxDamage(tier.getDurability()));
     }
 
     // todo implement

@@ -10,13 +10,13 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.crafting.IRecipe;
-import net.minecraft.item.crafting.IRecipeType;
-import net.minecraft.profiler.IProfiler;
-import net.minecraft.resources.IFutureReloadListener;
-import net.minecraft.resources.IResourceManager;
+import net.minecraft.inventory.Inventory;
+import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.RecipeType;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.resource.ResourceReloadListener;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.profiler.Profiler;
 import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import net.dries007.tfc.common.capabilities.heat.HeatManager;
@@ -30,12 +30,12 @@ import net.dries007.tfc.world.chunkdata.ChunkDataCache;
 /**
  * This is a manager for various cache invalidations, either on resource reload or server start/stop
  */
-public enum CacheInvalidationListener implements IFutureReloadListener
+public enum CacheInvalidationListener implements ResourceReloadListener
 {
     INSTANCE;
 
     @Override
-    public CompletableFuture<Void> reload(IStage stage, IResourceManager resourceManager, IProfiler preparationsProfiler, IProfiler reloadProfiler, Executor backgroundExecutor, Executor gameExecutor)
+    public CompletableFuture<Void> reload(Synchronizer stage, ResourceManager resourceManager, Profiler preparationsProfiler, Profiler reloadProfiler, Executor backgroundExecutor, Executor gameExecutor)
     {
         return CompletableFuture.runAsync(() -> {}, backgroundExecutor).thenCompose(stage::wait).thenRunAsync(this::invalidateAll, gameExecutor);
     }
@@ -58,7 +58,7 @@ public enum CacheInvalidationListener implements IFutureReloadListener
     }
 
     @SuppressWarnings("unchecked")
-    private <C extends IInventory, R extends IRecipe<C>> Collection<R> getRecipes(MinecraftServer server, IRecipeType<R> recipeType)
+    private <C extends Inventory, R extends Recipe<C>> Collection<R> getRecipes(MinecraftServer server, RecipeType<R> recipeType)
     {
         return (Collection<R>) ((RecipeManagerAccessor) server.getRecipeManager()).call$byType(recipeType).values();
     }

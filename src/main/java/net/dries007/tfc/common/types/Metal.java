@@ -9,45 +9,48 @@ package net.dries007.tfc.common.types;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 
 import com.google.gson.JsonObject;
+import net.dries007.tfc.common.TFCTags;
+import net.dries007.tfc.fabric.duck.ItemSettingsDuck;
+import net.dries007.tfc.forgereplacements.NotNullFunction;
+import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
+import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.block.Block;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
+import net.minecraft.block.Material;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.fluid.Fluid;
-import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.*;
-import net.minecraft.util.JSONUtils;
+import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
 import net.minecraft.util.Rarity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraftforge.common.ToolType;
-import net.minecraftforge.common.util.NonNullFunction;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.util.registry.Registry;
 
 import net.dries007.tfc.TerraFirmaCraft;
 import net.dries007.tfc.common.TFCArmorMaterial;
 import net.dries007.tfc.common.TFCItemGroup;
 import net.dries007.tfc.common.TFCItemTier;
 import net.dries007.tfc.common.items.tools.*;
+import org.jetbrains.annotations.Nullable;
 
 public class Metal
 {
     private final Tier tier;
     private final Fluid fluid;
 
-    private final ResourceLocation id;
+    private final Identifier id;
 
-    public Metal(ResourceLocation id, JsonObject json)
+    public Metal(Identifier id, JsonObject json)
     {
         this.id = id;
-        this.tier = Tier.valueOf(JSONUtils.getAsInt(json, "tier"));
-        this.fluid = ForgeRegistries.FLUIDS.getValue(new ResourceLocation(JSONUtils.getAsString(json, "fluid")));
+        this.tier = Tier.valueOf(JsonHelper.getInt(json, "tier"));
+        this.fluid = Registry.FLUID.get(new Identifier(JsonHelper.getString(json, "fluid")));
     }
 
-    public ResourceLocation getId()
+    public Identifier getId()
     {
         return id;
     }
@@ -62,9 +65,9 @@ public class Metal
         return fluid;
     }
 
-    public ITextComponent getDisplayName()
+    public Text getDisplayName()
     {
-        return new TranslationTextComponent("metal." + id.getNamespace() + "." + id.getPath());
+        return new TranslatableText("metal." + id.getNamespace() + "." + id.getPath());
     }
 
     /**
@@ -105,8 +108,8 @@ public class Metal
         UNKNOWN(0xFF2F2B27, Rarity.COMMON, false, false, false);
 
         private final boolean parts, armor, utility;
-        private final IItemTier tier;
-        private final IArmorMaterial armorTier;
+        private final ToolMaterial tier;
+        private final ArmorMaterial armorTier;
         private final Rarity rarity;
         private final int color;
 
@@ -115,7 +118,7 @@ public class Metal
             this(color, rarity, null, null, parts, armor, utility);
         }
 
-        Default(int color, Rarity rarity, @Nullable IItemTier tier, @Nullable IArmorMaterial armorTier, boolean parts, boolean armor, boolean utility)
+        Default(int color, Rarity rarity, @Nullable ToolMaterial tier, @Nullable ArmorMaterial armorTier, boolean parts, boolean armor, boolean utility)
         {
             this.tier = tier;
             this.armorTier = armorTier;
@@ -157,12 +160,12 @@ public class Metal
             return utility;
         }
 
-        public IItemTier getTier()
+        public ToolMaterial getTier()
         {
             return Objects.requireNonNull(tier, "Tried to get non-existent tier from " + name());
         }
 
-        public IArmorMaterial getArmorTier()
+        public ArmorMaterial getArmorTier()
         {
             return Objects.requireNonNull(armorTier, "Tried to get non-existent armor tier from " + name());
         }
@@ -216,16 +219,16 @@ public class Metal
             return this.ordinal() <= requiredInclusive.ordinal();
         }
 
-        public ITextComponent getDisplayName()
+        public Text getDisplayName()
         {
-            return new TranslationTextComponent(TerraFirmaCraft.MOD_ID + ".enum.tier." + this.name().toLowerCase());
+            return new TranslatableText(TerraFirmaCraft.MOD_ID + ".enum.tier." + this.name().toLowerCase());
         }
     }
 
     public enum BlockType
     {
-        ANVIL(Type.UTILITY, metal -> new Block(Block.Properties.of(Material.METAL).sound(SoundType.METAL).strength(4, 10).harvestLevel(0).harvestTool(ToolType.PICKAXE))),
-        LAMP(Type.UTILITY, metal -> new Block(Block.Properties.of(Material.METAL).sound(SoundType.METAL).strength(4, 10).harvestLevel(0).harvestTool(ToolType.PICKAXE)));
+        ANVIL(Type.UTILITY, metal -> new Block(FabricBlockSettings.of(Material.METAL).sounds(BlockSoundGroup.METAL).strength(4, 10).breakByTool(FabricToolTags.PICKAXES, 0))),
+        LAMP(Type.UTILITY, metal -> new Block(FabricBlockSettings.of(Material.METAL).sounds(BlockSoundGroup.METAL).strength(4, 10).breakByTool(FabricToolTags.PICKAXES, 0)));
 
         public static final Metal.BlockType[] VALUES = values();
 
@@ -234,25 +237,25 @@ public class Metal
             return i >= 0 && i < VALUES.length ? VALUES[i] : ANVIL;
         }
 
-        private final NonNullFunction<Metal.Default, Block> blockFactory;
+        private final NotNullFunction<Default, Block> blockFactory;
         private final Type type;
         private final String tag;
 
-        BlockType(@Nullable String tag, Type type, NonNullFunction<Metal.Default, Block> blockFactory)
+        BlockType(@Nullable String tag, Type type, NotNullFunction<Metal.Default, Block> blockFactory)
         {
             this.type = type;
             this.blockFactory = blockFactory;
             this.tag = tag;
         }
 
-        BlockType(Type type, NonNullFunction<Metal.Default, Block> blockFactory)
+        BlockType(Type type, NotNullFunction<Metal.Default, Block> blockFactory)
         {
             this(null, type, blockFactory);
         }
 
         public Supplier<Block> create(Metal.Default metal)
         {
-            return () -> blockFactory.apply(metal);
+            return () -> blockFactory.run(metal);
         }
 
         public boolean hasMetal(Default metal)
@@ -270,53 +273,53 @@ public class Metal
     public enum ItemType
     {
         // Generic
-        INGOT("ingots", Type.DEFAULT, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        DOUBLE_INGOT("double_ingots", Type.PART, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        SHEET("sheets", Type.PART, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        DOUBLE_SHEET("double_sheets", Type.PART, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        ROD("rods", Type.PART, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        TUYERE(Type.TOOL, metal -> new TieredItem(metal.getTier(), new Item.Properties().tab(TFCItemGroup.METAL))),
+        INGOT("ingots", Type.DEFAULT, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        DOUBLE_INGOT("double_ingots", Type.PART, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        SHEET("sheets", Type.PART, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        DOUBLE_SHEET("double_sheets", Type.PART, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        ROD("rods", Type.PART, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        TUYERE(Type.TOOL, metal -> new ToolItem(metal.getTier(), new Item.Settings().group(TFCItemGroup.METAL))),
 
         // Tools and Tool Heads
-        PICKAXE(Type.TOOL, metal -> new TFCPickaxeItem(metal.getTier(), 0.75F, -2.8F, (new Item.Properties()).tab(ItemGroup.TAB_TOOLS))),
-        PICKAXE_HEAD(Type.TOOL, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        PROPICK(Type.TOOL, metal -> new PropickItem(metal.getTier(), 0.5F, -2.8F, (new Item.Properties()).tab(ItemGroup.TAB_TOOLS))),
-        PROPICK_HEAD(Type.TOOL, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        AXE(Type.TOOL, metal -> new TFCAxeItem(metal.getTier(), 1.5F, -3.2F, (new Item.Properties()).tab(ItemGroup.TAB_TOOLS).addToolType(ToolType.AXE, metal.getTier().getLevel()))),
-        AXE_HEAD(Type.TOOL, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        SHOVEL(Type.TOOL, metal -> new TFCShovelItem(metal.getTier(), 0.875F, -3.0F, (new Item.Properties()).tab(ItemGroup.TAB_TOOLS).addToolType(ToolType.SHOVEL, metal.getTier().getLevel()))),
-        SHOVEL_HEAD(Type.TOOL, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        HOE(Type.TOOL, metal -> new HoeItem(metal.getTier(), -1, -2f, (new Item.Properties()).tab(ItemGroup.TAB_TOOLS).addToolType(ToolType.HOE, metal.getTier().getLevel()))),
-        HOE_HEAD(Type.TOOL, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        CHISEL(Type.TOOL, metal -> new ChiselItem(metal.getTier(), 0.27F, -1.5F, (new Item.Properties()).tab(ItemGroup.TAB_TOOLS).addToolType(TFCItemTier.CHISEL, metal.getTier().getLevel()))),
-        CHISEL_HEAD(Type.TOOL, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        HAMMER(Type.TOOL, metal -> new TFCToolItem(metal.getTier(), 1.0F, -3, (new Item.Properties()).tab(ItemGroup.TAB_TOOLS))),
-        HAMMER_HEAD(Type.TOOL, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL).addToolType(TFCItemTier.HAMMER, metal.getTier().getLevel()))),
-        SAW(Type.TOOL, metal -> new TFCToolItem(metal.getTier(), 0.5F, -3, (new Item.Properties()).tab(ItemGroup.TAB_TOOLS))),
-        SAW_BLADE(Type.TOOL, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL).addToolType(ToolType.AXE, 0))),
-        JAVELIN(Type.TOOL, metal -> new JavelinItem(metal.getTier(), 0.7F, -1.8F, (new Item.Properties()).tab(ItemGroup.TAB_COMBAT))),
-        JAVELIN_HEAD(Type.TOOL, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        SWORD(Type.TOOL, metal -> new TFCSwordItem(metal.getTier(), 1.0F, -2.4F, (new Item.Properties()).tab(ItemGroup.TAB_COMBAT))),
-        SWORD_BLADE(Type.TOOL, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        MACE(Type.TOOL, metal -> new WeaponItem(metal.getTier(), 1.3F, -3, (new Item.Properties()).tab(ItemGroup.TAB_COMBAT))),
-        MACE_HEAD(Type.TOOL, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        KNIFE(Type.TOOL, metal -> new TFCToolItem(metal.getTier(), 0.54F, -1.5F, (new Item.Properties()).tab(ItemGroup.TAB_TOOLS))),
-        KNIFE_BLADE(Type.TOOL, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL).addToolType(TFCItemTier.KNIFE, metal.getTier().getLevel()))),
-        SCYTHE(Type.TOOL, metal -> new TFCToolItem(metal.getTier(), 2, -3.2F, (new Item.Properties()).tab(ItemGroup.TAB_TOOLS).addToolType(TFCItemTier.KNIFE, 0))),
-        SCYTHE_BLADE(Type.TOOL, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        SHEARS(Type.TOOL, metal -> new TFCShearsItem(metal.getTier(), (new Item.Properties()).tab(ItemGroup.TAB_TOOLS))),
+        PICKAXE(Type.TOOL, metal -> new TFCPickaxeItem(metal.getTier(), 0.75F, -2.8F, (new Item.Settings()).group(ItemGroup.TOOLS))),
+        PICKAXE_HEAD(Type.TOOL, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        PROPICK(Type.TOOL, metal -> new PropickItem(metal.getTier(), 0.5F, -2.8F, (new Item.Settings()).group(ItemGroup.TOOLS))),
+        PROPICK_HEAD(Type.TOOL, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        AXE(Type.TOOL, metal -> new TFCAxeItem(metal.getTier(), 1.5F, -3.2F, ((ItemSettingsDuck)(new Item.Settings()).group(ItemGroup.TOOLS)).addToolType(FabricToolTags.AXES, metal.getTier().getMiningLevel()))),
+        AXE_HEAD(Type.TOOL, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        SHOVEL(Type.TOOL, metal -> new TFCShovelItem(metal.getTier(), 0.875F, -3.0F, ((ItemSettingsDuck)(new Item.Settings()).group(ItemGroup.TOOLS)).addToolType(FabricToolTags.SHOVELS, metal.getTier().getMiningLevel()))),
+        SHOVEL_HEAD(Type.TOOL, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        HOE(Type.TOOL, metal -> new net.dries007.tfc.wrapper.HoeItem(metal.getTier(), -1, -2f, ((ItemSettingsDuck)(new Item.Settings()).group(ItemGroup.TOOLS)).addToolType(FabricToolTags.HOES, metal.getTier().getMiningLevel()))),
+        HOE_HEAD(Type.TOOL, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        CHISEL(Type.TOOL, metal -> new ChiselItem(metal.getTier(), 0.27F, -1.5F, ((ItemSettingsDuck)(new Item.Settings()).group(ItemGroup.TOOLS)).addToolType(TFCTags.Items.CHISEL, metal.getTier().getMiningLevel()))),
+        CHISEL_HEAD(Type.TOOL, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        HAMMER(Type.TOOL, metal -> new TFCToolItem(metal.getTier(), 1.0F, -3, (new Item.Settings()).group(ItemGroup.TOOLS))),
+        HAMMER_HEAD(Type.TOOL, metal -> new Item(((ItemSettingsDuck)(new Item.Settings().group(TFCItemGroup.METAL))).addToolType(TFCTags.Items.HAMMER, metal.getTier().getMiningLevel()))),
+        SAW(Type.TOOL, metal -> new TFCToolItem(metal.getTier(), 0.5F, -3, (new Item.Settings()).group(ItemGroup.TOOLS))),
+        SAW_BLADE(Type.TOOL, metal -> new Item(((ItemSettingsDuck)(new Item.Settings().group(TFCItemGroup.METAL))).addToolType(FabricToolTags.AXES, 0))),
+        JAVELIN(Type.TOOL, metal -> new JavelinItem(metal.getTier(), 0.7F, -1.8F, (new Item.Settings()).group(ItemGroup.COMBAT))),
+        JAVELIN_HEAD(Type.TOOL, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        SWORD(Type.TOOL, metal -> new TFCSwordItem(metal.getTier(), 1.0F, -2.4F, (new Item.Settings()).group(ItemGroup.COMBAT))),
+        SWORD_BLADE(Type.TOOL, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        MACE(Type.TOOL, metal -> new WeaponItem(metal.getTier(), 1.3F, -3, (new Item.Settings()).group(ItemGroup.COMBAT))),
+        MACE_HEAD(Type.TOOL, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        KNIFE(Type.TOOL, metal -> new TFCToolItem(metal.getTier(), 0.54F, -1.5F, (new Item.Settings()).group(ItemGroup.TOOLS))),
+        KNIFE_BLADE(Type.TOOL, metal -> new Item(((ItemSettingsDuck)(new Item.Settings().group(TFCItemGroup.METAL))).addToolType(TFCTags.Items.KNIFE, metal.getTier().getMiningLevel()))),
+        SCYTHE(Type.TOOL, metal -> new TFCToolItem(metal.getTier(), 2, -3.2F, ((ItemSettingsDuck)(new Item.Settings()).group(ItemGroup.TOOLS)).addToolType(TFCTags.Items.KNIFE, 0))),
+        SCYTHE_BLADE(Type.TOOL, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        SHEARS(Type.TOOL, metal -> new TFCShearsItem(metal.getTier(), (new Item.Settings()).group(ItemGroup.TOOLS))),
 
         // Armor
-        UNFINISHED_HELMET(Type.ARMOR, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        HELMET(Type.ARMOR, metal -> new ArmorItem(metal.getArmorTier(), EquipmentSlotType.HEAD, new Item.Properties().tab(TFCItemGroup.METAL))),
-        UNFINISHED_CHESTPLATE(Type.ARMOR, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        CHESTPLATE(Type.ARMOR, metal -> new ArmorItem(metal.getArmorTier(), EquipmentSlotType.CHEST, new Item.Properties().tab(TFCItemGroup.METAL))),
-        UNFINISHED_GREAVES(Type.ARMOR, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        GREAVES(Type.ARMOR, metal -> new ArmorItem(metal.getArmorTier(), EquipmentSlotType.LEGS, new Item.Properties().tab(TFCItemGroup.METAL))),
-        UNFINISHED_BOOTS(Type.ARMOR, metal -> new Item(new Item.Properties().tab(TFCItemGroup.METAL))),
-        BOOTS(Type.ARMOR, metal -> new ArmorItem(metal.getArmorTier(), EquipmentSlotType.FEET, new Item.Properties().tab(TFCItemGroup.METAL))),
+        UNFINISHED_HELMET(Type.ARMOR, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        HELMET(Type.ARMOR, metal -> new ArmorItem(metal.getArmorTier(), EquipmentSlot.HEAD, new Item.Settings().group(TFCItemGroup.METAL))),
+        UNFINISHED_CHESTPLATE(Type.ARMOR, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        CHESTPLATE(Type.ARMOR, metal -> new ArmorItem(metal.getArmorTier(), EquipmentSlot.CHEST, new Item.Settings().group(TFCItemGroup.METAL))),
+        UNFINISHED_GREAVES(Type.ARMOR, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        GREAVES(Type.ARMOR, metal -> new ArmorItem(metal.getArmorTier(), EquipmentSlot.LEGS, new Item.Settings().group(TFCItemGroup.METAL))),
+        UNFINISHED_BOOTS(Type.ARMOR, metal -> new Item(new Item.Settings().group(TFCItemGroup.METAL))),
+        BOOTS(Type.ARMOR, metal -> new ArmorItem(metal.getArmorTier(), EquipmentSlot.FEET, new Item.Settings().group(TFCItemGroup.METAL))),
 
-        SHIELD(Type.TOOL, metal -> new TFCShieldItem(metal.getTier(), new Item.Properties().tab(TFCItemGroup.TAB_COMBAT)));
+        SHIELD(Type.TOOL, metal -> new TFCShieldItem(metal.getTier(), new Item.Settings().group(TFCItemGroup.COMBAT)));
 
         public static final Metal.ItemType[] VALUES = values();
 
@@ -325,25 +328,25 @@ public class Metal
             return i >= 0 && i < VALUES.length ? VALUES[i] : INGOT;
         }
 
-        private final NonNullFunction<Metal.Default, Item> itemFactory;
+        private final NotNullFunction<Metal.Default, Item> itemFactory;
         private final Type type;
         private final String tag;
 
-        ItemType(@Nullable String tag, Type type, NonNullFunction<Metal.Default, Item> itemFactory)
+        ItemType(@Nullable String tag, Type type, NotNullFunction<Metal.Default, Item> itemFactory)
         {
             this.type = type;
             this.tag = tag;
             this.itemFactory = itemFactory;
         }
 
-        ItemType(Type type, NonNullFunction<Metal.Default, Item> itemFactory)
+        ItemType(Type type, NotNullFunction<Metal.Default, Item> itemFactory)
         {
             this(null, type, itemFactory);
         }
 
         public Item create(Metal.Default metal)
         {
-            return itemFactory.apply(metal);
+            return itemFactory.run(metal);
         }
 
         public boolean hasMetal(Default metal)

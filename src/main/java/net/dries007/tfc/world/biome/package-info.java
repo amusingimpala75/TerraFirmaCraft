@@ -4,10 +4,10 @@
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  */
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
+//@MethodsReturnNonnullByDefault
+//@Param
 package net.dries007.tfc.world.biome;
 
-import javax.annotation.ParametersAreNonnullByDefault;
+//import javax.annotation.ParametersAreNonnullByDefault;
 
-import mcp.MethodsReturnNonnullByDefault;
+//import mcp.MethodsReturnNonnullByDefault;

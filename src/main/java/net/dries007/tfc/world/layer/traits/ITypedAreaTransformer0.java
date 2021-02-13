@@ -7,14 +7,14 @@
 package net.dries007.tfc.world.layer.traits;
 
 /**
- * Like {@link net.minecraft.world.gen.layer.traits.IAreaTransformer0}, but produces an {@link TypedArea}
+ * Like {@link net.minecraft.world.biome.layer.util.LayerFactory}, but produces an {@link TypedArea}
  */
 public interface ITypedAreaTransformer0<A>
 {
     default ITypedAreaFactory<A> apply(ITypedNoiseRandom<A> context)
     {
         return () -> context.createTypedResult((x, z) -> {
-            context.initRandom(x, z);
+            context.initSeed(x, z);
             return apply(context, x, z);
         });
     }

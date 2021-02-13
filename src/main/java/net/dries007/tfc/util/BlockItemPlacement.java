@@ -8,24 +8,24 @@ package net.dries007.tfc.util;
 
 import java.util.Collections;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 
-import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.SoundType;
+import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.*;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.state.Property;
-import net.minecraft.state.StateContainer;
-import net.minecraft.stats.Stats;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.stat.Stats;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.Property;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * This is a fake {@link BlockItem} copy pasta for a vanilla item that we want to behave like a block item for a specific block.
@@ -33,11 +33,11 @@ import net.minecraft.world.World;
 public class BlockItemPlacement implements InteractionManager.OnItemUseAction
 {
     /**
-     * Copy pasta from {@link BlockItem#updateState(BlockState, Property, String)}
+     * Copy pasta from @link BlockItem#with(BlockState, Property, String)
      */
     private static <T extends Comparable<T>> BlockState updateState(BlockState state, Property<T> property, String value)
     {
-        return property.getValue(value).map(valueIn -> state.setValue(property, valueIn)).orElse(state);
+        return property.parse(value).map(valueIn -> state.with(property, valueIn)).orElse(state);
     }
 
     private final Supplier<? extends Item> item;
@@ -60,96 +60,96 @@ public class BlockItemPlacement implements InteractionManager.OnItemUseAction
     }
 
     /**
-     * Copy paste from {@link ItemStack#useOn(ItemUseContext)}
+     * Copy paste from @link ItemStack#useOn(ItemUseContext)
      */
     @Override
-    public ActionResultType onItemUse(ItemStack stack, ItemUseContext context)
+    public ActionResult onItemUse(ItemStack stack, ItemUsageContext context)
     {
         PlayerEntity player = context.getPlayer();
-        if (player != null && !player.abilities.mayBuild)
+        if (player != null && !player.abilities.allowModifyWorld)
         {
-            return ActionResultType.PASS;
+            return ActionResult.PASS;
         }
         else
         {
             Item item = getItem();
-            ActionResultType result = place(new BlockItemUseContext(context));
-            if (player != null && result.consumesAction())
+            ActionResult result = place(new ItemPlacementContext(context));
+            if (player != null && result.shouldSwingHand())
             {
-                player.awardStat(Stats.ITEM_USED.get(item));
+                player.incrementStat(Stats.USED.getOrCreateStat(item));
             }
             return result;
         }
     }
 
     /**
-     * Copy pasta from {@link net.minecraft.item.BlockItem#place(BlockItemUseContext)}
+     * Copy pasta from {@link net.minecraft.item.BlockItem#place(ItemPlacementContext)}
      */
-    public ActionResultType place(BlockItemUseContext context)
+    public ActionResult place(ItemPlacementContext context)
     {
         if (!context.canPlace())
         {
-            return ActionResultType.FAIL;
+            return ActionResult.FAIL;
         }
         else
         {
             BlockState placementState = getPlacementState(context);
             if (placementState == null)
             {
-                return ActionResultType.FAIL;
+                return ActionResult.FAIL;
             }
             else if (!this.placeBlock(context, placementState))
             {
-                return ActionResultType.FAIL;
+                return ActionResult.FAIL;
             }
             else
             {
-                BlockPos pos = context.getClickedPos();
-                World world = context.getLevel();
+                BlockPos pos = context.getBlockPos();
+                World world = context.getWorld();
                 PlayerEntity player = context.getPlayer();
-                ItemStack stack = context.getItemInHand();
+                ItemStack stack = context.getStack();
                 BlockState placedState = world.getBlockState(pos);
                 Block placedBlock = placedState.getBlock();
                 if (placedBlock == placementState.getBlock())
                 {
                     placedState = updateBlockStateFromTag(pos, world, stack, placedState);
-                    BlockItem.updateCustomBlockEntityTag(world, player, pos, stack);
-                    placedBlock.setPlacedBy(world, pos, placedState, player, stack);
+                    BlockItem.writeTagToBlockEntity(world, player, pos, stack);
+                    placedBlock.onPlaced(world, pos, placedState, player, stack);
                     if (player instanceof ServerPlayerEntity)
                     {
-                        CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayerEntity) player, pos, stack);
+                        Criteria.PLACED_BLOCK.trigger((ServerPlayerEntity) player, pos, stack);
                     }
                 }
 
-                SoundType placementSound = placedState.getSoundType(world, pos, player);
-                world.playSound(player, pos, placedState.getSoundType(world, pos, player).getPlaceSound(), SoundCategory.BLOCKS, (placementSound.getVolume() + 1.0F) / 2.0F, placementSound.getPitch() * 0.8F);
-                if (player == null || !player.abilities.instabuild)
+                BlockSoundGroup placementSound = placedState.getSoundGroup(/*world, pos, player*/);
+                world.playSound(player, pos, placedState.getSoundGroup(/*world, pos, player*/).getPlaceSound(), SoundCategory.BLOCKS, (placementSound.getVolume() + 1.0F) / 2.0F, placementSound.getPitch() * 0.8F);
+                if (player == null || !player.abilities.creativeMode)
                 {
-                    stack.shrink(1);
+                    stack.decrement(1);
                 }
 
-                return ActionResultType.sidedSuccess(world.isClientSide);
+                return ActionResult.success(world.isClient);
             }
         }
     }
 
     @Nullable
-    protected BlockState getPlacementState(BlockItemUseContext context)
+    protected BlockState getPlacementState(ItemPlacementContext context)
     {
-        BlockState placementState = block.get().getStateForPlacement(context);
+        BlockState placementState = block.get().getPlacementState(context);
         return placementState != null && canPlace(context, placementState) ? placementState : null;
     }
 
-    protected boolean placeBlock(BlockItemUseContext context, BlockState state)
+    protected boolean placeBlock(ItemPlacementContext context, BlockState state)
     {
-        return context.getLevel().setBlock(context.getClickedPos(), state, 11);
+        return context.getWorld().setBlockState(context.getBlockPos(), state, 11);
     }
 
-    protected boolean canPlace(BlockItemUseContext context, BlockState stateToPlace)
+    protected boolean canPlace(ItemPlacementContext context, BlockState stateToPlace)
     {
         PlayerEntity player = context.getPlayer();
-        ISelectionContext selectionContext = player == null ? ISelectionContext.empty() : ISelectionContext.of(player);
-        return (stateToPlace.canSurvive(context.getLevel(), context.getClickedPos())) && context.getLevel().isUnobstructed(stateToPlace, context.getClickedPos(), selectionContext);
+        ShapeContext selectionContext = player == null ? ShapeContext.absent() : ShapeContext.of(player);
+        return (stateToPlace.canPlaceAt(context.getWorld(), context.getBlockPos())) && context.getWorld().canPlace(stateToPlace, context.getBlockPos(), selectionContext);
     }
 
     /**
@@ -159,18 +159,18 @@ public class BlockItemPlacement implements InteractionManager.OnItemUseAction
     private BlockState updateBlockStateFromTag(BlockPos pos, World world, ItemStack stack, BlockState state)
     {
         BlockState newState = state;
-        CompoundNBT nbt = stack.getTag();
+        CompoundTag nbt = stack.getTag();
         if (nbt != null)
         {
-            CompoundNBT blockStateNbt = nbt.getCompound("BlockStateTag");
-            StateContainer<Block, BlockState> container = state.getBlock().getStateDefinition();
+            CompoundTag blockStateNbt = nbt.getCompound("BlockStateTag");
+            StateManager<Block, BlockState> container = state.getBlock().getStateManager();
 
-            for (String propertyKey : blockStateNbt.getAllKeys())
+            for (String propertyKey : blockStateNbt.getKeys())
             {
                 Property<?> property = container.getProperty(propertyKey);
                 if (property != null)
                 {
-                    String s1 = blockStateNbt.get(propertyKey).getAsString();
+                    String s1 = blockStateNbt.get(propertyKey).asString();
                     newState = updateState(newState, property, s1);
                 }
             }
@@ -178,7 +178,7 @@ public class BlockItemPlacement implements InteractionManager.OnItemUseAction
 
         if (newState != state)
         {
-            world.setBlock(pos, newState, 2);
+            world.setBlockState(pos, newState, 2);
         }
         return newState;
     }

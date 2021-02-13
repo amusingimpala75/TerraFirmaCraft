@@ -6,18 +6,18 @@
 
 package net.dries007.tfc.world.layer;
 
-import net.minecraft.world.gen.INoiseRandom;
-import net.minecraft.world.gen.layer.traits.IAreaTransformer0;
+import net.minecraft.world.biome.layer.type.InitLayer;
+import net.minecraft.world.biome.layer.util.LayerRandomnessSource;
 
 /**
  * Initialize a layer filled with NULL_MARKER
  */
-public enum NullLayer implements IAreaTransformer0
+public enum NullLayer implements InitLayer
 {
     INSTANCE;
 
     @Override
-    public int applyPixel(INoiseRandom context, int x, int z)
+    public int sample(LayerRandomnessSource context, int x, int z)
     {
         return TFCLayerUtil.NULL_MARKER;
     }

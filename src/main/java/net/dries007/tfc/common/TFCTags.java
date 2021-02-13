@@ -62,6 +62,11 @@ public class TFCTags
     {
         public static final Tag.Identified<Item> THATCH_BED_HIDES = create("thatch_bed_hides");
 
+        //ToolTypes
+        public static final Tag.Identified<Item> HAMMER = create("hammer");
+        public static final Tag.Identified<Item> CHISEL = create("chisel");
+        public static final Tag.Identified<Item> KNIFE = create("knife");
+
         private static Tag.Identified<Item> create(String id)
         {
             return (Tag.Identified<Item>) TagRegistry.item(Helpers.identifier(id));

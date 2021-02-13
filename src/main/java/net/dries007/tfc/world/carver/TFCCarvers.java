@@ -8,31 +8,28 @@ package net.dries007.tfc.world.carver;
 
 import java.util.function.Function;
 
-import net.minecraft.world.gen.carver.ICarverConfig;
-import net.minecraft.world.gen.carver.WorldCarver;
-import net.minecraft.world.gen.feature.ProbabilityConfig;
-import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.dries007.tfc.util.Helpers;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.gen.ProbabilityConfig;
+import net.minecraft.world.gen.carver.Carver;
+import net.minecraft.world.gen.carver.CarverConfig;
 
 import com.mojang.serialization.Codec;
-
-import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
 
 @SuppressWarnings("unused")
 public class TFCCarvers
 {
-    public static final DeferredRegister<WorldCarver<?>> CARVERS = DeferredRegister.create(ForgeRegistries.WORLD_CARVERS, MOD_ID);
+    public static final TFCCaveCarver CAVE = register("cave", TFCCaveCarver::new, ProbabilityConfig.CODEC);
+    public static final TFCRavineCarver CANYON = register("canyon", TFCRavineCarver::new, ProbabilityConfig.CODEC);
+    public static final TFCUnderwaterCaveCarver UNDERWATER_CAVE = register("underwater_cave", TFCUnderwaterCaveCarver::new, ProbabilityConfig.CODEC);
+    public static final TFCUnderwaterRavineCarver UNDERWATER_CANYON = register("underwater_canyon", TFCUnderwaterRavineCarver::new, ProbabilityConfig.CODEC);
 
-    public static final RegistryObject<TFCCaveCarver> CAVE = register("cave", TFCCaveCarver::new, ProbabilityConfig.CODEC);
-    public static final RegistryObject<TFCRavineCarver> CANYON = register("canyon", TFCRavineCarver::new, ProbabilityConfig.CODEC);
-    public static final RegistryObject<TFCUnderwaterCaveCarver> UNDERWATER_CAVE = register("underwater_cave", TFCUnderwaterCaveCarver::new, ProbabilityConfig.CODEC);
-    public static final RegistryObject<TFCUnderwaterRavineCarver> UNDERWATER_CANYON = register("underwater_canyon", TFCUnderwaterRavineCarver::new, ProbabilityConfig.CODEC);
+    public static final WorleyCaveCarver WORLEY_CAVE = register("worley_cave", WorleyCaveCarver::new, WorleyCaveConfig.CODEC);
 
-    public static final RegistryObject<WorleyCaveCarver> WORLEY_CAVE = register("worley_cave", WorleyCaveCarver::new, WorleyCaveConfig.CODEC);
-
-    private static <C extends ICarverConfig, WC extends WorldCarver<C>> RegistryObject<WC> register(String name, Function<Codec<C>, WC> factory, Codec<C> codec)
+    private static <C extends CarverConfig, WC extends Carver<C>> WC register(String name, Function<Codec<C>, WC> factory, Codec<C> codec)
     {
-        return CARVERS.register(name, () -> factory.apply(codec));
+        return Registry.register(Registry.CARVER, Helpers.identifier(name), factory.apply(codec));
     }
+
+    public static void register() {}
 }

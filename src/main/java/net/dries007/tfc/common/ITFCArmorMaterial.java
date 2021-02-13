@@ -6,31 +6,31 @@
 
 package net.dries007.tfc.common;
 
-import net.minecraft.item.IArmorMaterial;
+import net.minecraft.item.ArmorMaterial;
 
 /**
  * @see TFCArmorMaterial
  */
-public interface ITFCArmorMaterial extends IArmorMaterial
+public interface ITFCArmorMaterial extends ArmorMaterial
 {
     /**
      * Returns the crushing modifier this armor has
      *
-     * @return float value with the modifier. To check how damage calculation is done, see {@link DamageType}
+     * @return float value with the modifier. To check how damage calculation is done, see @link DamageType
      */
     float getCrushingModifier();
 
     /**
      * Returns the crushing modifier this armor has
      *
-     * @return float value with the modifier. To check how damage calculation is done, see {@link DamageType}
+     * @return float value with the modifier. To check how damage calculation is done, see @link DamageType
      */
     float getPiercingModifier();
 
     /**
      * Returns the crushing modifier this armor has
      *
-     * @return float value with the modifier. To check how damage calculation is done, see {@link DamageType}
+     * @return float value with the modifier. To check how damage calculation is done, see @link DamageType
      */
     float getSlashingModifier();
 }

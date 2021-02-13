@@ -39,3 +39,52 @@ It is also included in [LICENSE.txt](LICENSE.txt)
 Based on original work by Robert "Bioxx" Anthony, Amanda "Kittychanley" Halek and others.
 
 Parts of this project are edited source code from the original TerraFirmaCraft for 1.7.10 mod. They are used under with permission from the original author (Bioxx).
+
+
+PAUSED ON WOOD IN common/types!!
+
+## Port TODO:
+Package Info's Params nonnull and Methods nonnull
+
+- client
+  - screen - all network things
+  - ClientForgeEventHandler - migrate to fapi / mixins  
+
+- common
+  - TFCItemGroup - migrate -> fapi
+  - types
+    - MetalItem - CraftingHelper calls
+
+- config - migrate (which one tho)
+
+- mixin
+  - block
+    - SnowBlockMixin - cannot figure out super override removeByPlayer
+    
+- network - fapi migration
+
+- util
+  - calendar
+    - CalendarEventHandler - transfer to fapi / mixins
+    - ServerCalendar - packets and current server calls
+  - data
+    - DataManager - CraftingHelper calls
+  - tracker
+    - Collapse - INBT Serializable
+    - WorldTracker - Capabilities -> CCA
+    - WorldTrackerCapability - ^
+  - CacheInvalidationListener - current server calls
+  - DispenserBehaviors - AW for final methods
+  - Helpers - CraftingPlayer and Capabilities -> CCA
+  - NoopStorage - Capabilities -> CCA  
+    
+- ForgeEventHandler - transfer to fapi / mixins
+  
+- world
+  - chunkdata
+    - ChunkData - Capabilities -> CCA
+    - ChunkDataCache - Capabilities -> CCA
+    - RockData - Capabilities -> CCA
+  - feature
+    -TFCIcebergFeature - AW for final methods
+  - TFCWorldType - AW for class extension  

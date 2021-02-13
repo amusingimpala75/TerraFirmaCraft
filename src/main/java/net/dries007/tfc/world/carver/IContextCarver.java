@@ -7,9 +7,9 @@
 package net.dries007.tfc.world.carver;
 
 import java.util.BitSet;
-import javax.annotation.Nullable;
 
 import net.dries007.tfc.world.chunkdata.RockData;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Marker interface for carvers which need additional context

@@ -17,14 +17,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import net.minecraft.block.BlockState;
-import net.minecraft.util.JSONUtils;
 
 import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.util.collections.IWeighted;
 import net.dries007.tfc.util.collections.Weighted;
+import net.minecraft.util.JsonHelper;
 
 /**
- * @see net.minecraft.util.JSONUtils
+ * @see net.minecraft.util.JsonHelper
  */
 public class TFCJSONUtils
 {
@@ -32,7 +32,7 @@ public class TFCJSONUtils
     {
         if (json.isJsonObject())
         {
-            return Helpers.readBlockState(JSONUtils.getAsString(json.getAsJsonObject(), "block"));
+            return Helpers.readBlockState(JsonHelper.getString(json.getAsJsonObject(), "block"));
         }
         else
         {
@@ -78,7 +78,7 @@ public class TFCJSONUtils
                 if (element.isJsonObject())
                 {
                     JsonObject obj = element.getAsJsonObject();
-                    float weight = JSONUtils.getAsFloat(obj, "weight", 1);
+                    float weight = JsonHelper.getFloat(obj, "weight", 1);
                     states.add(weight, elementDeserializer.apply(obj));
                 }
                 else

@@ -6,11 +6,12 @@
 
 package net.dries007.tfc.common.items.tools;
 
-import net.minecraft.item.IItemTier;
+import net.minecraft.item.Item;
+import net.minecraft.item.ToolMaterial;
 
 public class JavelinItem extends WeaponItem
 {
-    public JavelinItem(IItemTier tier, float attackDamageMultiplier, float attackSpeed, Properties builder)
+    public JavelinItem(ToolMaterial tier, float attackDamageMultiplier, float attackSpeed, Item.Settings builder)
     {
         super(tier, attackDamageMultiplier, attackSpeed, builder);
     }

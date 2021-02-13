@@ -9,6 +9,7 @@ package net.dries007.tfc.common.types;
 import java.util.Random;
 import java.util.function.Supplier;
 
+import net.dries007.tfc.forgereplacements.NotNullFunction;
 import net.minecraft.block.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.material.MaterialColor;
@@ -144,10 +145,10 @@ public class Wood
             return i >= 0 && i < VALUES.length ? VALUES[i] : LOG;
         }
 
-        private final NonNullFunction<Default, Block> blockFactory;
+        private final NotNullFunction<Default, Block> blockFactory;
         private final boolean isPlanksVariant;
 
-        BlockType(NonNullFunction<Default, Block> blockFactory, boolean isPlanksVariant)
+        BlockType(NotNullFunction<Default, Block> blockFactory, boolean isPlanksVariant)
         {
             this.blockFactory = blockFactory;
             this.isPlanksVariant = isPlanksVariant;
@@ -155,7 +156,7 @@ public class Wood
 
         public Supplier<Block> create(Default wood)
         {
-            return () -> blockFactory.apply(wood);
+            return () -> blockFactory.run(wood);
         }
 
         public String nameFor(Default wood)

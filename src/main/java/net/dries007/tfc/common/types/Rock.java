@@ -17,17 +17,11 @@ import com.google.gson.JsonParseException;
 import net.fabricmc.fabric.api.object.builder.v1.block.FabricBlockSettings;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.block.*;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.material.MaterialColor;
 import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.util.IStringSerializable;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.JSONUtils;
 import net.minecraft.util.JsonHelper;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StringIdentifiable;
-import net.minecraftforge.common.ToolType;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraft.util.registry.Registry;
 import net.dries007.tfc.wrapper.StairsBlock;
 
 import com.mojang.serialization.Codec;
@@ -57,7 +51,7 @@ public class Rock
         this.beachSandColor = Helpers.mapSafeOptional(() -> SandBlockType.valueOf(beachSandColorName.toUpperCase())).orElseThrow(() -> new JsonParseException("Unknown beach sand color: " + beachSandColorName));
         this.naturallyGenerating = JsonHelper.getBoolean(json, "naturally_generated", true);
 
-        this.blockVariants = Helpers.findRegistryObjects(json, "blocks", ForgeRegistries.BLOCKS, Arrays.asList(Rock.BlockType.values()), type -> type.name().toLowerCase());
+        this.blockVariants = Helpers.findRegistryObjects(json, "blocks", Registry.BLOCK, Arrays.asList(Rock.BlockType.values()), type -> type.name().toLowerCase());
     }
 
     public Identifier getId()

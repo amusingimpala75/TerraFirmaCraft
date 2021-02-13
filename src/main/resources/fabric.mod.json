@@ -4,14 +4,7 @@
   "version": "${file.jarVersion}",
 
   "name": "TerraFirmaCraft",
-  "description": "
-	TerraFirmaCraft - The Next Generation
-	By: 
-	AlcatrazEscapee, Disastermoo, 
-	Dries007, Bunsan, Claycorp, 
-	DavidTriphon, EERussianGuy, 
-	Gaelmare, and many others. 
-	Based on the original work by Bioxx, Dunk, and Kitty.",
+  "description": "TerraFirmaCraft - The Next Generation /n By: /n AlcatrazEscapee, Disastermoo, /n Dries007, Bunsan, Claycorp, /n DavidTriphon, EERussianGuy, /n Gaelmare, and many others. /n Based on the original work by Bioxx, Dunk, and Kitty.",
   "authors": [
     "AlcatrazEscapee"
   ],
@@ -25,7 +18,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.fabricmc.example.ExampleMod"
+      "net.dries007.tfc.TerrFirmaCraft"
+    ],
+    "client": [
+      "net.dries.tfc.client.TerraFirmaCraftClient"
     ]
   },
   "mixins": [

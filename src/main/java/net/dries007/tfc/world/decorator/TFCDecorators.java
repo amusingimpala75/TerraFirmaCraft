@@ -8,30 +8,27 @@ package net.dries007.tfc.world.decorator;
 
 import java.util.function.Function;
 
-import net.minecraft.world.gen.placement.IPlacementConfig;
-import net.minecraft.world.gen.placement.Placement;
-import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.dries007.tfc.util.Helpers;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.gen.decorator.Decorator;
+import net.minecraft.world.gen.decorator.DecoratorConfig;
 
 import com.mojang.serialization.Codec;
-
-import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
 
 @SuppressWarnings("unused")
 public final class TFCDecorators
 {
-    public static final DeferredRegister<Placement<?>> DECORATORS = DeferredRegister.create(ForgeRegistries.DECORATORS, MOD_ID);
+    public static final FlatEnoughDecorator FLAT_ENOUGH = register("flat_enough", FlatEnoughDecorator::new, FlatEnoughConfig.CODEC);
+    public static final ClimateDecorator CLIMATE = register("climate", ClimateDecorator::new, ClimateConfig.CODEC);
+    public static final NearWaterDecorator NEAR_WATER = register("near_water", NearWaterDecorator::new, NearWaterConfig.CODEC);
+    public static final BoundedCarvingMaskDecorator BOUNDED_CARVING_MASK = register("bounded_carving_mask", BoundedCarvingMaskDecorator::new, BoundedCarvingMaskConfig.CODEC);
+    public static final VolcanoDecorator VOLCANO = register("volcano", VolcanoDecorator::new, VolcanoConfig.CODEC);
+    public static final ShorelineDecorator SHORELINE = register("shoreline", ShorelineDecorator::new, NearWaterConfig.CODEC);
 
-    public static final RegistryObject<FlatEnoughDecorator> FLAT_ENOUGH = register("flat_enough", FlatEnoughDecorator::new, FlatEnoughConfig.CODEC);
-    public static final RegistryObject<ClimateDecorator> CLIMATE = register("climate", ClimateDecorator::new, ClimateConfig.CODEC);
-    public static final RegistryObject<NearWaterDecorator> NEAR_WATER = register("near_water", NearWaterDecorator::new, NearWaterConfig.CODEC);
-    public static final RegistryObject<BoundedCarvingMaskDecorator> BOUNDED_CARVING_MASK = register("bounded_carving_mask", BoundedCarvingMaskDecorator::new, BoundedCarvingMaskConfig.CODEC);
-    public static final RegistryObject<VolcanoDecorator> VOLCANO = register("volcano", VolcanoDecorator::new, VolcanoConfig.CODEC);
-    public static final RegistryObject<ShorelineDecorator> SHORELINE = register("shoreline", ShorelineDecorator::new, NearWaterConfig.CODEC);
-
-    private static <C extends IPlacementConfig, D extends Placement<C>> RegistryObject<D> register(String name, Function<Codec<C>, D> factory, Codec<C> codec)
+    private static <C extends DecoratorConfig, D extends Decorator<C>> D register(String name, Function<Codec<C>, D> factory, Codec<C> codec)
     {
-        return DECORATORS.register(name, () -> factory.apply(codec));
+        return Registry.register(Registry.DECORATOR, Helpers.identifier(name), factory.apply(codec));
     }
+
+    public static void register() {}
 }

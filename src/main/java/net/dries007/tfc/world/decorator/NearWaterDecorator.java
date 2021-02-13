@@ -10,14 +10,14 @@ import java.util.Random;
 import java.util.stream.Stream;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.tags.FluidTags;
+import net.minecraft.tag.FluidTags;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.gen.feature.WorldDecoratingHelper;
-import net.minecraft.world.gen.placement.Placement;
+import net.minecraft.world.gen.decorator.Decorator;
+import net.minecraft.world.gen.decorator.DecoratorContext;
 
 import com.mojang.serialization.Codec;
 
-public class NearWaterDecorator extends Placement<NearWaterConfig>
+public class NearWaterDecorator extends Decorator<NearWaterConfig>
 {
     public NearWaterDecorator(Codec<NearWaterConfig> codec)
     {
@@ -25,7 +25,7 @@ public class NearWaterDecorator extends Placement<NearWaterConfig>
     }
 
     @Override
-    public Stream<BlockPos> getPositions(WorldDecoratingHelper helper, Random random, NearWaterConfig config, BlockPos pos)
+    public Stream<BlockPos> getPositions(DecoratorContext helper, Random random, NearWaterConfig config, BlockPos pos)
     {
         final BlockPos.Mutable mutablePos = new BlockPos.Mutable();
         final int radius = config.getRadius();
@@ -38,7 +38,7 @@ public class NearWaterDecorator extends Placement<NearWaterConfig>
                     mutablePos.set(pos).move(x, y, z);
 
                     final BlockState state = helper.getBlockState(mutablePos);
-                    if (state.getFluidState().is(FluidTags.WATER))
+                    if (state.getFluidState().isIn(FluidTags.WATER))
                     {
                         return Stream.of(pos);
                     }

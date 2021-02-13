@@ -8,13 +8,12 @@ package net.dries007.tfc.common.items.tools;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
-import net.minecraft.entity.ai.attributes.Attribute;
-import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.ai.attributes.Attributes;
-import net.minecraft.inventory.EquipmentSlotType;
-import net.minecraft.item.IItemTier;
-import net.minecraft.item.ItemStack;
+import net.minecraft.entity.EquipmentSlot;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.item.PickaxeItem;
+import net.minecraft.item.ToolMaterial;
 
 /**
  * This is needed so we override the damage math done by vanilla
@@ -27,16 +26,16 @@ public class TFCPickaxeItem extends PickaxeItem
 {
     protected final float attackDamage;
     protected final float attackSpeed;
-    protected final Multimap<Attribute, AttributeModifier> attributeModifiers;
+    protected final Multimap<EntityAttribute, EntityAttributeModifier> attributeModifiers;
 
-    public TFCPickaxeItem(IItemTier tier, float attackDamageMultiplier, float attackSpeed, Properties builder)
+    public TFCPickaxeItem(ToolMaterial tier, float attackDamageMultiplier, float attackSpeed, Settings builder)
     {
         super(tier, 0, attackSpeed, builder);
-        this.attackDamage = attackDamageMultiplier * tier.getAttackDamageBonus();
+        this.attackDamage = attackDamageMultiplier * tier.getAttackDamage();
         this.attackSpeed = attackSpeed;
-        this.attributeModifiers = ImmutableMultimap.<Attribute, AttributeModifier>builder()
-            .put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", attackDamage, AttributeModifier.Operation.ADDITION))
-            .put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", attackSpeed, AttributeModifier.Operation.ADDITION))
+        this.attributeModifiers = ImmutableMultimap.<EntityAttribute, EntityAttributeModifier>builder()
+            .put(EntityAttributes.GENERIC_ATTACK_DAMAGE, new EntityAttributeModifier(ATTACK_DAMAGE_MODIFIER_ID, "Weapon modifier", attackDamage, EntityAttributeModifier.Operation.ADDITION))
+            .put(EntityAttributes.GENERIC_ATTACK_SPEED, new EntityAttributeModifier(ATTACK_SPEED_MODIFIER_ID, "Weapon modifier", attackSpeed, EntityAttributeModifier.Operation.ADDITION))
             .build();
     }
 
@@ -51,8 +50,8 @@ public class TFCPickaxeItem extends PickaxeItem
     }
 
     @Override
-    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlotType slot, ItemStack stack)
+    public Multimap<EntityAttribute, EntityAttributeModifier> getAttributeModifiers(EquipmentSlot slot)
     {
-        return slot == EquipmentSlotType.MAINHAND ? attributeModifiers : super.getAttributeModifiers(slot, stack);
+        return slot == EquipmentSlot.MAINHAND ? attributeModifiers : super.getAttributeModifiers(slot);
     }
 }

@@ -6,21 +6,13 @@
 
 package net.dries007.tfc;
 
-import com.mojang.brigadier.CommandDispatcher;
 import net.dries007.tfc.common.command.TFCCommands;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
-import net.minecraft.command.CommandSource;
 import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import net.minecraft.util.registry.Registry;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import net.dries007.tfc.client.TFCSounds;
 import net.dries007.tfc.common.blocks.TFCBlocks;
@@ -117,12 +109,12 @@ public final class TerraFirmaCraft implements ModInitializer {
 
         TFCBiomes.register();
         TFCFeatures.register();
-        TFCDecorators.DECORATORS.register(modEventBus);
+        TFCDecorators.register();
         TFCSurfaceBuilders.register();
-        TFCCarvers.CARVERS.register(modEventBus);
-        TFCBlockStateProviderTypes.BLOCK_STATE_PROVIDER_TYPES.register(modEventBus);
-        TFCBlockPlacers.BLOCK_PLACER_TYPES.register(modEventBus);
-        TFCWorldType.WORLD_TYPES.register(modEventBus);
+        TFCCarvers.register();
+        TFCBlockStateProviderTypes.register();
+        TFCBlockPlacers.register();
+        TFCWorldType.register();
         CommandRegistrationCallback.EVENT.register((dispatcher, isDedicated) -> TFCCommands.register(dispatcher));
 
         // Init methods

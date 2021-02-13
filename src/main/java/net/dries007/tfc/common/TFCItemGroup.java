@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraftforge.common.util.Lazy;
 
 import net.dries007.tfc.common.blocks.TFCBlocks;
 import net.dries007.tfc.common.blocks.plant.Plant;
@@ -19,6 +18,7 @@ import net.dries007.tfc.common.items.TFCItems;
 import net.dries007.tfc.common.types.Metal;
 import net.dries007.tfc.common.types.Rock;
 import net.dries007.tfc.common.types.Wood;
+import net.minecraft.util.Lazy;
 
 import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
 
@@ -33,7 +33,7 @@ public final class TFCItemGroup extends ItemGroup
     public static final ItemGroup METAL = new TFCItemGroup("metals", () -> new ItemStack(TFCItems.METAL_ITEMS.get(Metal.Default.WROUGHT_IRON).get(Metal.ItemType.INGOT).get()));
     public static final ItemGroup WOOD = new TFCItemGroup("wood", () -> new ItemStack(TFCBlocks.WOODS.get(Wood.Default.DOUGLAS_FIR).get(Wood.BlockType.LOG).get()));
     public static final ItemGroup FOOD = new TFCItemGroup("food", MISSING_ITEM);
-    public static final ItemGroup FLORA = new TFCItemGroup("flora", () -> new ItemStack(TFCBlocks.PLANTS.get(Plant.GOLDENROD).get()));
+    public static final ItemGroup FLORA = new TFCItemGroup("flora", () -> new ItemStack(TFCBlocks.PLANTS.get(Plant.GOLDENROD)));
     public static final ItemGroup MISC = new TFCItemGroup("misc", MISSING_ITEM);
 
     private final Lazy<ItemStack> iconStack;
@@ -41,7 +41,7 @@ public final class TFCItemGroup extends ItemGroup
     private TFCItemGroup(String label, Supplier<ItemStack> iconSupplier)
     {
         super(MOD_ID + "." + label);
-        this.iconStack = Lazy.of(iconSupplier);
+        this.iconStack = new Lazy<>(iconSupplier);
     }
 
     @Override

@@ -6,11 +6,11 @@
 
 package net.dries007.tfc.common.items.tools;
 
-import net.minecraft.item.IItemTier;
+import net.minecraft.item.ToolMaterial;
 
 public class ChiselItem extends TFCToolItem
 {
-    public ChiselItem(IItemTier tier, float attackDamageMultiplier, float attackSpeed, Properties builder)
+    public ChiselItem(ToolMaterial tier, float attackDamageMultiplier, float attackSpeed, Settings builder)
     {
         super(tier, attackDamageMultiplier, attackSpeed, builder);
     }

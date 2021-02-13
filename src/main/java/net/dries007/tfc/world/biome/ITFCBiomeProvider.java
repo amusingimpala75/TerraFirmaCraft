@@ -8,11 +8,11 @@ package net.dries007.tfc.world.biome;
 
 import java.util.Random;
 import java.util.function.Predicate;
-import javax.annotation.Nullable;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.provider.BiomeProvider;
+import net.minecraft.world.biome.source.BiomeSource;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Marker for TFC biome providers
@@ -31,14 +31,14 @@ public interface ITFCBiomeProvider
     @Nullable
     default BlockPos findBiomeIgnoreClimate(int x, int y, int z, int radius, int increment, Predicate<Biome> predicate, Random rand)
     {
-        return biomeSource().findBiomeHorizontal(x, y, z, radius, increment, predicate, rand, false);
+        return biomeSource().locateBiome(x, y, z, radius, increment, predicate, rand, false);
     }
 
     /**
      * @return itself, or the underlying biome provider / source
      */
-    default BiomeProvider biomeSource()
+    default BiomeSource biomeSource()
     {
-        return (BiomeProvider) this;
+        return (BiomeSource) this;
     }
 }

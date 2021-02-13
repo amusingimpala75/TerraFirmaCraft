@@ -10,9 +10,9 @@ import java.util.Random;
 import java.util.stream.Stream;
 
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.ISeedReader;
+import net.minecraft.world.StructureWorldAccess;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.gen.feature.WorldDecoratingHelper;
+import net.minecraft.world.gen.decorator.DecoratorContext;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.mixin.world.gen.feature.WorldDecoratingHelperAccessor;
@@ -38,9 +38,9 @@ public class VolcanoDecorator extends SeededDecorator<VolcanoConfig>
     }
 
     @Override
-    protected Stream<BlockPos> getSeededPositions(WorldDecoratingHelper helper, Random rand, VolcanoConfig config, BlockPos pos)
+    protected Stream<BlockPos> getSeededPositions(DecoratorContext helper, Random rand, VolcanoConfig config, BlockPos pos)
     {
-        final ISeedReader world = ((WorldDecoratingHelperAccessor) helper).accessor$getLevel();
+        final StructureWorldAccess world = ((WorldDecoratingHelperAccessor) helper).accessor$getLevel();
         final Biome biome = world.getBiome(pos);
         final BiomeVariants variants = TFCBiomes.getExtensionOrThrow(world, biome).getVariants();
         if (variants.isVolcanic())

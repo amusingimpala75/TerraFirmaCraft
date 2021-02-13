@@ -12,51 +12,46 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import net.dries007.tfc.forgereplacements.NotNullFunction;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.command.argument.BlockArgumentParser;
+import net.minecraft.loot.context.LootContext;
+import net.minecraft.loot.context.LootContextParameters;
+import net.minecraft.screen.NamedScreenHandlerFactory;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.ScreenHandlerFactory;
+import net.minecraft.server.network.SpawnLocating;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.state.property.Property;
+import net.minecraft.tag.BlockTags;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
+import net.minecraft.util.Lazy;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.Heightmap;
 import net.minecraft.world.WorldView;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.command.arguments.BlockStateParser;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.fluid.FluidState;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.IContainerProvider;
-import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.ItemStack;
-import net.minecraft.loot.LootContext;
-import net.minecraft.loot.LootParameters;
-import net.minecraft.state.Property;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.vector.Vector3d;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.util.LazyOptional;
@@ -71,9 +66,11 @@ import net.dries007.tfc.common.fluids.IFluidLoggable;
 import net.dries007.tfc.util.function.FromByteFunction;
 import net.dries007.tfc.util.function.ToByteFunction;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
 
+@SuppressWarnings("unused")
 public final class Helpers
 {
     private static final Logger LOGGER = LogManager.getLogger();
@@ -117,22 +114,22 @@ public final class Helpers
         }
     }
 
-    public static <K, V extends IForgeRegistryEntry<V>> Map<K, V> findRegistryObjects(JsonObject obj, String path, IForgeRegistry<V> registry, Collection<K> keyValues, NonNullFunction<K, String> keyStringMapper)
+    public static <K, V> Map<K, V> findRegistryObjects(JsonObject obj, String path, Registry<V> registry, Collection<K> keyValues, NotNullFunction<K, String> keyStringMapper)
     {
         return findRegistryObjects(obj, path, registry, keyValues, Collections.emptyList(), keyStringMapper);
     }
 
-    public static <K, V extends IForgeRegistryEntry<V>> Map<K, V> findRegistryObjects(JsonObject obj, String path, IForgeRegistry<V> registry, Collection<K> keyValues, Collection<K> optionalKeyValues, NonNullFunction<K, String> keyStringMapper)
+    public static <K, V> Map<K, V> findRegistryObjects(JsonObject obj, String path, Registry<V> registry, Collection<K> keyValues, Collection<K> optionalKeyValues, NotNullFunction<K, String> keyStringMapper)
     {
         if (obj.has(path))
         {
             Map<K, V> objects = new HashMap<>();
-            JsonObject objectsJson = JSONUtils.getAsJsonObject(obj, path);
+            JsonObject objectsJson = JsonHelper.getObject(obj, path);
             for (K expectedKey : keyValues)
             {
-                String jsonKey = keyStringMapper.apply(expectedKey);
-                ResourceLocation id = new ResourceLocation(JSONUtils.getAsString(objectsJson, jsonKey));
-                V registryObject = registry.getValue(id);
+                String jsonKey = keyStringMapper.run(expectedKey);
+                Identifier id = new Identifier(JsonHelper.getString(objectsJson, jsonKey));
+                V registryObject = registry.get(id);
                 if (registryObject == null)
                 {
                     throw new JsonParseException("Unknown registry object: " + id);
@@ -141,11 +138,11 @@ public final class Helpers
             }
             for (K optionalKey : optionalKeyValues)
             {
-                String jsonKey = keyStringMapper.apply(optionalKey);
+                String jsonKey = keyStringMapper.run(optionalKey);
                 if (objectsJson.has(jsonKey))
                 {
-                    ResourceLocation id = new ResourceLocation(JSONUtils.getAsString(objectsJson, jsonKey));
-                    V registryObject = registry.getValue(id);
+                    Identifier id = new Identifier(JsonHelper.getString(objectsJson, jsonKey));
+                    V registryObject = registry.get(id);
                     if (registryObject == null)
                     {
                         throw new JsonParseException("Unknown registry object: " + id);
@@ -160,10 +157,10 @@ public final class Helpers
 
     public static BlockState readBlockState(String block) throws JsonParseException
     {
-        BlockStateParser parser = parseBlockState(block, false);
-        if (parser.getState() != null)
+        BlockArgumentParser parser = parseBlockState(block, false);
+        if (parser.getBlockState() != null)
         {
-            return parser.getState();
+            return parser.getBlockState();
         }
         throw new JsonParseException("Weird result, valid parse but not a block state: " + block);
     }
@@ -207,15 +204,21 @@ public final class Helpers
     /**
      * Applies two possible consumers of a given lazy optional
      */
-    public static <T> void ifPresentOrElse(LazyOptional<T> lazyOptional, Consumer<T> ifPresent, Runnable orElse)
+    public static <T> void ifPresentOrElse(Lazy<T> lazyOptional, Consumer<T> ifPresent, Runnable orElse)
     {
-        lazyOptional.map(t -> {
+        /*lazyOptional.map(t -> {
             ifPresent.accept(t);
             return Unit.INSTANCE;
         }).orElseGet(() -> {
             orElse.run();
             return Unit.INSTANCE;
-        });
+        });*/
+        T t = lazyOptional.get();
+        if (t != null) {
+            ifPresent.accept(t);
+        } else {
+            orElse.run();
+        }
     }
 
     /**
@@ -255,19 +258,19 @@ public final class Helpers
      *
      * @return a singleton container provider
      */
-    public static INamedContainerProvider createNamedContainerProvider(ITextComponent name, IContainerProvider provider)
+    public static NamedScreenHandlerFactory createNamedContainerProvider(Text name, ScreenHandlerFactory provider)
     {
-        return new INamedContainerProvider()
+        return new NamedScreenHandlerFactory()
         {
             @Override
-            public ITextComponent getDisplayName()
+            public Text getDisplayName()
             {
                 return name;
             }
 
             @Nullable
             @Override
-            public Container createMenu(int windowId, PlayerInventory inv, PlayerEntity player)
+            public ScreenHandler createMenu(int windowId, PlayerInventory inv, PlayerEntity player)
             {
                 return provider.createMenu(windowId, inv, player);
             }
@@ -290,9 +293,9 @@ public final class Helpers
 
     @Nullable
     @SuppressWarnings("unchecked")
-    public static <T extends TileEntity> T getTileEntity(IWorldReader world, BlockPos pos, Class<T> tileEntityClass)
+    public static <T extends BlockEntity> T getTileEntity(WorldView world, BlockPos pos, Class<T> tileEntityClass)
     {
-        TileEntity te = world.getBlockEntity(pos);
+        BlockEntity te = world.getBlockEntity(pos);
         if (tileEntityClass.isInstance(te))
         {
             return (T) te;
@@ -312,7 +315,7 @@ public final class Helpers
     }
 
     /**
-     * This returns the previous result of {@link ServerWorld#getBlockRandomPos(int, int, int, int)}.
+     * This returns the previous result of {@link ServerWorld#getRandomPosInChunk(int, int, int, int)}.
      */
     public static BlockPos getPreviousRandomPos(int x, int y, int z, int yMask, int randValue)
     {
@@ -340,11 +343,11 @@ public final class Helpers
 
     public static void slowEntityInBlock(Entity entity, float factor, int fallDamageReduction)
     {
-        Vector3d motion = entity.getDeltaMovement();
-        entity.setDeltaMovement(motion.multiply(factor, motion.y < 0 ? factor : 1, factor));
+        Vec3d motion = entity.getVelocity();
+        entity.setVelocity(motion.multiply(factor, motion.y < 0 ? factor : 1, factor));
         if (entity.fallDistance > fallDamageReduction)
         {
-            entity.causeFallDamage(entity.fallDistance - fallDamageReduction, 1.0f);
+            entity.handleFallDamage(entity.fallDistance - fallDamageReduction, 1.0f);
         }
         entity.fallDistance = 0;
     }
@@ -357,24 +360,24 @@ public final class Helpers
     }
 
     /**
-     * Copy pasta from {@link net.minecraft.entity.player.SpawnLocationHelper} except one that doesn't require the spawn block be equal to the surface builder config top block
+     * Copy pasta from {@link SpawnLocating} except one that doesn't require the spawn block be equal to the surface builder config top block
      */
     @Nullable
     public static BlockPos findValidSpawnLocation(ServerWorld world, ChunkPos chunkPos)
     {
         final Chunk chunk = world.getChunk(chunkPos.x, chunkPos.z);
         final BlockPos.Mutable mutablePos = new BlockPos.Mutable();
-        for (int x = chunkPos.getMinBlockX(); x <= chunkPos.getMaxBlockX(); ++x)
+        for (int x = chunkPos.getStartX(); x <= chunkPos.getEndX(); ++x)
         {
-            for (int z = chunkPos.getMinBlockZ(); z <= chunkPos.getMaxBlockZ(); ++z)
+            for (int z = chunkPos.getStartZ(); z <= chunkPos.getEndZ(); ++z)
             {
                 mutablePos.set(x, 0, z);
 
                 final Biome biome = world.getBiome(mutablePos);
-                final int motionBlockingHeight = chunk.getHeight(Heightmap.Type.MOTION_BLOCKING, x & 15, z & 15);
-                final int worldSurfaceHeight = chunk.getHeight(Heightmap.Type.WORLD_SURFACE, x & 15, z & 15);
-                final int oceanFloorHeight = chunk.getHeight(Heightmap.Type.OCEAN_FLOOR, x & 15, z & 15);
-                if (worldSurfaceHeight >= oceanFloorHeight && biome.getMobSettings().playerSpawnFriendly())
+                final int motionBlockingHeight = chunk.sampleHeightmap(Heightmap.Type.MOTION_BLOCKING, x & 15, z & 15);
+                final int worldSurfaceHeight = chunk.sampleHeightmap(Heightmap.Type.WORLD_SURFACE, x & 15, z & 15);
+                final int oceanFloorHeight = chunk.sampleHeightmap(Heightmap.Type.OCEAN_FLOOR, x & 15, z & 15);
+                if (worldSurfaceHeight >= oceanFloorHeight && biome.getSpawnSettings().isPlayerSpawnFriendly())
                 {
                     for (int y = 1 + motionBlockingHeight; y >= oceanFloorHeight; y--)
                     {
@@ -388,7 +391,7 @@ public final class Helpers
 
                         if (BlockTags.VALID_SPAWN.contains(state.getBlock()))
                         {
-                            return mutablePos.above().immutable();
+                            return mutablePos.up().toImmutable();
                         }
                     }
                 }
@@ -408,9 +411,9 @@ public final class Helpers
 
     public static <T extends Comparable<T>> BlockState copyProperty(BlockState copyTo, BlockState copyFrom, Property<T> property)
     {
-        if (copyTo.hasProperty(property))
+        if (copyTo.contains(property))
         {
-            return copyTo.setValue(property, copyFrom.getValue(property));
+            return copyTo.with(property, copyFrom.get(property));
         }
         return copyTo;
     }
@@ -420,7 +423,7 @@ public final class Helpers
         PlayerEntity player = ForgeHooks.getCraftingPlayer(); // Mods may not set this properly
         if (player != null)
         {
-            stack.hurtAndBreak(amount, player, entity -> {});
+            stack.damage(amount, player, entity -> {});
         }
         else
         {
@@ -429,24 +432,24 @@ public final class Helpers
     }
 
     /**
-     * A replacement for {@link ItemStack#hurtAndBreak(int, LivingEntity, Consumer)} when an entity is not present
+     * A replacement for {@link ItemStack#damage(int, LivingEntity, Consumer)} when an entity is not present
      */
     public static void damageItem(ItemStack stack, int amount)
     {
-        if (stack.isDamageableItem())
+        if (stack.isDamageable())
         {
             // There's no player here so we can't safely do anything.
             //amount = stack.getItem().damageItem(stack, amount, null, e -> {});
-            if (stack.hurt(amount, RANDOM, null))
+            if (stack.damage(amount, RANDOM, null))
             {
-                stack.shrink(1);
-                stack.setDamageValue(0);
+                stack.decrement(1);
+                stack.setDamage(0);
             }
         }
     }
 
     /**
-     * Copied from {@link World#destroyBlock(BlockPos, boolean, Entity, int)}
+     * Copied from {@link World#breakBlock(BlockPos, boolean)}
      * Allows the loot context to be modified
      */
     @SuppressWarnings("deprecation")
@@ -458,25 +461,25 @@ public final class Helpers
             FluidState fluidstate = worldIn.getFluidState(pos);
             if (!(state.getBlock() instanceof AbstractFireBlock))
             {
-                worldIn.levelEvent(2001, pos, Block.getId(state));
+                worldIn.syncWorldEvent(2001, pos, Block.getRawIdFromState(state));
             }
 
             if (worldIn instanceof ServerWorld)
             {
-                TileEntity tileEntity = state.hasTileEntity() ? worldIn.getBlockEntity(pos) : null;
+                BlockEntity tileEntity = state.getBlock().hasBlockEntity() ? worldIn.getBlockEntity(pos) : null;
 
                 // Copied from Block.getDrops()
                 LootContext.Builder lootContext = new LootContext.Builder((ServerWorld) worldIn)
-                    .withRandom(worldIn.random)
-                    .withParameter(LootParameters.ORIGIN, Vector3d.atCenterOf(pos))
-                    .withParameter(LootParameters.TOOL, ItemStack.EMPTY)
-                    .withOptionalParameter(LootParameters.THIS_ENTITY, null)
-                    .withOptionalParameter(LootParameters.BLOCK_ENTITY, tileEntity);
+                    .random(worldIn.random)
+                    .parameter(LootContextParameters.ORIGIN, Vec3d.ofCenter(pos))
+                    .parameter(LootContextParameters.TOOL, ItemStack.EMPTY)
+                    .optionalParameter(LootContextParameters.THIS_ENTITY, null)
+                    .optionalParameter(LootContextParameters.BLOCK_ENTITY, tileEntity);
                 builder.accept(lootContext);
-                state.getDrops(lootContext).forEach(stackToSpawn -> Block.popResource(worldIn, pos, stackToSpawn));
-                state.spawnAfterBreak((ServerWorld) worldIn, pos, ItemStack.EMPTY);
+                state.getDroppedStacks(lootContext).forEach(stackToSpawn -> Block.dropStack(worldIn, pos, stackToSpawn));
+                state.onStacksDropped((ServerWorld) worldIn, pos, ItemStack.EMPTY);
             }
-            worldIn.setBlock(pos, fluidstate.createLegacyBlock(), 3, 512);
+            worldIn.setBlockState(pos, fluidstate.getBlockState(), 3, 512);
         }
     }
 }

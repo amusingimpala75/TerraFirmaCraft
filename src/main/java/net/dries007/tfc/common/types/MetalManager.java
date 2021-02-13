@@ -8,6 +8,7 @@ package net.dries007.tfc.common.types;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.ResourceLocation;
 
 import net.dries007.tfc.util.data.DataManager;
@@ -22,7 +23,7 @@ public class MetalManager extends DataManager<Metal>
     }
 
     @Override
-    protected Metal read(ResourceLocation id, JsonObject obj)
+    protected Metal read(Identifier id, JsonObject obj)
     {
         return new Metal(id, obj);
     }

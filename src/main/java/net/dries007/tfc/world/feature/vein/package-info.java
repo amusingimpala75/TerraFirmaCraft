@@ -4,10 +4,10 @@
  * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
  */
 
-@MethodsReturnNonnullByDefault
-@ParametersAreNonnullByDefault
+//@MethodsReturnNonnullByDefault
+//@ParametersAreNonnullByDefault
 package net.dries007.tfc.world.feature.vein;
 
-import javax.annotation.ParametersAreNonnullByDefault;
+//import javax.annotation.ParametersAreNonnullByDefault;
 
-import mcp.MethodsReturnNonnullByDefault;
+//import mcp.MethodsReturnNonnullByDefault;

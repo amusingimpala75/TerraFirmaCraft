@@ -7,19 +7,19 @@
 package net.dries007.tfc.common.types;
 
 import java.util.List;
-import javax.annotation.Nullable;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
 
 import net.dries007.tfc.TerraFirmaCraft;
 import net.dries007.tfc.util.collections.IndirectHashCollection;
 import net.dries007.tfc.util.data.DataManager;
+import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 public class MetalItemManager extends DataManager<MetalItem>
 {
@@ -44,13 +44,13 @@ public class MetalItemManager extends DataManager<MetalItem>
         CACHE.reload(INSTANCE.getValues());
     }
 
-    public static void addTooltipInfo(ItemStack stack, List<ITextComponent> text)
+    public static void addTooltipInfo(ItemStack stack, List<Text> text)
     {
         MetalItem def = get(stack);
         if (def != null)
         {
-            text.add(new TranslationTextComponent(TerraFirmaCraft.MOD_ID + ".tooltip.metal", def.getMetal().getDisplayName()));
-            text.add(new TranslationTextComponent(TerraFirmaCraft.MOD_ID + ".tooltip.units", def.getAmount()));
+            text.add(new TranslatableText(TerraFirmaCraft.MOD_ID + ".tooltip.metal", def.getMetal().getDisplayName()));
+            text.add(new TranslatableText(TerraFirmaCraft.MOD_ID + ".tooltip.units", def.getAmount()));
             text.add(def.getMetal().getTier().getDisplayName());
         }
     }
@@ -61,7 +61,7 @@ public class MetalItemManager extends DataManager<MetalItem>
     }
 
     @Override
-    protected MetalItem read(ResourceLocation id, JsonObject obj)
+    protected MetalItem read(Identifier id, JsonObject obj)
     {
         return new MetalItem(id, obj);
     }

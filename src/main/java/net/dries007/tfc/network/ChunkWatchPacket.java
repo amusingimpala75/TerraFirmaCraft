@@ -8,10 +8,10 @@ package net.dries007.tfc.network;
 
 import java.util.function.Supplier;
 
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.IChunk;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -45,7 +45,7 @@ public class ChunkWatchPacket
         this.plateTectonicsInfo = plateTectonicsInfo;
     }
 
-    ChunkWatchPacket(PacketBuffer buffer)
+    ChunkWatchPacket(PacketByteBuf buffer)
     {
         chunkX = buffer.readVarInt();
         chunkZ = buffer.readVarInt();
@@ -57,7 +57,7 @@ public class ChunkWatchPacket
         plateTectonicsInfo = PlateTectonicsClassification.valueOf(buffer.readByte());
     }
 
-    void encode(PacketBuffer buffer)
+    void encode(PacketByteBuf buffer)
     {
         buffer.writeVarInt(chunkX);
         buffer.writeVarInt(chunkZ);
@@ -79,7 +79,7 @@ public class ChunkWatchPacket
             {
                 // First, synchronize the chunk data in the capability and cache.
                 // Then, update the single data instance with the packet data
-                IChunk chunk = world.hasChunk(chunkX, chunkZ) ? world.getChunk(chunkX, chunkZ) : null;
+                Chunk chunk = world.isChunkLoaded(chunkX, chunkZ) ? world.getChunk(chunkX, chunkZ) : null;
                 ChunkData data = ChunkData.getCapability(chunk)
                     .map(dataIn -> {
                         ChunkDataCache.CLIENT.update(pos, dataIn);

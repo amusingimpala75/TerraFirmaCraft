@@ -10,18 +10,18 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Random;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.IChunk;
-import net.minecraft.world.gen.carver.WorldCarver;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.gen.carver.Carver;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.world.chunkdata.RockData;
 import net.dries007.tfc.world.noise.*;
+import org.jetbrains.annotations.Nullable;
 
-public class WorleyCaveCarver extends WorldCarver<WorleyCaveConfig> implements IContextCarver
+public class WorleyCaveCarver extends Carver<WorleyCaveConfig> implements IContextCarver
 {
     private final AirBlockCarver blockCarver;
 
@@ -57,7 +57,7 @@ public class WorleyCaveCarver extends WorldCarver<WorleyCaveConfig> implements I
     }
 
     @Override
-    public boolean carve(IChunk chunkIn, Function<BlockPos, Biome> biomePos, Random rand, int seaLevel, int chunkXOffset, int chunkZOffset, int chunkX, int chunkZ, BitSet carvingMask, WorleyCaveConfig config)
+    public boolean carve(Chunk chunkIn, Function<BlockPos, Biome> biomePos, Random rand, int seaLevel, int chunkXOffset, int chunkZOffset, int chunkX, int chunkZ, BitSet carvingMask, WorleyCaveConfig config)
     {
         // This carver is entirely noise based, so we need to only carve chunks when we're at the start chunk
         if (chunkX == chunkXOffset && chunkZ == chunkZOffset)
@@ -73,19 +73,19 @@ public class WorleyCaveCarver extends WorldCarver<WorleyCaveConfig> implements I
     }
 
     @Override
-    public boolean isStartChunk(Random rand, int chunkX, int chunkZ, WorleyCaveConfig config)
+    public boolean shouldCarve(Random rand, int chunkX, int chunkZ, WorleyCaveConfig config)
     {
         return true;
     }
 
     @Override
-    protected boolean skip(double distX, double distY, double distZ, int posY)
+    protected boolean isPositionExcluded(double distX, double distY, double distZ, int posY)
     {
         return false; // Unused
     }
 
     @SuppressWarnings("PointlessArithmeticExpression")
-    private void carve(IChunk chunkIn, int chunkX, int chunkZ, Random random, int seaLevel, WorleyCaveConfig config)
+    private void carve(Chunk chunkIn, int chunkX, int chunkZ, Random random, int seaLevel, WorleyCaveConfig config)
     {
         final int heightSampleRange = (config.heightFadeThreshold / 4) + 8;
         final float[] noiseValues = new float[5 * 5 * heightSampleRange];

@@ -7,12 +7,11 @@
 package net.dries007.tfc.world.carver;
 
 import java.util.*;
-import javax.annotation.Nullable;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.chunk.IChunk;
+import net.minecraft.world.chunk.Chunk;
 
 import net.dries007.tfc.common.blocks.TFCBlocks;
 import net.dries007.tfc.common.blocks.soil.SandBlockType;
@@ -20,6 +19,7 @@ import net.dries007.tfc.common.blocks.soil.SoilBlockType;
 import net.dries007.tfc.common.types.Rock;
 import net.dries007.tfc.common.types.RockManager;
 import net.dries007.tfc.world.chunkdata.RockData;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A common class for single block carving logic
@@ -46,7 +46,7 @@ public abstract class BlockCarver implements IContextCarver
         reload();
     }
 
-    public abstract boolean carve(IChunk chunk, BlockPos pos, Random random, int seaLevel);
+    public abstract boolean carve(Chunk chunk, BlockPos pos, Random random, int seaLevel);
 
     @Override
     public void setContext(long worldSeed, BitSet airCarvingMask, BitSet liquidCarvingMask, RockData rockData, @Nullable BitSet waterAdjacencyMask)
@@ -70,13 +70,13 @@ public abstract class BlockCarver implements IContextCarver
         }
         for (SoilBlockType.Variant variant : SoilBlockType.Variant.values())
         {
-            carvableBlocks.add(TFCBlocks.SOIL.get(SoilBlockType.DIRT).get(variant).get());
-            carvableBlocks.add(TFCBlocks.SOIL.get(SoilBlockType.GRASS).get(variant).get());
-            exposedBlockReplacements.put(TFCBlocks.SOIL.get(SoilBlockType.DIRT).get(variant).get(), TFCBlocks.SOIL.get(SoilBlockType.GRASS).get(variant).get());
+            carvableBlocks.add(TFCBlocks.SOIL.get(SoilBlockType.DIRT).get(variant));
+            carvableBlocks.add(TFCBlocks.SOIL.get(SoilBlockType.GRASS).get(variant));
+            exposedBlockReplacements.put(TFCBlocks.SOIL.get(SoilBlockType.DIRT).get(variant), TFCBlocks.SOIL.get(SoilBlockType.GRASS).get(variant));
         }
         for (SandBlockType sand : SandBlockType.values())
         {
-            supportableBlocks.add(TFCBlocks.SAND.get(sand).get());
+            supportableBlocks.add(TFCBlocks.SAND.get(sand));
         }
 
         supportableBlocks.addAll(carvableBlocks);
@@ -93,7 +93,6 @@ public abstract class BlockCarver implements IContextCarver
     /**
      * If the state can be supported. Any block carved must ensure that exposed blocks (all but down) are supported
      */
-    @SuppressWarnings("deprecation")
     protected boolean isSupportable(BlockState state)
     {
         return state.isAir() || supportableBlocks.contains(state.getBlock());
@@ -103,12 +102,11 @@ public abstract class BlockCarver implements IContextCarver
      * Set the block to be supported. This should be called from any carved block, with the above position and state.
      * If the block can be supported via property, set that. Otherwise replace with raw rock of the correct type (supported), but only if the block above that is also not air (as otherwise this creates unsightly floating raw rock blocks.
      */
-    @SuppressWarnings("deprecation")
-    protected void setSupported(IChunk chunk, BlockPos pos, BlockState state, RockData rockData)
+    protected void setSupported(Chunk chunk, BlockPos pos, BlockState state, RockData rockData)
     {
-        if (!state.isAir() && state.getFluidState().isEmpty() && !chunk.getBlockState(pos.above()).isAir())
+        if (!state.isAir() && state.getFluidState().isEmpty() && !chunk.getBlockState(pos.up()).isAir())
         {
-            chunk.setBlockState(pos, rockData.getRock(pos).getBlock(Rock.BlockType.HARDENED).defaultBlockState(), false);
+            chunk.setBlockState(pos, rockData.getRock(pos).getBlock(Rock.BlockType.HARDENED).getDefaultState(), false);
         }
     }
 }

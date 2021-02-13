@@ -9,17 +9,17 @@ package net.dries007.tfc.util.data;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
-import javax.annotation.Nullable;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
+import org.jetbrains.annotations.Nullable;
 
 public class TypedDataManager<T> extends DataManager<T>
 {
-    protected final Map<ResourceLocation, BiFunction<ResourceLocation, JsonObject, ? extends T>> deserializers;
+    protected final Map<Identifier, BiFunction<Identifier, JsonObject, ? extends T>> deserializers;
 
     protected TypedDataManager(Gson gson, String domain, String typeName, boolean allowNone)
     {
@@ -28,7 +28,7 @@ public class TypedDataManager<T> extends DataManager<T>
         this.deserializers = new HashMap<>();
     }
 
-    public void register(ResourceLocation name, BiFunction<ResourceLocation, JsonObject, ? extends T> deserializer)
+    public void register(Identifier name, BiFunction<Identifier, JsonObject, ? extends T> deserializer)
     {
         if (!deserializers.containsKey(name))
         {
@@ -42,12 +42,12 @@ public class TypedDataManager<T> extends DataManager<T>
     }
 
     @Override
-    protected T read(ResourceLocation id, JsonObject json)
+    protected T read(Identifier id, JsonObject json)
     {
-        ResourceLocation type;
+        Identifier type;
         if (json.has("type"))
         {
-            type = new ResourceLocation(JSONUtils.getAsString(json, "type"));
+            type = new Identifier(JsonHelper.getString(json, "type"));
         }
         else
         {
@@ -68,7 +68,7 @@ public class TypedDataManager<T> extends DataManager<T>
     }
 
     @Nullable
-    protected ResourceLocation getFallbackType()
+    protected Identifier getFallbackType()
     {
         return null;
     }

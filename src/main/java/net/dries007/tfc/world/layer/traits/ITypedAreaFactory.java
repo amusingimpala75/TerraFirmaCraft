@@ -7,7 +7,7 @@
 package net.dries007.tfc.world.layer.traits;
 
 /**
- * Like {@link net.minecraft.world.gen.area.IAreaFactory} but using {@link TypedArea}
+ * Like {@link net.minecraft.world.biome.layer.util.LayerFactory} but using {@link TypedArea}
  */
 public interface ITypedAreaFactory<A>
 {

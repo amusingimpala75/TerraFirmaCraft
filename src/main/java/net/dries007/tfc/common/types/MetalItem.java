@@ -14,32 +14,32 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.recipe.Ingredient;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
 import net.minecraftforge.common.crafting.CraftingHelper;
 
 public class MetalItem
 {
-    private final ResourceLocation id;
+    private final Identifier id;
     private final Ingredient ingredient;
     private final Metal metal;
     private final int amount;
 
-    public MetalItem(ResourceLocation id, JsonObject json)
+    public MetalItem(Identifier id, JsonObject json)
     {
         this.id = id;
-        ingredient = CraftingHelper.getIngredient(JSONUtils.getAsJsonObject(json, "ingredient"));
-        ResourceLocation metalId = new ResourceLocation(JSONUtils.getAsString(json, "metal"));
+        ingredient = CraftingHelper.getIngredient(JsonHelper.getObject(json, "ingredient"));
+        Identifier metalId = new Identifier(JsonHelper.getString(json, "metal"));
         metal = MetalManager.INSTANCE.get(metalId);
         if (metal == null)
         {
             throw new JsonSyntaxException("Invalid metal specified: " + metalId.toString());
         }
-        amount = JSONUtils.getAsInt(json, "amount");
+        amount = JsonHelper.getInt(json, "amount");
     }
 
-    public ResourceLocation getId()
+    public Identifier getId()
     {
         return id;
     }
@@ -56,7 +56,7 @@ public class MetalItem
 
     public Collection<Item> getValidItems()
     {
-        return Arrays.stream(this.ingredient.getItems()).map(ItemStack::getItem).collect(Collectors.toSet());
+        return Arrays.stream(this.ingredient.getMatchingStacksClient()).map(ItemStack::getItem).collect(Collectors.toSet());
     }
 
     public boolean isValid(ItemStack stack)

@@ -7,20 +7,15 @@
 package net.dries007.tfc.world.layer.traits;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.gen.area.LazyArea;
-import net.minecraft.world.gen.layer.traits.IPixelTransformer;
 
 import it.unimi.dsi.fastutil.HashCommon;
-import it.unimi.dsi.fastutil.longs.Long2IntLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectLinkedOpenHashMap;
 
 /**
- * Like {@link net.minecraft.world.gen.area.LazyArea} but with a generic return type.
- * There isn't an interface type like {@link net.minecraft.world.gen.area.IArea} as there's no need.
+ * Like {@link net.minecraft.world.biome.layer.util.CachingLayerSampler} but with a generic return type.
+ * There isn't an interface type like {@link net.minecraft.world.biome.layer.util.LayerSampler} as there's no need.
  */
 public class TypedArea<A>
 {
@@ -44,7 +39,7 @@ public class TypedArea<A>
     @SuppressWarnings("unchecked")
     public A get(int x, int z)
     {
-        final long key = ChunkPos.asLong(x, z);
+        final long key = ChunkPos.toLong(x, z);
         final int index = (int) HashCommon.mix(key) & mask;
         if (keys[index] == key)
         {

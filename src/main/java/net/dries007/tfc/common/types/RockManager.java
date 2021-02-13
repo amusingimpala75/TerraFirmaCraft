@@ -8,14 +8,14 @@ package net.dries007.tfc.common.types;
 
 import java.util.HashMap;
 import java.util.Map;
-import javax.annotation.Nullable;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import net.minecraft.block.Block;
-import net.minecraft.util.ResourceLocation;
 
 import net.dries007.tfc.util.data.DataManager;
+import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 public class RockManager extends DataManager<Rock>
 {
@@ -40,7 +40,7 @@ public class RockManager extends DataManager<Rock>
     }
 
     @Override
-    protected Rock read(ResourceLocation id, JsonObject obj)
+    protected Rock read(Identifier id, JsonObject obj)
     {
         return new Rock(id, obj);
     }

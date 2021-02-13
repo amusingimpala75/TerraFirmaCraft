@@ -6,19 +6,19 @@
 
 package net.dries007.tfc.world.layer.traits;
 
-import net.minecraft.world.gen.layer.traits.IDimTransformer;
+import net.minecraft.world.biome.layer.util.CoordinateTransformer;
 
 /**
- * Like {@link net.minecraft.world.gen.layer.traits.IAreaTransformer1} but with {@link TypedArea}
+ * Like {@link net.minecraft.world.biome.layer.util.CoordinateTransformer} but with {@link TypedArea}
  */
-public interface ITypedAreaTransformer1<A> extends IDimTransformer
+public interface ITypedAreaTransformer1<A> extends CoordinateTransformer
 {
     default ITypedAreaFactory<A> run(ITypedNoiseRandom<A> context, ITypedAreaFactory<A> areaFactory)
     {
         return () -> {
             TypedArea<A> area = areaFactory.make();
             return context.createTypedResult((x, z) -> {
-                context.initRandom(x, z);
+                context.initSeed(x, z);
                 return apply(context, area, x, z);
             });
         };

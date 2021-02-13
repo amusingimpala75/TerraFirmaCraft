@@ -8,8 +8,8 @@ package net.dries007.tfc.network;
 
 import java.util.function.Supplier;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraftforge.fml.network.NetworkEvent;
 import net.minecraftforge.fml.network.NetworkHooks;
 
@@ -24,12 +24,12 @@ public class SwitchInventoryTabPacket
         this.type = type;
     }
 
-    SwitchInventoryTabPacket(PacketBuffer buffer)
+    SwitchInventoryTabPacket(PacketByteBuf buffer)
     {
         this.type = Type.VALUES[buffer.readByte()];
     }
 
-    void encode(PacketBuffer buffer)
+    void encode(PacketByteBuf buffer)
     {
         buffer.writeByte(type.ordinal());
     }
@@ -41,10 +41,10 @@ public class SwitchInventoryTabPacket
             ServerPlayerEntity player = context.get().getSender();
             if (player != null)
             {
-                player.doCloseContainer();
+                player.closeScreenHandler();
                 if (type == Type.INVENTORY)
                 {
-                    player.containerMenu = player.inventoryMenu;
+                    player.currentScreenHandler = player.playerScreenHandler;
                 }
                 else if (type == Type.CALENDAR)
                 {

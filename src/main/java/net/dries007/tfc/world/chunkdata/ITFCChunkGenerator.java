@@ -6,9 +6,8 @@
 
 package net.dries007.tfc.world.chunkdata;
 
-import net.minecraft.world.gen.ChunkGenerator;
-
 import net.dries007.tfc.world.biome.ITFCBiomeProvider;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 
 /**
  * Identifier interface for the TFC enabled chunk generators
@@ -24,7 +23,7 @@ public interface ITFCChunkGenerator
     ChunkDataProvider getChunkDataProvider();
 
     /**
-     * Override in {@link net.minecraft.world.gen.ChunkGenerator} to return a narrower type
+     * Override in {@link ChunkGenerator} to return a narrower type
      *
      * @return The biome provider / source for this generator
      */

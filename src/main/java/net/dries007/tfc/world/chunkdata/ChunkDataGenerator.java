@@ -11,8 +11,6 @@ import java.util.Random;
 
 import com.google.common.annotations.VisibleForTesting;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.gen.area.IAreaFactory;
-import net.minecraft.world.gen.area.LazyArea;
 
 import net.dries007.tfc.common.types.Rock;
 import net.dries007.tfc.config.TFCConfig;
@@ -47,7 +45,7 @@ public class ChunkDataGenerator implements IChunkDataGenerator
 
     public ChunkDataGenerator(long worldSeed, Random seedGenerator, TFCBiomeProvider.LayerSettings layerSettings)
     {
-        List<IAreaFactory<FastArea>> rockLayers = TFCLayerUtil.createOverworldRockLayers(seedGenerator.nextLong(), layerSettings);
+        List<net.minecraft.world.biome.layer.util.LayerFactory<FastArea>> rockLayers = TFCLayerUtil.createOverworldRockLayers(seedGenerator.nextLong(), layerSettings);
         this.bottomRockLayer = LayerFactory.rocks(rockLayers.get(0), layerSettings);
         this.middleRockLayer = LayerFactory.rocks(rockLayers.get(1), layerSettings);
         this.topRockLayer = LayerFactory.rocks(rockLayers.get(2), layerSettings);
@@ -84,7 +82,7 @@ public class ChunkDataGenerator implements IChunkDataGenerator
     public void generate(ChunkData data, ChunkData.Status status)
     {
         ChunkPos pos = data.getPos();
-        int chunkX = pos.getMinBlockX(), chunkZ = pos.getMinBlockZ();
+        int chunkX = pos.getStartX(), chunkZ = pos.getStartZ();
         switch (status)
         {
             case EMPTY:

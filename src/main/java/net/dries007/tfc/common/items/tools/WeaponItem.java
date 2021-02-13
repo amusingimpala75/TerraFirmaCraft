@@ -9,12 +9,12 @@ package net.dries007.tfc.common.items.tools;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.attributes.Attribute;
-import net.minecraft.entity.ai.attributes.AttributeModifier;
-import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.attribute.EntityAttribute;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -28,20 +28,20 @@ import net.minecraft.world.World;
  * Vanilla: Tool value (ie: 3.0 for swords) + material damage value (ie: 2.0 for iron) + 1.0 (hand) = 6.0
  * TFC: Tool value (ie: 1.3 for maces) * material damage value (ie: 5.75 for steel) + 1.0 (hand) ~= 7.5
  */
-public class WeaponItem extends TieredItem
+public class WeaponItem extends ToolItem
 {
-    protected final Multimap<Attribute, AttributeModifier> attributeModifiers;
+    protected final Multimap<EntityAttribute, EntityAttributeModifier> attributeModifiers;
     private final float attackDamage;
     private final float attackSpeed;
 
-    public WeaponItem(IItemTier tier, float attackDamageMultiplier, float attackSpeed, Item.Properties builder)
+    public WeaponItem(ToolMaterial tier, float attackDamageMultiplier, float attackSpeed, Item.Settings builder)
     {
         super(tier, builder);
         this.attackSpeed = attackSpeed;
-        this.attackDamage = attackDamageMultiplier * tier.getAttackDamageBonus();
-        this.attributeModifiers = ImmutableMultimap.<Attribute, AttributeModifier>builder()
-            .put(Attributes.ATTACK_DAMAGE, new AttributeModifier(BASE_ATTACK_DAMAGE_UUID, "Weapon modifier", attackDamage, AttributeModifier.Operation.ADDITION))
-            .put(Attributes.ATTACK_SPEED, new AttributeModifier(BASE_ATTACK_SPEED_UUID, "Weapon modifier", attackSpeed, AttributeModifier.Operation.ADDITION))
+        this.attackDamage = attackDamageMultiplier * tier.getAttackDamage();
+        this.attributeModifiers = ImmutableMultimap.<EntityAttribute, EntityAttributeModifier>builder()
+            .put(EntityAttributes.GENERIC_ATTACK_DAMAGE, new EntityAttributeModifier(ATTACK_DAMAGE_MODIFIER_ID, "Weapon modifier", attackDamage, EntityAttributeModifier.Operation.ADDITION))
+            .put(EntityAttributes.GENERIC_ATTACK_SPEED, new EntityAttributeModifier(ATTACK_SPEED_MODIFIER_ID, "Weapon modifier", attackSpeed, EntityAttributeModifier.Operation.ADDITION))
             .build();
     }
 
@@ -56,31 +56,31 @@ public class WeaponItem extends TieredItem
     }
 
     @Override
-    public boolean canAttackBlock(BlockState state, World worldIn, BlockPos pos, PlayerEntity player)
+    public boolean canMine(BlockState state, World worldIn, BlockPos pos, PlayerEntity player)
     {
         return !player.isCreative();
     }
 
     @Override
-    public boolean hurtEnemy(ItemStack stack, LivingEntity target, LivingEntity attacker)
+    public boolean postHit(ItemStack stack, LivingEntity target, LivingEntity attacker)
     {
-        stack.hurtAndBreak(1, attacker, (entity) -> entity.broadcastBreakEvent(EquipmentSlotType.MAINHAND));
+        stack.damage(1, attacker, (entity) -> entity.sendEquipmentBreakStatus(EquipmentSlot.MAINHAND));
         return true;
     }
 
     @Override
-    public boolean mineBlock(ItemStack stack, World worldIn, BlockState state, BlockPos pos, LivingEntity entityLiving)
+    public boolean postMine(ItemStack stack, World worldIn, BlockState state, BlockPos pos, LivingEntity entityLiving)
     {
-        if (state.getDestroySpeed(worldIn, pos) != 0.0F)
+        if (state.getHardness(worldIn, pos) != 0.0F)
         {
-            stack.hurtAndBreak(2, entityLiving, (entity) -> entity.broadcastBreakEvent(EquipmentSlotType.MAINHAND));
+            stack.damage(2, entityLiving, (entity) -> entity.sendEquipmentBreakStatus(EquipmentSlot.MAINHAND));
         }
         return true;
     }
 
     @Override
-    public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlotType slot, ItemStack stack)
+    public Multimap<EntityAttribute, EntityAttributeModifier> getAttributeModifiers(EquipmentSlot slot)
     {
-        return slot == EquipmentSlotType.MAINHAND ? attributeModifiers : super.getAttributeModifiers(slot, stack);
+        return slot == EquipmentSlot.MAINHAND ? attributeModifiers : super.getAttributeModifiers(slot);
     }
 }

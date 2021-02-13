@@ -9,12 +9,12 @@ package net.dries007.tfc.world;
 import java.util.Random;
 
 import net.minecraft.block.*;
-import net.minecraft.world.gen.blockstateprovider.BlockStateProvider;
-import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.gen.blockstateprovider.BlockStateProviderType;
 
 import com.mojang.serialization.Codec;
+import net.minecraft.util.math.Direction;
+import net.minecraft.world.gen.stateprovider.BlockStateProvider;
+import net.minecraft.world.gen.stateprovider.BlockStateProviderType;
 
 public class FacingHorizontalBlockStateProvider extends BlockStateProvider
 {
@@ -28,15 +28,15 @@ public class FacingHorizontalBlockStateProvider extends BlockStateProvider
     }
 
     @Override
-    protected BlockStateProviderType<?> type()
+    protected BlockStateProviderType<?> getType()
     {
-        return TFCBlockStateProviderTypes.FACING_PROVIDER.get();
+        return TFCBlockStateProviderTypes.FACING_PROVIDER;
     }
 
     @Override
-    public BlockState getState(Random random, BlockPos pos)
+    public BlockState getBlockState(Random random, BlockPos pos)
     {
-        Direction facing = Direction.Plane.HORIZONTAL.getRandomDirection(random);
-        return this.state.setValue(HorizontalBlock.FACING, facing);
+        Direction facing = Direction.Type.HORIZONTAL.random(random);
+        return this.state.with(HorizontalFacingBlock.FACING, facing);
     }
 }

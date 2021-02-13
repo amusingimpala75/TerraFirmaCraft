@@ -6,13 +6,12 @@
 
 package net.dries007.tfc.world.layer.traits;
 
-import net.minecraft.world.gen.IExtendedNoiseRandom;
-import net.minecraft.world.gen.area.LazyArea;
+import net.minecraft.world.biome.layer.util.LayerSampleContext;
 
 /**
- * Like {@link IExtendedNoiseRandom}
+ * Like {@link net.minecraft.world.biome.layer.util.LayerSampleContext}
  */
-public interface ITypedNoiseRandom<A> extends IExtendedNoiseRandom<FastArea>
+public interface ITypedNoiseRandom<A> extends LayerSampleContext<FastArea>
 {
     TypedArea<A> createTypedResult(ITypedPixelTransformer<A> factory);
 }

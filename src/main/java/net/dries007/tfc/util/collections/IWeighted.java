@@ -7,10 +7,10 @@
 package net.dries007.tfc.util.collections;
 
 import java.util.*;
-import javax.annotation.Nonnull;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
+import org.jetbrains.annotations.NotNull;
 
 public interface IWeighted<E> extends Iterable<E>
 {
@@ -49,7 +49,7 @@ public interface IWeighted<E> extends Iterable<E>
             return true;
         }
 
-        @Nonnull
+        @NotNull
         @Override
         public Iterator<Object> iterator()
         {
@@ -126,7 +126,7 @@ public interface IWeighted<E> extends Iterable<E>
                 return false;
             }
 
-            @Nonnull
+            @NotNull
             @Override
             public Iterator<E> iterator()
             {

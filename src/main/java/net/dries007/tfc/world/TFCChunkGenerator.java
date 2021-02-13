@@ -63,7 +63,7 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
     /**
      * This is the default instance used in the TFC preset, both on client and server
      */
-    public static TFCChunkGenerator createDefaultPreset(Supplier<ChunkGeneratorSettings> dimensionSettings, Registry<Biome> biomeRegistry, long seed)
+    public static TFCChunkGenerator createDefaultPreset(ChunkGeneratorSettings dimensionSettings, Registry<Biome> biomeRegistry, long seed)
     {
         return new TFCChunkGenerator(new TFCBiomeProvider(seed, 8_000, 0, 0, new TFCBiomeProvider.LayerSettings(), new TFCBiomeProvider.ClimateSettings(), biomeRegistry), dimensionSettings, false, seed);
     }
@@ -83,16 +83,16 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
     private final boolean flatBedrock;
     private final long seed;
 
-    public TFCChunkGenerator(BiomeSource biomeProvider, Supplier<ChunkGeneratorSettings> settings, boolean flatBedrock, long seed)
+    public TFCChunkGenerator(BiomeSource biomeProvider, ChunkGeneratorSettings settings, boolean flatBedrock, long seed)
     {
-        super(biomeProvider, settings.get().getStructuresConfig());
+        super(biomeProvider, settings.getStructuresConfig());
 
         if (!(biomeProvider instanceof TFCBiomeProvider))
         {
             throw new IllegalArgumentException("biome provider must extend TFCBiomeProvider");
         }
         this.biomeProvider = (TFCBiomeProvider) biomeProvider;
-        this.settings = settings.get();
+        this.settings = settings;
         this.flatBedrock = flatBedrock;
         this.seed = seed;
 
@@ -133,7 +133,7 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
     @Override
     public ChunkGenerator withSeed(long seedIn)
     {
-        return new TFCChunkGenerator(biomeProvider, () -> settings, flatBedrock, seedIn);
+        return new TFCChunkGenerator(biomeProvider, settings, flatBedrock, seedIn);
     }
 
     @Override

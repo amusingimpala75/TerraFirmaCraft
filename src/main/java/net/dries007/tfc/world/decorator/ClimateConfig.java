@@ -6,12 +6,11 @@
 
 package net.dries007.tfc.world.decorator;
 
-import java.util.Locale;
 import java.util.Random;
 
-import net.minecraft.util.IStringSerializable;
+import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.gen.placement.IPlacementConfig;
+import net.minecraft.world.gen.decorator.DecoratorConfig;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -20,7 +19,7 @@ import net.dries007.tfc.util.calendar.Calendars;
 import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.dries007.tfc.world.chunkdata.ForestType;
 
-public class ClimateConfig implements IPlacementConfig
+public class ClimateConfig implements DecoratorConfig
 {
     public static final Codec<ClimateConfig> CODEC = RecordCodecBuilder.create(instance -> instance.group(
         Codec.FLOAT.optionalFieldOf("min_temperature", -Float.MAX_VALUE).forGetter(c -> c.minTemp),
@@ -91,16 +90,16 @@ public class ClimateConfig implements IPlacementConfig
         throw new IllegalStateException("Unknown temperature type: " + tempType);
     }
 
-    public enum TemperatureType implements IStringSerializable
+    public enum TemperatureType implements StringIdentifiable
     {
         AVERAGE,
         MONTHLY,
         ACTUAL;
 
-        public static final Codec<TemperatureType> CODEC = IStringSerializable.fromEnum(TemperatureType::values, name -> TemperatureType.valueOf(name.toUpperCase()));
+        public static final Codec<TemperatureType> CODEC = StringIdentifiable.createCodec(TemperatureType::values, name -> TemperatureType.valueOf(name.toUpperCase()));
 
         @Override
-        public String getSerializedName()
+        public String asString()
         {
             return name().toLowerCase();
         }

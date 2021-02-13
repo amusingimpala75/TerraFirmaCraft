@@ -6,10 +6,10 @@
 
 package net.dries007.tfc.world.layer;
 
-import net.minecraft.world.gen.INoiseRandom;
-import net.minecraft.world.gen.layer.traits.IAreaTransformer0;
+import net.minecraft.world.biome.layer.type.InitLayer;
+import net.minecraft.world.biome.layer.util.LayerRandomnessSource;
 
-public class IslandLayer implements IAreaTransformer0
+public class IslandLayer implements InitLayer
 {
     private final int islandFrequency;
 
@@ -19,7 +19,7 @@ public class IslandLayer implements IAreaTransformer0
     }
 
     @Override
-    public int applyPixel(INoiseRandom random, int x, int z)
+    public int sample(LayerRandomnessSource random, int x, int z)
     {
         if (x == 0 && z == 0)
         {
@@ -27,7 +27,7 @@ public class IslandLayer implements IAreaTransformer0
         }
         else
         {
-            return random.nextRandom(islandFrequency) == 0 ? TFCLayerUtil.PLAINS : TFCLayerUtil.DEEP_OCEAN;
+            return random.nextInt(islandFrequency) == 0 ? TFCLayerUtil.PLAINS : TFCLayerUtil.DEEP_OCEAN;
         }
     }
 }

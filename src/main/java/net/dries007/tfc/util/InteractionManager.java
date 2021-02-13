@@ -14,23 +14,19 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.SoundType;
+import net.minecraft.block.enums.BedPart;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
-import net.minecraft.state.properties.BedPart;
-import net.minecraft.stats.Stats;
-import net.minecraft.tags.ITag;
+import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.stat.Stats;
+import net.minecraft.tag.Tag;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
 import net.minecraft.util.Hand;
-import net.minecraft.util.SoundCategory;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 
 import net.dries007.tfc.common.TFCTags;
@@ -42,8 +38,8 @@ import net.dries007.tfc.util.collections.IndirectHashCollection;
 
 /**
  * This exists due to problems in handling right click events
- * Forge provides a right click block event. This works for intercepting would-be calls to {@link net.minecraft.block.BlockState#use(World, PlayerEntity, Hand, BlockRayTraceResult)}
- * However, this cannot be used (maintaining vanilla behavior) for item usages, or calls to {@link net.minecraft.item.ItemStack#onItemUse(ItemUseContext, Function)}, as the priority of those two behaviors are very different (blocks take priority, cancelling the event with an item behavior forces the item to take priority
+ * Forge provides a right click block event. This works for intercepting would-be calls to {@link net.minecraft.block.BlockState#onUse(World, PlayerEntity, Hand, BlockHitResult)}
+ * However, this cannot be used (maintaining vanilla behavior) for item usages, or calls to @link net.minecraft.item.ItemStack#onItemUse(ItemUseContext, Function), as the priority of those two behaviors are very different (blocks take priority, cancelling the event with an item behavior forces the item to take priority
  *
  * This is in lieu of a system such as https://github.com/MinecraftForge/MinecraftForge/pull/6615
  */
@@ -56,60 +52,60 @@ public final class InteractionManager
     public static void setup()
     {
         register(TFCTags.Items.THATCH_BED_HIDES, (stack, context) -> {
-            final World world = context.getLevel();
+            final World world = context.getWorld();
             final PlayerEntity player = context.getPlayer();
-            if (!world.isClientSide() && player != null)
+            if (!world.isClient() && player != null)
             {
-                final BlockPos basePos = context.getClickedPos();
-                final Direction facing = context.getHorizontalDirection();
-                final BlockState bed = TFCBlocks.THATCH_BED.get().defaultBlockState();
-                for (Direction direction : new Direction[] {facing, facing.getClockWise(), facing.getOpposite(), facing.getCounterClockWise()})
+                final BlockPos basePos = context.getBlockPos();
+                final Direction facing = context.getPlayerFacing();
+                final BlockState bed = TFCBlocks.THATCH_BED.getDefaultState();
+                for (Direction direction : new Direction[] {facing, facing.rotateYClockwise(), facing.getOpposite(), facing.rotateYCounterclockwise()})
                 {
-                    final BlockPos headPos = basePos.relative(direction, 1);
-                    if (world.getBlockState(basePos).is(TFCTags.Blocks.THATCH_BED_THATCH) && world.getBlockState(headPos).is(TFCTags.Blocks.THATCH_BED_THATCH))
+                    final BlockPos headPos = basePos.offset(direction, 1);
+                    if (world.getBlockState(basePos).isIn(TFCTags.Blocks.THATCH_BED_THATCH) && world.getBlockState(headPos).isIn(TFCTags.Blocks.THATCH_BED_THATCH))
                     {
-                        final BlockPos playerPos = player.blockPosition();
+                        final BlockPos playerPos = player.getBlockPos();
                         if (playerPos != headPos && playerPos != basePos)
                         {
-                            world.setBlock(basePos, bed.setValue(ThatchBedBlock.PART, BedPart.FOOT).setValue(ThatchBedBlock.FACING, direction), 18);
-                            world.setBlock(headPos, bed.setValue(ThatchBedBlock.PART, BedPart.HEAD).setValue(ThatchBedBlock.FACING, direction.getOpposite()), 18);
-                            stack.shrink(1);
-                            return ActionResultType.SUCCESS;
+                            world.setBlockState(basePos, bed.with(ThatchBedBlock.PART, BedPart.FOOT).with(ThatchBedBlock.FACING, direction), 18);
+                            world.setBlockState(headPos, bed.with(ThatchBedBlock.PART, BedPart.HEAD).with(ThatchBedBlock.FACING, direction.getOpposite()), 18);
+                            stack.decrement(1);
+                            return ActionResult.SUCCESS;
                         }
 
                     }
                 }
             }
-            return ActionResultType.FAIL;
+            return ActionResult.FAIL;
         });
 
         register(Items.SNOW, (stack, context) -> {
             PlayerEntity player = context.getPlayer();
-            if (player != null && !player.abilities.mayBuild)
+            if (player != null && !player.abilities.allowModifyWorld)
             {
-                return ActionResultType.PASS;
+                return ActionResult.PASS;
             }
             else
             {
-                final BlockItemUseContext blockContext = new BlockItemUseContext(context);
-                final World world = context.getLevel();
-                final BlockPos pos = context.getClickedPos();
-                final BlockState stateAt = world.getBlockState(blockContext.getClickedPos());
-                if (stateAt.is(TFCTags.Blocks.CAN_BE_SNOW_PILED))
+                final ItemPlacementContext blockContext = new ItemPlacementContext(context);
+                final World world = context.getWorld();
+                final BlockPos pos = context.getBlockPos();
+                final BlockState stateAt = world.getBlockState(blockContext.getBlockPos());
+                if (stateAt.isIn(TFCTags.Blocks.CAN_BE_SNOW_PILED))
                 {
                     SnowPileBlock.convertToPile(world, pos, stateAt);
                     BlockState placedState = world.getBlockState(pos);
-                    SoundType placementSound = placedState.getSoundType(world, pos, player);
-                    world.playSound(player, pos, placedState.getSoundType(world, pos, player).getPlaceSound(), SoundCategory.BLOCKS, (placementSound.getVolume() + 1.0F) / 2.0F, placementSound.getPitch() * 0.8F);
-                    if (player == null || !player.abilities.instabuild)
+                    BlockSoundGroup placementSound = placedState.getSoundGroup(/*world, pos, player*/);
+                    world.playSound(player, pos, placedState.getSoundGroup(/*world, pos, player*/).getPlaceSound(), SoundCategory.BLOCKS, (placementSound.getVolume() + 1.0F) / 2.0F, placementSound.getPitch() * 0.8F);
+                    if (player == null || !player.abilities.creativeMode)
                     {
-                        stack.shrink(1);
+                        stack.decrement(1);
                     }
 
-                    ActionResultType result = ActionResultType.sidedSuccess(world.isClientSide);
-                    if (player != null && result.consumesAction())
+                    ActionResult result = ActionResult.success(world.isClient);
+                    if (player != null && result.isAccepted())
                     {
-                        player.awardStat(Stats.ITEM_USED.get(Items.SNOW));
+                        player.incrementStat(Stats.USED.getOrCreateStat(Items.SNOW));
                     }
                     return result;
                 }
@@ -119,7 +115,7 @@ public final class InteractionManager
                 {
                     return ((BlockItem) snow).place(blockContext);
                 }
-                return ActionResultType.FAIL;
+                return ActionResult.FAIL;
             }
         });
 
@@ -128,7 +124,7 @@ public final class InteractionManager
         {
             if (type.getVanillaItem() != null)
             {
-                register(new BlockItemPlacement(type.getVanillaItem(), TFCBlocks.GROUNDCOVER.get(type)));
+                register(new BlockItemPlacement(type.getVanillaItem(), () -> TFCBlocks.GROUNDCOVER.get(type)));
             }
         }
 
@@ -148,9 +144,9 @@ public final class InteractionManager
         ACTIONS.add(new Entry(action, stack -> stack.getItem() == item, () -> Collections.singleton(item)));
     }
 
-    public static void register(ITag<Item> tag, OnItemUseAction action)
+    public static void register(Tag<Item> tag, OnItemUseAction action)
     {
-        ACTIONS.add(new Entry(action, stack -> stack.getItem().is(tag), tag::getValues));
+        ACTIONS.add(new Entry(action, stack -> stack.getItem().isIn(tag), tag::values));
     }
 
     public static Optional<ActionResult> onItemUse(ItemStack stack, ItemUsageContext context)
@@ -161,7 +157,7 @@ public final class InteractionManager
             {
                 if (entry.test.test(stack))
                 {
-                    ActionResultType result;
+                    ActionResult result;
                     ACTIVE.set(true);
                     try
                     {
@@ -186,7 +182,7 @@ public final class InteractionManager
     @FunctionalInterface
     public interface OnItemUseAction
     {
-        ActionResultType onItemUse(ItemStack stack, ItemUseContext context);
+        ActionResult onItemUse(ItemStack stack, ItemUsageContext context);
     }
 
     private static class Entry

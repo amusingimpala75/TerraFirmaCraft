@@ -8,9 +8,9 @@ package net.dries007.tfc.util.collections;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
 
 import com.mojang.datafixers.util.Pair;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Modified from https://stackoverflow.com/questions/6409652/random-weighted-selection-in-java
@@ -69,7 +69,7 @@ public class Weighted<E> implements IWeighted<E>
         return backingMap.isEmpty();
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public Iterator<E> iterator()
     {

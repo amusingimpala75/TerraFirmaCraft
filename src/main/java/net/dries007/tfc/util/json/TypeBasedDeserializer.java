@@ -10,19 +10,19 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import javax.annotation.Nullable;
 
 import com.google.gson.*;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class TypeBasedDeserializer<T> implements JsonDeserializer<T>
 {
     private static final Logger LOGGER = LogManager.getLogger();
 
-    private final Map<ResourceLocation, Function<JsonObject, ? extends T>> deserializers;
+    private final Map<Identifier, Function<JsonObject, ? extends T>> deserializers;
     private final String typeName;
 
     protected TypeBasedDeserializer(String typeName)
@@ -31,7 +31,7 @@ public abstract class TypeBasedDeserializer<T> implements JsonDeserializer<T>
         this.deserializers = new HashMap<>();
     }
 
-    public void register(ResourceLocation name, Function<JsonObject, ? extends T> deserializer)
+    public void register(Identifier name, Function<JsonObject, ? extends T> deserializer)
     {
         if (!deserializers.containsKey(name))
         {
@@ -52,11 +52,11 @@ public abstract class TypeBasedDeserializer<T> implements JsonDeserializer<T>
 
     public T read(JsonElement element)
     {
-        JsonObject json = JSONUtils.convertToJsonObject(element, typeName);
-        ResourceLocation type;
+        JsonObject json = JsonHelper.asObject(element, typeName);
+        Identifier type;
         if (json.has("type"))
         {
-            type = new ResourceLocation(JSONUtils.getAsString(json, "type"));
+            type = new Identifier(JsonHelper.getString(json, "type"));
         }
         else
         {
@@ -80,7 +80,7 @@ public abstract class TypeBasedDeserializer<T> implements JsonDeserializer<T>
      * Returns a fallback deserializer ID, if the "type" field is not present
      */
     @Nullable
-    protected ResourceLocation getFallbackType()
+    protected Identifier getFallbackType()
     {
         return null;
     }

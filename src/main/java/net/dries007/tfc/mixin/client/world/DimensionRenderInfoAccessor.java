@@ -13,7 +13,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
-@SuppressWarnings("ConstantConditions")
 //@MethodsReturnNonnullByDefault
 @Mixin(SkyProperties.class)
 public interface DimensionRenderInfoAccessor

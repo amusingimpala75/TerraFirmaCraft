@@ -6,34 +6,47 @@
 
 package net.dries007.tfc.world;
 
-import net.minecraft.world.gen.DimensionSettings;
-import net.minecraftforge.common.ForgeConfig;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.world.ForgeWorldType;
-import net.minecraftforge.fml.RegistryObject;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.dries007.tfc.mixin.fabric.world.GeneratorTypeAccessor;
+import net.minecraft.client.world.GeneratorType;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.biome.Biome;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
+import net.minecraft.world.gen.chunk.ChunkGeneratorSettings;
 
 import net.dries007.tfc.config.TFCConfig;
 
-import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
-
 public class TFCWorldType
 {
-    public static final DeferredRegister<ForgeWorldType> WORLD_TYPES = DeferredRegister.create(ForgeRegistries.WORLD_TYPES, MOD_ID);
+    public static final GeneratorType WORLD_TYPE = new GeneratorType() {
+        @Override
+        protected ChunkGenerator getChunkGenerator(Registry<Biome> biomeRegistry, Registry<ChunkGeneratorSettings> chunkGeneratorSettingsRegistry, long seed) {
+            return TFCChunkGenerator.createDefaultPreset(chunkGeneratorSettingsRegistry.getOrThrow(ChunkGeneratorSettings.OVERWORLD), biomeRegistry, seed);
+        }
+    };
+    //WORLD_TYPES.register("tng", () -> new ForgeWorldType((biomeRegistry, dimensionSettingsRegistry, seed) -> TFCChunkGenerator.createDefaultPreset(() -> dimensionSettingsRegistry.getOrThrow(DimensionSettings.OVERWORLD), biomeRegistry, seed)));
 
-    public static final RegistryObject<ForgeWorldType> WORLD_TYPE = WORLD_TYPES.register("tng", () -> new ForgeWorldType((biomeRegistry, dimensionSettingsRegistry, seed) -> TFCChunkGenerator.createDefaultPreset(() -> dimensionSettingsRegistry.getOrThrow(DimensionSettings.OVERWORLD), biomeRegistry, seed)));
 
-    /**
+    /*
      * Override the default world type, in a safe, mixin free, and API providing manner :D
      * Thank you gigahertz!
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    /*@SuppressWarnings({"rawtypes", "unchecked"})
     public static void setup()
     {
         if (TFCConfig.COMMON.setTFCWorldTypeAsDefault.get() && ForgeConfig.COMMON.defaultWorldType.get().equals("default"))
         {
             ((ForgeConfigSpec.ConfigValue) ForgeConfig.COMMON.defaultWorldType).set(TFCWorldType.WORLD_TYPE.getId().toString());
         }
+    }*/
+
+    public static void setup()
+    {
+        if (TFCConfig.COMMON.setTFCWorldTypeAsDefault.get() && GeneratorTypeAccessor.accessor$getVALUES().get(0).getTranslationKey().getString().contains("default"))
+        {
+            GeneratorTypeAccessor.accessor$getVALUES().add(0, WORLD_TYPE);
+        }
+
     }
+
+    public static void register() {}
 }

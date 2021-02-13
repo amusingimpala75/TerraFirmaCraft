@@ -11,29 +11,29 @@ import java.util.Random;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.gen.Heightmap;
-import net.minecraft.world.gen.blockplacer.BlockPlacer;
-import net.minecraft.world.gen.blockplacer.BlockPlacerType;
 
 import com.mojang.serialization.Codec;
+import net.minecraft.world.Heightmap;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.gen.placer.BlockPlacer;
+import net.minecraft.world.gen.placer.BlockPlacerType;
 
 public class UndergroundPlacer extends BlockPlacer
 {
     public static final Codec<UndergroundPlacer> CODEC = Codec.unit(new UndergroundPlacer());
 
     @Override
-    public void place(IWorld worldIn, BlockPos pos, BlockState state, Random random)
+    public void generate(WorldAccess worldIn, BlockPos pos, BlockState state, Random random)
     {
-        if (worldIn.getBlockState(pos).getBlock() == Blocks.CAVE_AIR && worldIn.getHeight(Heightmap.Type.WORLD_SURFACE_WG, pos.getX(), pos.getZ()) > pos.getY())
+        if (worldIn.getBlockState(pos).getBlock() == Blocks.CAVE_AIR && worldIn.getTopY(Heightmap.Type.WORLD_SURFACE_WG, pos.getX(), pos.getZ()) > pos.getY())
         {
-            worldIn.setBlock(pos, state, 3);
+            worldIn.setBlockState(pos, state, 3);
         }
     }
 
     @Override
-    protected BlockPlacerType<?> type()
+    protected BlockPlacerType<?> getType()
     {
-        return TFCBlockPlacers.UNDERGROUND.get();
+        return TFCBlockPlacers.UNDERGROUND;
     }
 }
