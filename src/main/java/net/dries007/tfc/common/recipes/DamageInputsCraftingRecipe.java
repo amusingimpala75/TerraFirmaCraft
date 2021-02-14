@@ -12,7 +12,9 @@ import net.minecraft.recipe.CraftingRecipe;
 
 import net.dries007.tfc.util.Helpers;
 import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.RecipeSerializer;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.collection.DefaultedList;
 
 public class DamageInputsCraftingRecipe extends DelegatingRecipe<CraftingInventory> implements CraftingRecipe
 {
@@ -22,19 +24,19 @@ public class DamageInputsCraftingRecipe extends DelegatingRecipe<CraftingInvento
     }
 
     @Override
-    public NonNullList<ItemStack> getRemainingItems(CraftingInventory inv)
+    public DefaultedList<ItemStack> getRemainingStacks(CraftingInventory inv)
     {
-        NonNullList<ItemStack> items = NonNullList.withSize(inv.getContainerSize(), ItemStack.EMPTY);
+        DefaultedList<ItemStack> items = DefaultedList.ofSize(inv.size(), ItemStack.EMPTY);
         for (int i = 0; i < items.size(); ++i)
         {
-            ItemStack stack = inv.getItem(i);
-            if (stack.isDamageableItem())
+            ItemStack stack = inv.getStack(i);
+            if (stack.isDamageable())
             {
                 Helpers.damageCraftingItem(stack, 1);
             }
-            else if (stack.hasContainerItem())
+            else if (stack.getItem().hasRecipeRemainder())
             {
-                items.set(i, stack.getContainerItem());
+                items.set(i, new ItemStack(stack.getItem().getRecipeRemainder()));
             }
         }
         return items;

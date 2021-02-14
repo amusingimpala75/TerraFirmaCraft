@@ -6,20 +6,19 @@
 
 package net.dries007.tfc.common.blocks.plant;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.state.StateContainer;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.state.StateManager;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorldReader;
 
 import net.dries007.tfc.common.TFCTags;
 import net.dries007.tfc.common.fluids.FluidProperty;
 import net.dries007.tfc.common.fluids.IFluidLoggable;
+import net.minecraft.world.WorldView;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class WaterPlantBlock extends PlantBlock implements IFluidLoggable
 {
@@ -45,34 +44,34 @@ public abstract class WaterPlantBlock extends PlantBlock implements IFluidLoggab
     {
         super(properties);
 
-        registerDefaultState(getStateDefinition().any().setValue(getFluidProperty(), getFluidProperty().keyFor(Fluids.EMPTY)));
+        setDefaultState(getDefaultState().with(getFluidProperty(), getFluidProperty().keyFor(Fluids.EMPTY)));
     }
 
     @Override
     @Nullable
-    public BlockState getStateForPlacement(BlockItemUseContext context)
+    public BlockState getPlacementState(ItemPlacementContext context)
     {
-        BlockPos pos = context.getClickedPos();
-        FluidState fluidState = context.getLevel().getFluidState(pos);
-        BlockState state = updateStateWithCurrentMonth(defaultBlockState());
-        if (getFluidProperty().canContain(fluidState.getType()))
+        BlockPos pos = context.getBlockPos();
+        FluidState fluidState = context.getWorld().getFluidState(pos);
+        BlockState state = updateStateWithCurrentMonth(getDefaultState());
+        if (getFluidProperty().canContain(fluidState.getFluid()))
         {
-            state = state.setValue(getFluidProperty(), getFluidProperty().keyFor(fluidState.getType()));
+            state = state.with(getFluidProperty(), getFluidProperty().keyFor(fluidState.getFluid()));
         }
         return state;
     }
 
     @Override
-    public boolean canSurvive(BlockState state, IWorldReader worldIn, BlockPos pos)
+    public boolean canPlaceAt(BlockState state, WorldView worldIn, BlockPos pos)
     {
-        BlockState belowState = worldIn.getBlockState(pos.below());
-        return belowState.is(TFCTags.Blocks.SEA_BUSH_PLANTABLE_ON) && state.getValue(getFluidProperty()) != getFluidProperty().keyFor(Fluids.EMPTY);
+        BlockState belowState = worldIn.getBlockState(pos.down());
+        return belowState.isIn(TFCTags.Blocks.SEA_BUSH_PLANTABLE_ON) && state.get(getFluidProperty()) != getFluidProperty().keyFor(Fluids.EMPTY);
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder)
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder)
     {
-        super.createBlockStateDefinition(builder);
+        super.appendProperties(builder);
         builder.add(getFluidProperty());
     }
 

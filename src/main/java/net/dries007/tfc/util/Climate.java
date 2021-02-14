@@ -20,7 +20,6 @@ import net.dries007.tfc.util.calendar.ICalendar;
 import net.dries007.tfc.util.calendar.Month;
 import net.dries007.tfc.world.TFCChunkGenerator;
 import net.dries007.tfc.world.biome.TFCBiomes;
-import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.dries007.tfc.world.noise.INoise1D;
 import net.dries007.tfc.world.noise.NoiseUtil;
 import org.jetbrains.annotations.Nullable;

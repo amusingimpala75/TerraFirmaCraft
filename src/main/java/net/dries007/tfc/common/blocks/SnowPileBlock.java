@@ -13,9 +13,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorld;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 import net.dries007.tfc.common.tileentity.SnowPileTileEntity;
@@ -34,7 +32,7 @@ public class SnowPileBlock extends SnowBlock implements IForgeBlockProperties
      * @param world      The world
      * @param pos        The position
      * @param state      The original state
-     * @param snowLayers How many layers of snow were in the original state (may be 0 if the state doesn't pile up it's own snow)
+     * param snowLayers How many layers of snow were in the original state (may be 0 if the state doesn't pile up it's own snow)
      */
     public static void convertToPile(WorldAccess world, BlockPos pos, BlockState state)
     {
@@ -62,17 +60,26 @@ public class SnowPileBlock extends SnowBlock implements IForgeBlockProperties
      * - Snow piles are removed one layer at a time, same as snow blocks (modified via mixin)
      * - Once removed enough, they convert to the underlying block state.
      */
+    //TODO: Confirm works
     @Override
+    public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+        super.onBreak(world, pos, state, player);
+        SnowPileTileEntity te = Helpers.getTileEntityOrThrow(world, pos, SnowPileTileEntity.class);
+        BlockState newState = te.getDestroyedState(state);
+        world.setBlockState(pos, newState, world.isClient ? 11 : 3);
+    }
+
+    /*@Override
     public boolean removedByPlayer(BlockState state, World world, BlockPos pos, PlayerEntity player, boolean willHarvest, FluidState fluid)
     {
         onBreak(world, pos, state, player);
         SnowPileTileEntity te = Helpers.getTileEntityOrThrow(world, pos, SnowPileTileEntity.class);
         BlockState newState = te.getDestroyedState(state);
         return world.setBlockState(pos, newState, world.isClient ? 11 : 3);
-    }
+    }*/
 
     @Override
-    public ItemStack getPickBlock(BlockState state, RayTraceResult target, IBlockReader world, BlockPos pos, PlayerEntity player)
+    public ItemStack getPickStack(BlockView world, BlockPos pos, BlockState state)
     {
         return new ItemStack(Blocks.SNOW);
     }

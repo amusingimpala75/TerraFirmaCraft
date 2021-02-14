@@ -10,53 +10,53 @@ import java.util.Random;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.util.Direction;
+import net.minecraft.block.ShapeContext;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.IWorldReader;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.WorldView;
 
 public class ThinSpikeBlock extends Block
 {
-    public static final VoxelShape PILLAR_SHAPE = VoxelShapes.or(
-        box(9.5, 0, 12.5, 11.5, 16, 14.5),
-        box(8, 0, 1, 11, 16, 4),
-        box(3.5, 0, 1.5, 5.5, 16, 3.5),
-        box(4, 0, 11, 7, 16, 14),
-        box(2.5, 0, 8.5, 4.5, 16, 10.5),
-        box(9.5, 0, 4.5, 11.5, 16, 6.5),
-        box(11, 0, 8, 14, 16, 11),
-        box(4, 0, 4, 8, 16, 8)
+    public static final VoxelShape PILLAR_SHAPE = VoxelShapes.union(
+        createCuboidShape(9.5, 0, 12.5, 11.5, 16, 14.5),
+        createCuboidShape(8, 0, 1, 11, 16, 4),
+        createCuboidShape(3.5, 0, 1.5, 5.5, 16, 3.5),
+        createCuboidShape(4, 0, 11, 7, 16, 14),
+        createCuboidShape(2.5, 0, 8.5, 4.5, 16, 10.5),
+        createCuboidShape(9.5, 0, 4.5, 11.5, 16, 6.5),
+        createCuboidShape(11, 0, 8, 14, 16, 11),
+        createCuboidShape(4, 0, 4, 8, 16, 8)
     );
 
-    public static final VoxelShape TIP_SHAPE = VoxelShapes.or(
-        box(5, 4, 12, 6, 8, 13),
-        box(4, 12, 11, 7, 16, 14),
-        box(4.5, 8, 11.5, 6.5, 12, 13.5),
-        box(9, 4, 2, 10, 8, 3),
-        box(8, 12, 1, 11, 16, 4),
-        box(8.5, 8, 1.5, 10.5, 12, 3.5),
-        box(5, 2, 5, 7, 7, 7),
-        box(4, 11, 4, 8, 16, 8),
-        box(4.5, 6, 4.5, 7.5, 11, 7.5),
-        box(12, 5, 9, 13, 9, 10),
-        box(11, 13, 8, 14, 16, 11),
-        box(11.5, 9, 8.5, 13.5, 13, 10.5),
-        box(10, 6, 5, 11, 12, 6),
-        box(9.5, 12, 4.5, 11.5, 16, 6.5),
-        box(3, 10, 9, 4, 14, 10),
-        box(2.5, 14, 8.5, 4.5, 16, 10.5),
-        box(4, 10, 2, 5, 13, 3),
-        box(3.5, 13, 1.5, 5.5, 16, 3.5),
-        box(10, 9, 13, 11, 14, 14),
-        box(9.5, 14, 12.5, 11.5, 16, 14.5)
+    public static final VoxelShape TIP_SHAPE = VoxelShapes.union(
+        createCuboidShape(5, 4, 12, 6, 8, 13),
+        createCuboidShape(4, 12, 11, 7, 16, 14),
+        createCuboidShape(4.5, 8, 11.5, 6.5, 12, 13.5),
+        createCuboidShape(9, 4, 2, 10, 8, 3),
+        createCuboidShape(8, 12, 1, 11, 16, 4),
+        createCuboidShape(8.5, 8, 1.5, 10.5, 12, 3.5),
+        createCuboidShape(5, 2, 5, 7, 7, 7),
+        createCuboidShape(4, 11, 4, 8, 16, 8),
+        createCuboidShape(4.5, 6, 4.5, 7.5, 11, 7.5),
+        createCuboidShape(12, 5, 9, 13, 9, 10),
+        createCuboidShape(11, 13, 8, 14, 16, 11),
+        createCuboidShape(11.5, 9, 8.5, 13.5, 13, 10.5),
+        createCuboidShape(10, 6, 5, 11, 12, 6),
+        createCuboidShape(9.5, 12, 4.5, 11.5, 16, 6.5),
+        createCuboidShape(3, 10, 9, 4, 14, 10),
+        createCuboidShape(2.5, 14, 8.5, 4.5, 16, 10.5),
+        createCuboidShape(4, 10, 2, 5, 13, 3),
+        createCuboidShape(3.5, 13, 1.5, 5.5, 16, 3.5),
+        createCuboidShape(10, 9, 13, 11, 14, 14),
+        createCuboidShape(9.5, 14, 12.5, 11.5, 16, 14.5)
     );
 
     public static final BooleanProperty TIP = TFCBlockStateProperties.TIP;
@@ -65,67 +65,67 @@ public class ThinSpikeBlock extends Block
     {
         super(properties);
 
-        registerDefaultState(getStateDefinition().any().setValue(TIP, false));
+        setDefaultState(getDefaultState().with(TIP, false));
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving)
+    public void neighborUpdate(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving)
     {
-        if (!canSurvive(state, worldIn, pos))
+        if (!canPlaceAt(state, worldIn, pos))
         {
-            worldIn.destroyBlock(pos, false);
+            worldIn.breakBlock(pos, false);
         }
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public void onRemove(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving)
+    public void onStateReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving)
     {
-        BlockPos posDown = pos.below();
+        BlockPos posDown = pos.down();
         BlockState otherState = worldIn.getBlockState(posDown);
         if (otherState.getBlock() == this)
         {
-            worldIn.getBlockTicks().scheduleTick(posDown, this, 0);
+            worldIn.getBlockTickScheduler().schedule(posDown, this, 0);
         }
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public boolean canSurvive(BlockState state, IWorldReader worldIn, BlockPos pos)
+    public boolean canPlaceAt(BlockState state, WorldView worldIn, BlockPos pos)
     {
-        BlockPos abovePos = pos.above();
+        BlockPos abovePos = pos.up();
         BlockState aboveState = worldIn.getBlockState(abovePos);
-        return (aboveState.getBlock() == this && !aboveState.getValue(TIP)) || aboveState.isFaceSturdy(worldIn, abovePos, Direction.DOWN);
+        return (aboveState.getBlock() == this && !aboveState.get(TIP)) || aboveState.isSideSolidFullSquare(worldIn, abovePos, Direction.DOWN);
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos)
+    public BlockState getStateForNeighborUpdate(BlockState stateIn, Direction facing, BlockState facingState, WorldAccess worldIn, BlockPos currentPos, BlockPos facingPos)
     {
-        if (facing == Direction.DOWN && !facingState.is(this))
+        if (facing == Direction.DOWN && !facingState.isOf(this))
         {
-            return stateIn.setValue(TIP, true);
+            return stateIn.with(TIP, true);
         }
-        return super.updateShape(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+        return super.getStateForNeighborUpdate(stateIn, facing, facingState, worldIn, currentPos, facingPos);
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getOutlineShape(BlockState state, BlockView worldIn, BlockPos pos, ShapeContext context)
     {
-        return state.getValue(TIP) ? TIP_SHAPE : PILLAR_SHAPE;
+        return state.get(TIP) ? TIP_SHAPE : PILLAR_SHAPE;
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public void tick(BlockState state, ServerWorld worldIn, BlockPos pos, Random rand)
+    public void scheduledTick(BlockState state, ServerWorld worldIn, BlockPos pos, Random rand)
     {
-        worldIn.destroyBlock(pos, false);
+        worldIn.breakBlock(pos, false);
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder)
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder)
     {
         builder.add(TIP);
     }

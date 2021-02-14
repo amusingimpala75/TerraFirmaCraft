@@ -6,29 +6,28 @@
 
 package net.dries007.tfc.common.blocks;
 
-import javax.annotation.Nullable;
-
+import net.dries007.tfc.forgereplacements.block.IForgeBlock;
 import net.minecraft.block.*;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.DyeColor;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.Direction;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.DyeColor;
 import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.Explosion;
-import net.minecraft.world.IBlockReader;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import net.minecraft.world.explosion.Explosion;
+import org.jetbrains.annotations.Nullable;
 
-public class ThatchBedBlock extends BedBlock
+public class ThatchBedBlock extends BedBlock implements IForgeBlock
 {
-    private static final VoxelShape BED_SHAPE = Block.box(0.0F, 0.0F, 0.0F, 16.0F, 9.0F, 16.0F);
+    private static final VoxelShape BED_SHAPE = Block.createCuboidShape(0.0F, 0.0F, 0.0F, 16.0F, 9.0F, 16.0F);
 
     public ThatchBedBlock(AbstractBlock.Settings properties)
     {
@@ -36,57 +35,57 @@ public class ThatchBedBlock extends BedBlock
     }
 
     @Override
-    public ActionResultType use(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockRayTraceResult hit)
+    public ActionResult onUse(BlockState state, World worldIn, BlockPos pos, PlayerEntity player, Hand handIn, BlockHitResult hit)
     {
-        if (!worldIn.isClientSide())
+        if (!worldIn.isClient)
         {
-            if (canSetSpawn(worldIn))
+            if (isOverworld(worldIn))
             {
                 if (!worldIn.isThundering())
                 {
-                    player.displayClientMessage(new TranslationTextComponent("tfc.thatch_bed.use"), true);
+                    player.sendMessage(new TranslatableText("tfc.thatch_bed.use"), true);
                 }
                 else
                 {
-                    player.displayClientMessage(new TranslationTextComponent("tfc.thatch_bed.thundering"), true);
+                    player.sendMessage(new TranslatableText("tfc.thatch_bed.thundering"), true);
                 }
-                return ActionResultType.SUCCESS;
+                return ActionResult.SUCCESS;
             }
             else
             {
-                worldIn.explode(null, DamageSource.badRespawnPointExplosion(), null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 7.0F, true, Explosion.Mode.DESTROY);
+                worldIn.createExplosion(null, DamageSource.badRespawnPoint(), null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 7.0F, true, Explosion.DestructionType.DESTROY);
             }
         }
-        return ActionResultType.FAIL;
+        return ActionResult.FAIL;
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getOutlineShape(BlockState state, BlockView worldIn, BlockPos pos, ShapeContext context)
     {
         return BED_SHAPE;
     }
 
     @Override
-    @SuppressWarnings("deprecation")
-    public BlockRenderType getRenderShape(BlockState state)
+    public BlockRenderType getRenderType(BlockState state)
     {
         return BlockRenderType.MODEL;
     }
 
     @Override
-    public TileEntity newBlockEntity(IBlockReader worldIn)
+    public BlockEntity createBlockEntity(BlockView worldIn)
     {
         return null; // Need to override as the super class is a ITileEntityProvider
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public void neighborChanged(BlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving)
+    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving)
     {
-        Direction facing = state.getValue(FACING);
-        if (!(world.getBlockState(pos.relative(facing)).is(TFCBlocks.THATCH_BED.get())) || world.getBlockState(pos.below()).isAir(world, pos))
+        Direction facing = state.get(FACING);
+        //if (!(world.getBlockState(pos.offset(facing)).isOf(TFCBlocks.THATCH_BED)) || world.getBlockState(pos.down()).isAir(world, pos))
+        if (!(world.getBlockState(pos.offset(facing)).isOf(TFCBlocks.THATCH_BED)) || world.getBlockState(pos.down()).isAir())
         {
-            world.destroyBlock(pos, true);
+            world.breakBlock(pos, true);
         }
     }
 
@@ -97,7 +96,7 @@ public class ThatchBedBlock extends BedBlock
     }
 
     @Override
-    public boolean isBed(BlockState state, IBlockReader world, BlockPos pos, @Nullable Entity player)
+    public boolean isBed(BlockState state, BlockView world, BlockPos pos, @Nullable Entity player)
     {
         return true;
     }

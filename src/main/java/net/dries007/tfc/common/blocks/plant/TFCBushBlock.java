@@ -21,8 +21,8 @@ public class TFCBushBlock extends net.minecraft.block.PlantBlock
     }
 
     @Override
-    protected boolean mayPlaceOn(BlockState state, BlockView worldIn, BlockPos pos)
+    protected boolean canPlantOnTop(BlockState state, BlockView worldIn, BlockPos pos)
     {
-        return super.mayPlaceOn(state, worldIn, pos) || TFCTags.Blocks.BUSH_PLANTABLE_ON.contains(state.getBlock());
+        return super.canPlantOnTop(state, worldIn, pos) || TFCTags.Blocks.BUSH_PLANTABLE_ON.contains(state.getBlock());
     }
 }

@@ -25,7 +25,6 @@ import net.minecraft.world.gen.surfacebuilder.TernarySurfaceConfig;
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.util.Climate;
 import net.dries007.tfc.world.TFCChunkGenerator;
-import net.dries007.tfc.world.chunkdata.ChunkData;
 
 /**
  * Modified from {@link FrozenOceanSurfaceBuilder}

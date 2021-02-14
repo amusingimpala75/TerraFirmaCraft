@@ -11,13 +11,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.WorldView;
-import net.minecraftforge.fml.network.PacketDistributor;
 
-import net.dries007.tfc.network.PacketHandler;
 import net.dries007.tfc.util.Helpers;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,8 +43,8 @@ public final class ChunkDataCache
     /**
      * This is a cache of incomplete chunk data used by world generation
      * It is generated in stages:
-     * - {@link ChunkData.Status#CLIMATE} during biome generation to generate climate variants
-     * - {@link ChunkData.Status#ROCKS} during surface generation, later used for feature generation
+     * - {@link ChunkDataChunkComponent.Status#CLIMATE} during biome generation to generate climate variants
+     * - {@link ChunkDataChunkComponent.Status#ROCKS} during surface generation, later used for feature generation
      * When the chunk is finished generating on server, this cache is cleared and the data is saved to the chunk capability for long term storage
      */
     public static final ChunkDataCache WORLD_GEN = new ChunkDataCache("worldgen");
@@ -84,7 +83,7 @@ public final class ChunkDataCache
     }
 
     private final String name;
-    private final Map<ChunkPos, ChunkData> cache;
+    private final Map<ChunkPos, ChunkDataChunkComponent> cache;
 
     /**
      * Creates an infinite size cache that must be managed to not create memory leaks
@@ -95,42 +94,42 @@ public final class ChunkDataCache
         this.cache = new HashMap<>();
     }
 
-    public ChunkData getOrEmpty(BlockPos pos)
+    public ChunkDataChunkComponent getOrEmpty(BlockPos pos)
     {
         return getOrEmpty(new ChunkPos(pos));
     }
 
-    public ChunkData getOrEmpty(ChunkPos pos)
+    public ChunkDataChunkComponent getOrEmpty(ChunkPos pos)
     {
-        return cache.getOrDefault(pos, ChunkData.EMPTY);
+        return cache.getOrDefault(pos, ChunkDataChunkComponent.EMPTY);
     }
 
     @Nullable
-    public ChunkData get(BlockPos pos)
+    public ChunkDataChunkComponent get(BlockPos pos)
     {
         return get(new ChunkPos(pos));
     }
 
     @Nullable
-    public ChunkData get(ChunkPos pos)
+    public ChunkDataChunkComponent get(ChunkPos pos)
     {
         return cache.get(pos);
     }
 
     @Nullable
-    public ChunkData remove(ChunkPos pos)
+    public ChunkDataChunkComponent remove(ChunkPos pos)
     {
         return cache.remove(pos);
     }
 
-    public void update(ChunkPos pos, ChunkData data)
+    public void update(ChunkPos pos, ChunkDataChunkComponent data)
     {
         cache.put(pos, data);
     }
 
-    public ChunkData getOrCreate(ChunkPos pos)
+    public ChunkDataChunkComponent getOrCreate(ChunkPos pos)
     {
-        return cache.computeIfAbsent(pos, ChunkData::new);
+        return cache.computeIfAbsent(pos, ChunkDataChunkComponent::new);
     }
 
     @Override
@@ -166,14 +165,15 @@ public final class ChunkDataCache
             }
         }
 
-        public void dequeueLoadedChunk(ChunkPos pos, ChunkData data)
+        public void dequeueLoadedChunk(ChunkPos pos, ChunkDataChunkComponent data)
         {
             if (queue.containsKey(pos))
             {
                 Set<ServerPlayerEntity> players = queue.remove(pos);
                 for (ServerPlayerEntity player : players)
                 {
-                    PacketHandler.send(PacketDistributor.PLAYER.with(() -> player), data.getUpdatePacket());
+                    //PacketHandler.send(PacketDistributor.PLAYER.with(() -> player), data.getUpdatePacket());
+                    data.getUpdatePacket().send(player);
                 }
             }
         }

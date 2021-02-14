@@ -7,11 +7,11 @@
 package net.dries007.tfc.common.blocks.wood;
 
 import net.minecraft.block.SaplingBlock;
-import net.minecraft.block.trees.Tree;
+import net.minecraft.block.sapling.SaplingGenerator;
 
 public class TFCSaplingBlock extends SaplingBlock
 {
-    public TFCSaplingBlock(Tree treeIn, Properties properties)
+    public TFCSaplingBlock(SaplingGenerator treeIn, Settings properties)
     {
         super(treeIn, properties);
     }

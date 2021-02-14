@@ -17,7 +17,7 @@ import net.dries007.tfc.config.TFCConfig;
 
 public class TFCWorldType
 {
-    public static final GeneratorType WORLD_TYPE = new GeneratorType() {
+    public static final GeneratorType WORLD_TYPE = new GeneratorType("terrafirmacraft.world_type") {
         @Override
         protected ChunkGenerator getChunkGenerator(Registry<Biome> biomeRegistry, Registry<ChunkGeneratorSettings> chunkGeneratorSettingsRegistry, long seed) {
             return TFCChunkGenerator.createDefaultPreset(chunkGeneratorSettingsRegistry.getOrThrow(ChunkGeneratorSettings.OVERWORLD), biomeRegistry, seed);

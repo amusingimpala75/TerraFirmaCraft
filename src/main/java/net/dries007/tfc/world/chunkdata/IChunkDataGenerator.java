@@ -6,6 +6,8 @@
 
 package net.dries007.tfc.world.chunkdata;
 
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
+
 /**
  * This is the object responsible for generating TFC chunk data, in parallel with normal chunk generation.
  *
@@ -13,5 +15,5 @@ package net.dries007.tfc.world.chunkdata;
  */
 public interface IChunkDataGenerator
 {
-    void generate(ChunkData data, ChunkData.Status status);
+    void generate(ChunkDataChunkComponent data, ChunkDataChunkComponent.Status status);
 }

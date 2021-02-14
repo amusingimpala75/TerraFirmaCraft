@@ -7,39 +7,39 @@
 package net.dries007.tfc.common.blocks.wood;
 
 import java.util.Random;
-import javax.annotation.Nonnull;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.state.EnumProperty;
-import net.minecraft.state.StateContainer;
+import net.minecraft.block.ShapeContext;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.server.ServerWorld;
 
 import net.dries007.tfc.common.blocks.GroundcoverBlock;
 import net.dries007.tfc.common.blocks.TFCBlockStateProperties;
 import net.dries007.tfc.util.calendar.Calendars;
 import net.dries007.tfc.util.calendar.Season;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.world.BlockView;
+import org.jetbrains.annotations.NotNull;
 
 public class FallenLeavesBlock extends GroundcoverBlock
 {
     public static final EnumProperty<Season> SEASON = TFCBlockStateProperties.SEASON_NO_SPRING;
 
-    private static final VoxelShape VERY_FLAT = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 1.0D, 16.0D);
+    private static final VoxelShape VERY_FLAT = Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 1.0D, 16.0D);
 
-    public FallenLeavesBlock(Properties properties)
+    public FallenLeavesBlock(Settings properties)
     {
         super(properties, VERY_FLAT, null);
 
-        registerDefaultState(defaultBlockState().setValue(SEASON, Season.SUMMER));
+        setDefaultState(getStateManager().getDefaultState().with(SEASON, Season.SUMMER));
     }
 
     @Override
-    public boolean isRandomlyTicking(BlockState state)
+    public boolean hasRandomTicks(BlockState state)
     {
         return true; // Not for the purposes of leaf decay, but for the purposes of seasonal updates
     }
@@ -49,29 +49,29 @@ public class FallenLeavesBlock extends GroundcoverBlock
     public void randomTick(BlockState state, ServerWorld worldIn, BlockPos pos, Random random)
     {
         // Adjust the season based on the current time
-        Season oldSeason = state.getValue(SEASON);
+        Season oldSeason = state.get(SEASON);
         Season newSeason = getSeasonForState();
         if (oldSeason != newSeason)
         {
-            worldIn.setBlockAndUpdate(pos, state.setValue(SEASON, newSeason));
+            worldIn.setBlockState(pos, state.with(SEASON, newSeason));
         }
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context)
+    public BlockState getPlacementState(ItemPlacementContext context)
     {
-        return super.getStateForPlacement(context).setValue(SEASON, getSeasonForState());
+        return super.getPlacementState(context).with(SEASON, getSeasonForState());
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder)
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder)
     {
-        super.createBlockStateDefinition(builder.add(SEASON));
+        super.appendProperties(builder.add(SEASON));
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getOutlineShape(BlockState state, BlockView worldIn, BlockPos pos, ShapeContext context)
     {
         return VERY_FLAT;
     }

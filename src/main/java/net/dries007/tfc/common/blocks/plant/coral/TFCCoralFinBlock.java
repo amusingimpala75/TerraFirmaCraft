@@ -11,15 +11,15 @@ import java.util.function.Supplier;
 
 import net.minecraft.block.*;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.tags.FluidTags;
-import net.minecraft.util.Direction;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.tag.FluidTags;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorld;
+import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.WorldAccess;
 
 /**
- * {@link CoralFinBlock}
+ * {@link CoralFanBlock}
  */
 public class TFCCoralFinBlock extends TFCCoralFanBlock
 {
@@ -33,36 +33,36 @@ public class TFCCoralFinBlock extends TFCCoralFanBlock
 
     @Override
     @SuppressWarnings("deprecation")
-    public void onPlace(BlockState state, World worldIn, BlockPos pos, BlockState oldState, boolean isMoving)
+    public void onBlockAdded(BlockState state, World worldIn, BlockPos pos, BlockState oldState, boolean isMoving)
     {
         tryScheduleDieTick(state, worldIn, pos);
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public void tick(BlockState state, ServerWorld worldIn, BlockPos pos, Random rand)
+    public void scheduledTick(BlockState state, ServerWorld worldIn, BlockPos pos, Random rand)
     {
         if (!scanForWater(state, worldIn, pos))
         {
-            worldIn.setBlock(pos, deadBlock.get().defaultBlockState().setValue(getFluidProperty(), getFluidProperty().keyFor(Fluids.EMPTY)), 2);
+            worldIn.setBlockState(pos, deadBlock.get().getDefaultState().with(getFluidProperty(), getFluidProperty().keyFor(Fluids.EMPTY)), 2);
         }
     }
 
     @Override
-    public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos)
+    public BlockState getStateForNeighborUpdate(BlockState stateIn, Direction facing, BlockState facingState, WorldAccess worldIn, BlockPos currentPos, BlockPos facingPos)
     {
-        if (facing == Direction.DOWN && !stateIn.canSurvive(worldIn, currentPos))
+        if (facing == Direction.DOWN && !stateIn.canPlaceAt(worldIn, currentPos))
         {
-            return Blocks.AIR.defaultBlockState();
+            return Blocks.AIR.getDefaultState();
         }
         else
         {
             tryScheduleDieTick(stateIn, worldIn, currentPos);
-            if (stateIn.getValue(getFluidProperty()).getFluid().is(FluidTags.WATER))
+            if (stateIn.get(getFluidProperty()).getFluid().isIn(FluidTags.WATER))
             {
-                worldIn.getLiquidTicks().scheduleTick(currentPos, Fluids.WATER, Fluids.WATER.getTickDelay(worldIn));
+                worldIn.getFluidTickScheduler().schedule(currentPos, Fluids.WATER, Fluids.WATER.getTickRate(worldIn));
             }
-            return super.updateShape(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+            return super.getStateForNeighborUpdate(stateIn, facing, facingState, worldIn, currentPos, facingPos);
         }
     }
 }

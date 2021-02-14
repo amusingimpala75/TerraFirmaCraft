@@ -30,7 +30,6 @@ import net.dries007.tfc.common.blocks.TFCBlocks;
 import net.dries007.tfc.common.fluids.TFCFluids;
 import net.dries007.tfc.util.Climate;
 import net.dries007.tfc.util.calendar.Calendars;
-import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.dries007.tfc.world.chunkdata.ChunkDataProvider;
 import net.dries007.tfc.world.noise.INoise2D;
 import net.dries007.tfc.world.noise.OpenSimplex2D;

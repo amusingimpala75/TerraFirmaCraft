@@ -6,12 +6,8 @@
 
 package net.dries007.tfc.network;
 
-import java.util.function.Supplier;
-
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraftforge.fml.network.NetworkEvent;
-import net.minecraftforge.fml.network.NetworkHooks;
 
 import net.dries007.tfc.common.container.TFCContainerProviders;
 
@@ -24,7 +20,7 @@ public class SwitchInventoryTabPacket
         this.type = type;
     }
 
-    SwitchInventoryTabPacket(PacketByteBuf buffer)
+    public SwitchInventoryTabPacket(PacketByteBuf buffer)
     {
         this.type = Type.VALUES[buffer.readByte()];
     }
@@ -34,36 +30,36 @@ public class SwitchInventoryTabPacket
         buffer.writeByte(type.ordinal());
     }
 
-    void handle(Supplier<NetworkEvent.Context> context)
+    //void handle(Supplier<NetworkEvent.Context> context)
+    public void handle(ServerPlayerEntity target)
     {
-        context.get().setPacketHandled(true);
-        context.get().enqueueWork(() -> {
-            ServerPlayerEntity player = context.get().getSender();
-            if (player != null)
+        //context.get().setPacketHandled(true);
+        //context.get().enqueueWork(() -> {
+        if (target != null)
             {
-                player.closeScreenHandler();
+                target.closeScreenHandler();
                 if (type == Type.INVENTORY)
                 {
-                    player.currentScreenHandler = player.playerScreenHandler;
+                    target.currentScreenHandler = target.playerScreenHandler;
                 }
                 else if (type == Type.CALENDAR)
                 {
-                    NetworkHooks.openGui(player, TFCContainerProviders.CALENDAR);
+                    target.openHandledScreen(TFCContainerProviders.CALENDAR);
                 }
                 else if (type == Type.NUTRITION)
                 {
-                    NetworkHooks.openGui(player, TFCContainerProviders.NUTRITION);
+                    target.openHandledScreen(TFCContainerProviders.NUTRITION);
                 }
                 else if (type == Type.CLIMATE)
                 {
-                    NetworkHooks.openGui(player, TFCContainerProviders.CLIMATE);
+                    target.openHandledScreen(TFCContainerProviders.CLIMATE);
                 }
                 else
                 {
                     throw new IllegalStateException("Unknown type?");
                 }
             }
-        });
+        //});
     }
 
     public enum Type

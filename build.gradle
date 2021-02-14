@@ -29,6 +29,10 @@ repositories {
     }
 }
 
+loom {
+    accessWidener "src/main/resources/tfc.accesswidener"
+}
+
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -40,6 +44,20 @@ dependencies {
 
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
+    modImplementation "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-base:2.7.11"
+    include "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-base:2.7.11"
+
+    modImplementation "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-util:2.7.11"
+    include "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-util:2.7.11"
+
+    modImplementation "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-item:2.7.11"
+    include "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-item:2.7.11"
+
+    modImplementation "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-world:2.7.11"
+    include "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-world:2.7.11"
+
+    modImplementation "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-chunk:2.7.11"
+    include "io.github.onyxstudios.Cardinal-Components-API:cardinal-components-chunk:2.7.11"
 }
 
 processResources {

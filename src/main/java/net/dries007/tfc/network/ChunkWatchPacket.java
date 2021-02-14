@@ -6,15 +6,15 @@
 
 package net.dries007.tfc.network;
 
-import java.util.function.Supplier;
-
+import net.dries007.tfc.fabric.Networking;
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.network.NetworkEvent;
 
 import net.dries007.tfc.client.ClientHelpers;
 import net.dries007.tfc.world.chunkdata.*;
@@ -45,7 +45,7 @@ public class ChunkWatchPacket
         this.plateTectonicsInfo = plateTectonicsInfo;
     }
 
-    ChunkWatchPacket(PacketByteBuf buffer)
+    public ChunkWatchPacket(PacketByteBuf buffer)
     {
         chunkX = buffer.readVarInt();
         chunkZ = buffer.readVarInt();
@@ -57,7 +57,7 @@ public class ChunkWatchPacket
         plateTectonicsInfo = PlateTectonicsClassification.valueOf(buffer.readByte());
     }
 
-    void encode(PacketByteBuf buffer)
+    public void encode(PacketByteBuf buffer)
     {
         buffer.writeVarInt(chunkX);
         buffer.writeVarInt(chunkZ);
@@ -69,25 +69,32 @@ public class ChunkWatchPacket
         buffer.writeByte(plateTectonicsInfo.ordinal());
     }
 
-    void handle(Supplier<NetworkEvent.Context> context)
+    //void handle(Supplier<NetworkEvent.Context> context)
+    public void handle()
     {
-        context.get().enqueueWork(() -> {
+        //context.get().enqueueWork(() -> {
             ChunkPos pos = new ChunkPos(chunkX, chunkZ);
             // Update client-side chunk data capability
-            World world = DistExecutor.safeCallWhenOn(Dist.CLIENT, () -> ClientHelpers::getWorld);
+            World world = ClientHelpers.getWorld();//DistExecutor.safeCallWhenOn(Dist.CLIENT, () -> ClientHelpers::getWorld);
             if (world != null)
             {
                 // First, synchronize the chunk data in the capability and cache.
                 // Then, update the single data instance with the packet data
                 Chunk chunk = world.isChunkLoaded(chunkX, chunkZ) ? world.getChunk(chunkX, chunkZ) : null;
-                ChunkData data = ChunkData.getCapability(chunk)
+                ChunkDataChunkComponent data = ChunkDataChunkComponent.getCapability(chunk)
                     .map(dataIn -> {
                         ChunkDataCache.CLIENT.update(pos, dataIn);
                         return dataIn;
                     }).orElseGet(() -> ChunkDataCache.CLIENT.getOrCreate(pos));
                 data.onUpdatePacket(rainfallLayer, temperatureLayer, forestType, forestDensity, forestWeirdness, plateTectonicsInfo);
             }
-        });
-        context.get().setPacketHandled(true);
+        //});
+        //context.get().setPacketHandled(true);
+    }
+
+    public void send(ServerPlayerEntity target) {
+        PacketByteBuf buf = PacketByteBufs.create();
+        encode(buf);
+        ServerPlayNetworking.send(target, Networking.CHANNEL_ID, buf);
     }
 }

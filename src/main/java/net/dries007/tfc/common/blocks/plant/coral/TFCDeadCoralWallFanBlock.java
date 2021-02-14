@@ -7,106 +7,105 @@
 package net.dries007.tfc.common.blocks.plant.coral;
 
 import java.util.Map;
-import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import net.minecraft.block.*;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.state.DirectionProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.tags.FluidTags;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Mirror;
-import net.minecraft.util.Rotation;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.DirectionProperty;
+import net.minecraft.tag.FluidTags;
+import net.minecraft.util.BlockMirror;
+import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.IWorldReader;
 
 import net.dries007.tfc.common.fluids.TFCFluids;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.world.BlockView;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.WorldView;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * {@link DeadCoralWallFanBlock}
  */
 public class TFCDeadCoralWallFanBlock extends TFCCoralFanBlock
 {
-    public static final DirectionProperty FACING = HorizontalBlock.FACING;
+    public static final DirectionProperty FACING = HorizontalFacingBlock.FACING;
     private static final Map<Direction, VoxelShape> SHAPES = Maps.newEnumMap(ImmutableMap.of(
-        Direction.NORTH, Block.box(0.0D, 4.0D, 5.0D, 16.0D, 12.0D, 16.0D),
-        Direction.SOUTH, Block.box(0.0D, 4.0D, 0.0D, 16.0D, 12.0D, 11.0D),
-        Direction.WEST, Block.box(5.0D, 4.0D, 0.0D, 16.0D, 12.0D, 16.0D),
-        Direction.EAST, Block.box(0.0D, 4.0D, 0.0D, 11.0D, 12.0D, 16.0D)));
+        Direction.NORTH, Block.createCuboidShape(0.0D, 4.0D, 5.0D, 16.0D, 12.0D, 16.0D),
+        Direction.SOUTH, Block.createCuboidShape(0.0D, 4.0D, 0.0D, 16.0D, 12.0D, 11.0D),
+        Direction.WEST, Block.createCuboidShape(5.0D, 4.0D, 0.0D, 16.0D, 12.0D, 16.0D),
+        Direction.EAST, Block.createCuboidShape(0.0D, 4.0D, 0.0D, 11.0D, 12.0D, 16.0D)));
 
     public TFCDeadCoralWallFanBlock(AbstractBlock.Settings builder)
     {
         super(builder);
-        registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
+        setDefaultState(getStateManager().getDefaultState().with(FACING, Direction.NORTH));
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getOutlineShape(BlockState state, BlockView worldIn, BlockPos pos, ShapeContext context)
     {
-        return SHAPES.get(state.getValue(FACING));
+        return SHAPES.get(state.get(FACING));
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public BlockState rotate(BlockState state, Rotation rot)
+    public BlockState rotate(BlockState state, BlockRotation rot)
     {
-        return state.setValue(FACING, rot.rotate(state.getValue(FACING)));
+        return state.with(FACING, rot.rotate(state.get(FACING)));
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public BlockState mirror(BlockState state, Mirror mirrorIn)
+    public BlockState mirror(BlockState state, BlockMirror mirrorIn)
     {
-        return state.rotate(mirrorIn.getRotation(state.getValue(FACING)));
+        return state.rotate(mirrorIn.getRotation(state.get(FACING)));
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder)
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder)
     {
         builder.add(FACING, FLUID);
     }
 
     @Override
-    public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos)
+    public BlockState getStateForNeighborUpdate(BlockState stateIn, Direction facing, BlockState facingState, WorldAccess worldIn, BlockPos currentPos, BlockPos facingPos)
     {
-        if (stateIn.getValue(getFluidProperty()).getFluid().is(FluidTags.WATER))
+        if (stateIn.get(getFluidProperty()).getFluid().isIn(FluidTags.WATER))
         {
-            worldIn.getLiquidTicks().scheduleTick(currentPos, TFCFluids.SALT_WATER.getSource(), TFCFluids.SALT_WATER.getSource().getTickDelay(worldIn));
+            worldIn.getFluidTickScheduler().schedule(currentPos, TFCFluids.SALT_WATER.getSource(), TFCFluids.SALT_WATER.getSource().getTickRate(worldIn));
         }
 
-        return facing.getOpposite() == stateIn.getValue(FACING) && !stateIn.canSurvive(worldIn, currentPos) ? Blocks.AIR.defaultBlockState() : stateIn;
+        return facing.getOpposite() == stateIn.get(FACING) && !stateIn.canPlaceAt(worldIn, currentPos) ? Blocks.AIR.getDefaultState() : stateIn;
     }
 
     @Override
-    public boolean canSurvive(BlockState state, IWorldReader worldIn, BlockPos pos)
+    public boolean canPlaceAt(BlockState state, WorldView worldIn, BlockPos pos)
     {
-        Direction direction = state.getValue(FACING);
-        BlockPos blockpos = pos.relative(direction.getOpposite());
+        Direction direction = state.get(FACING);
+        BlockPos blockpos = pos.offset(direction.getOpposite());
         BlockState blockstate = worldIn.getBlockState(blockpos);
-        return blockstate.isFaceSturdy(worldIn, blockpos, direction);
+        return blockstate.isSideSolidFullSquare(worldIn, blockpos, direction);
     }
 
     @Nullable
     @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context)
+    public BlockState getPlacementState(ItemPlacementContext context)
     {
-        BlockState blockstate = super.getStateForPlacement(context);
-        IWorldReader iworldreader = context.getLevel();
-        BlockPos blockpos = context.getClickedPos();
-        Direction[] directions = context.getNearestLookingDirections();
+        BlockState blockstate = super.getPlacementState(context);
+        WorldView iworldreader = context.getWorld();
+        BlockPos blockpos = context.getBlockPos();
+        Direction[] directions = context.getPlacementDirections();
 
         for (Direction d : directions)
         {
             if (d.getAxis().isHorizontal())
             {
-                blockstate = blockstate.setValue(FACING, d.getOpposite());
-                if (blockstate.canSurvive(iworldreader, blockpos))
+                blockstate = blockstate.with(FACING, d.getOpposite());
+                if (blockstate.canPlaceAt(iworldreader, blockpos))
                 {
                     return blockstate;
                 }

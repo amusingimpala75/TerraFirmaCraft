@@ -9,21 +9,24 @@ package net.dries007.tfc.common.blocks.soil;
 import java.util.Map;
 import java.util.Random;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableMap;
+import net.dries007.tfc.fabric.duck.WorldDuck;
+import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.state.StateContainer;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
@@ -112,7 +115,7 @@ public class ConnectedGrassBlock extends Block implements IGrassBlock
     {
         if (!canBeGrass(state, worldIn, pos))
         {
-            if (worldIn.isRegionLoaded(pos, 3))
+            if (((WorldDuck)worldIn).inject$isAreaLoaded(pos, 3))
             {
                 // Turn to not-grass
                 worldIn.setBlockState(pos, getDirt());
@@ -141,9 +144,15 @@ public class ConnectedGrassBlock extends Block implements IGrassBlock
     }
 
     @Override
+    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+        world.setBlockState(pos, getToolModifiedState(state, world, pos, player, player.getStackInHand(hand), player.getStackInHand(hand).getItem()));
+        return super.onUse(state, world, pos, player, hand, hit);
+    }
+
+    @Override
     public void scheduledTick(BlockState state, ServerWorld worldIn, BlockPos pos, Random rand)
     {
-        if (worldIn.isRegionLoaded(pos, 2))
+        if (((WorldDuck)worldIn).inject$isAreaLoaded(pos, 2))
         {
             worldIn.setBlockState(pos, updateStateFromNeighbors(worldIn, pos, state), 2);
         }
@@ -169,14 +178,14 @@ public class ConnectedGrassBlock extends Block implements IGrassBlock
     }
 
     @Nullable
-    @Override
-    public BlockState getToolModifiedState(BlockState state, World world, BlockPos pos, PlayerEntity player, ItemStack stack, ToolType toolType)
+    //@Override
+    public BlockState getToolModifiedState(BlockState state, World world, BlockPos pos, PlayerEntity player, ItemStack stack, Item toolType)
     {
-        if (toolType == ToolType.HOE && TFCConfig.SERVER.enableFarmlandCreation.get() && farmland != null)
+        if (toolType.isIn(FabricToolTags.HOES) && TFCConfig.SERVER.enableFarmlandCreation.get() && farmland != null)
         {
             return farmland.get().getDefaultState();
         }
-        else if (toolType == ToolType.SHOVEL && TFCConfig.SERVER.enableGrassPathCreation.get() && grassPath != null)
+        else if (toolType.isIn(FabricToolTags.SHOVELS) && TFCConfig.SERVER.enableGrassPathCreation.get() && grassPath != null)
         {
             return grassPath.get().getDefaultState();
         }
@@ -191,7 +200,7 @@ public class ConnectedGrassBlock extends Block implements IGrassBlock
      */
     protected void updateSurroundingGrassConnections(WorldAccess world, BlockPos pos)
     {
-        if (world.isRegionLoaded(pos, 2))
+        if (((WorldDuck)world).inject$isAreaLoaded(pos, 2))
         {
             for (Direction direction : Direction.Type.HORIZONTAL)
             {

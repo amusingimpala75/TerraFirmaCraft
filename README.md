@@ -44,13 +44,26 @@ Parts of this project are edited source code from the original TerraFirmaCraft f
 PAUSED ON WOOD IN common/types!!
 
 ## Port TODO:
-Package Info's Params nonnull and Methods nonnull
+- Package Info's Params nonnull and Methods nonnull
 
 - client
   - screen - all network things
   - ClientForgeEventHandler - migrate to fapi / mixins  
 
 - common
+  - block
+    - GroundcoverBlock - ItemHelperHandler call
+    - plant
+      - DryPlantBlock - Sand tag
+      - KelpTreeFlowerBlock - ForgeHooks pre/post plant growth calls
+      - TopPlantBlock - ^
+  - capability
+    - heat
+      - HeatDefinition - CraftingHelper call
+  - fluids
+    - FluidHelpers - ForgeEventFactory fluid related calls
+  - tileentity
+    - TFCTileEntity - Injected Forge patch calls
   - TFCItemGroup - migrate -> fapi
   - types
     - MetalItem - CraftingHelper calls
@@ -69,22 +82,13 @@ Package Info's Params nonnull and Methods nonnull
     - ServerCalendar - packets and current server calls
   - data
     - DataManager - CraftingHelper calls
-  - tracker
-    - Collapse - INBT Serializable
-    - WorldTracker - Capabilities -> CCA
-    - WorldTrackerCapability - ^
   - CacheInvalidationListener - current server calls
-  - DispenserBehaviors - AW for final methods
-  - Helpers - CraftingPlayer and Capabilities -> CCA
-  - NoopStorage - Capabilities -> CCA  
+  - Helpers - CraftingPlayer
     
 - ForgeEventHandler - transfer to fapi / mixins
   
 - world
   - chunkdata
-    - ChunkData - Capabilities -> CCA
-    - ChunkDataCache - Capabilities -> CCA
-    - RockData - Capabilities -> CCA
-  - feature
-    -TFCIcebergFeature - AW for final methods
-  - TFCWorldType - AW for class extension  
+    - ChunkDataCache - networking
+    
+- Item/Block tags Forge -> common

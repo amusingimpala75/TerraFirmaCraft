@@ -6,30 +6,26 @@
 
 package net.dries007.tfc.common.blocks.plant;
 
-import javax.annotation.Nullable;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.material.Material;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.Direction;
+import net.minecraft.block.*;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.IWorldReader;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.world.BlockView;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.WorldView;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class HangingPlantBlock extends PlantBlock
 {
-    protected static final BooleanProperty HANGING = BlockStateProperties.HANGING;
-    protected static final VoxelShape NOT_HANGING_SHAPE = box(0.0, 0.0, 0.0, 16.0, 2.0, 16.0);
+    protected static final BooleanProperty HANGING = Properties.HANGING;
+    protected static final VoxelShape NOT_HANGING_SHAPE = createCuboidShape(0.0, 0.0, 0.0, 16.0, 2.0, 16.0);
 
-    public static HangingPlantBlock create(IPlant plant, Properties properties)
+    public static HangingPlantBlock create(IPlant plant, Settings properties)
     {
         return new HangingPlantBlock(properties)
         {
@@ -41,31 +37,31 @@ public abstract class HangingPlantBlock extends PlantBlock
         };
     }
 
-    protected HangingPlantBlock(Properties properties)
+    protected HangingPlantBlock(Settings properties)
     {
         super(properties);
     }
 
     @Override
-    public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos)
+    public BlockState getStateForNeighborUpdate(BlockState stateIn, Direction facing, BlockState facingState, WorldAccess worldIn, BlockPos currentPos, BlockPos facingPos)
     {
-        for (Direction direction : Direction.Plane.VERTICAL)
+        for (Direction direction : Direction.Type.VERTICAL)
         {
-            BlockState attach = worldIn.getBlockState(currentPos.relative(direction));
+            BlockState attach = worldIn.getBlockState(currentPos.offset(direction));
             if (attach.getMaterial() == Material.LEAVES)
             {
-                return stateIn.setValue(HANGING, direction == Direction.UP);
+                return stateIn.with(HANGING, direction == Direction.UP);
             }
         }
-        return Blocks.AIR.defaultBlockState();
+        return Blocks.AIR.getDefaultState();
     }
 
     @Override
-    public boolean canSurvive(BlockState state, IWorldReader worldIn, BlockPos pos)
+    public boolean canPlaceAt(BlockState state, WorldView worldIn, BlockPos pos)
     {
-        for (Direction direction : Direction.Plane.VERTICAL)
+        for (Direction direction : Direction.Type.VERTICAL)
         {
-            if (worldIn.getBlockState(pos.relative(direction)).getMaterial() == Material.LEAVES)
+            if (worldIn.getBlockState(pos.offset(direction)).getMaterial() == Material.LEAVES)
             {
                 return true;
             }
@@ -75,25 +71,25 @@ public abstract class HangingPlantBlock extends PlantBlock
 
     @Nullable
     @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context)
+    public BlockState getPlacementState(ItemPlacementContext context)
     {
-        if (context.getLevel().getBlockState(context.getClickedPos().relative(Direction.UP)).getMaterial() == Material.LEAVES)
+        if (context.getWorld().getBlockState(context.getBlockPos().offset(Direction.UP)).getMaterial() == Material.LEAVES)
         {
-            return defaultBlockState().setValue(HANGING, true);
+            return getDefaultState().with(HANGING, true);
         }
-        if (context.getLevel().getBlockState(context.getClickedPos().relative(Direction.DOWN)).getMaterial() == Material.LEAVES)
+        if (context.getWorld().getBlockState(context.getBlockPos().offset(Direction.DOWN)).getMaterial() == Material.LEAVES)
         {
-            return defaultBlockState().setValue(HANGING, false);
+            return getDefaultState().with(HANGING, false);
         }
         return null;
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getOutlineShape(BlockState state, BlockView worldIn, BlockPos pos, ShapeContext context)
     {
-        if (state.getValue(HANGING))
+        if (state.get(HANGING))
         {
-            return super.getShape(state, worldIn, pos, context);
+            return super.getOutlineShape(state, worldIn, pos, context);
         }
         else
         {
@@ -102,9 +98,9 @@ public abstract class HangingPlantBlock extends PlantBlock
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder)
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder)
     {
-        super.createBlockStateDefinition(builder);
+        super.appendProperties(builder);
         builder.add(HANGING);
     }
 }

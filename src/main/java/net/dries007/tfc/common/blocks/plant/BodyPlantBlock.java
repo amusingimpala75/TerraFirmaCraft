@@ -10,14 +10,14 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 import net.minecraft.block.*;
-import net.minecraft.tags.BlockTags;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorldReader;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.WorldView;
 
 public class BodyPlantBlock extends AbstractPlantBlock
 {
@@ -36,36 +36,36 @@ public class BodyPlantBlock extends AbstractPlantBlock
     }
 
     @Override
-    public boolean isValidBonemealTarget(IBlockReader worldIn, BlockPos pos, BlockState state, boolean isClient)
+    public boolean isFertilizable(BlockView worldIn, BlockPos pos, BlockState state, boolean isClient)
     {
         return false;
     }
 
     @Override
-    public boolean isBonemealSuccess(World worldIn, Random rand, BlockPos pos, BlockState state)
+    public boolean canGrow(World worldIn, Random rand, BlockPos pos, BlockState state)
     {
         return false;
     }
 
     @Override
-    public void performBonemeal(ServerWorld worldIn, Random rand, BlockPos pos, BlockState state)
+    public void grow(ServerWorld worldIn, Random rand, BlockPos pos, BlockState state)
     {
 
     }
 
     @Override // lifted from AbstractPlantBlock to add leaves to it
-    public boolean canSurvive(BlockState state, IWorldReader worldIn, BlockPos pos)
+    public boolean canPlaceAt(BlockState state, WorldView worldIn, BlockPos pos)
     {
-        BlockPos blockpos = pos.relative(growthDirection.getOpposite());
+        BlockPos blockpos = pos.offset(growthDirection.getOpposite());
         BlockState blockstate = worldIn.getBlockState(blockpos);
         Block block = blockstate.getBlock();
-        if (!canAttachToBlock(block))
+        if (!canAttachTo(block))
         {
             return false;
         }
         else
         {
-            return block == getHeadBlock() || block == getBodyBlock() || blockstate.is(BlockTags.LEAVES) || blockstate.isFaceSturdy(worldIn, blockpos, growthDirection);
+            return block == getStem() || block == getPlant() || blockstate.isIn(BlockTags.LEAVES) || blockstate.isSideSolidFullSquare(worldIn, blockpos, growthDirection);
         }
     }
 }

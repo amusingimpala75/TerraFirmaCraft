@@ -7,20 +7,20 @@
 package net.dries007.tfc.common.blocks.plant;
 
 import net.minecraft.block.BlockState;
+import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.Entity;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.util.DamageSource;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorldReader;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldView;
 
 public abstract class TFCCactusBlock extends TFCTallGrassBlock
 {
-    public static TFCCactusBlock create(IPlant plant, Properties properties)
+    public static TFCCactusBlock create(IPlant plant, Settings properties)
     {
         return new TFCCactusBlock(properties)
         {
@@ -32,40 +32,40 @@ public abstract class TFCCactusBlock extends TFCTallGrassBlock
         };
     }
 
-    protected TFCCactusBlock(Properties properties)
+    protected TFCCactusBlock(Settings properties)
     {
         super(properties);
     }
 
     @Override
-    public boolean canSurvive(BlockState state, IWorldReader worldIn, BlockPos pos)
+    public boolean canPlaceAt(BlockState state, WorldView worldIn, BlockPos pos)
     {
-        BlockState blockstate = worldIn.getBlockState(pos.below());
-        if (state.getValue(PART) == Part.LOWER)
+        BlockState blockstate = worldIn.getBlockState(pos.down());
+        if (state.get(PART) == Part.LOWER)
         {
-            return blockstate.is(BlockTags.SAND);
+            return blockstate.isIn(BlockTags.SAND);
         }
         else
         {
             if (state.getBlock() != this)
             {
-                return blockstate.is(BlockTags.SAND); //calling super here is stupid it does nothing lets just check tags
+                return blockstate.isIn(BlockTags.SAND); //calling super here is stupid it does nothing lets just check tags
             }
-            return blockstate.getBlock() == this && blockstate.getValue(PART) == Part.LOWER;
+            return blockstate.getBlock() == this && blockstate.get(PART) == Part.LOWER;
         }
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public void entityInside(BlockState state, World worldIn, BlockPos pos, Entity entityIn)
+    public void onEntityCollision(BlockState state, World worldIn, BlockPos pos, Entity entityIn)
     {
-        entityIn.hurt(DamageSource.CACTUS, 1.0F);
+        entityIn.damage(DamageSource.CACTUS, 1.0F);
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context)
+    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context)
     {
-        return VoxelShapes.block();
+        return VoxelShapes.fullCube();
     }
 
     @Override

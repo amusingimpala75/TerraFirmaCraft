@@ -6,16 +6,15 @@
 
 package net.dries007.tfc.common.capabilities.heat;
 
-import javax.annotation.Nullable;
-
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.Identifier;
 
 import net.dries007.tfc.util.collections.IndirectHashCollection;
 import net.dries007.tfc.util.data.DataManager;
+import org.jetbrains.annotations.Nullable;
 
 public class HeatManager extends DataManager<HeatDefinition>
 {
@@ -46,7 +45,7 @@ public class HeatManager extends DataManager<HeatDefinition>
     }
 
     @Override
-    protected HeatDefinition read(ResourceLocation id, JsonObject obj)
+    protected HeatDefinition read(Identifier id, JsonObject obj)
     {
         return new HeatDefinition(id, obj);
     }

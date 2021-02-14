@@ -1,13 +1,17 @@
-/*
- * Licensed under the EUPL, Version 1.2.
- * You may obtain a copy of the Licence at:
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- */
+package net.dries007.tfc.fabric.cca;
 
-package net.dries007.tfc.util.tracker;
-
-import java.util.*;
-
+import net.dries007.tfc.client.TFCSounds;
+import net.dries007.tfc.common.TFCTags;
+import net.dries007.tfc.common.entities.TFCFallingBlockEntity;
+import net.dries007.tfc.common.recipes.CollapseRecipe;
+import net.dries007.tfc.common.recipes.LandslideRecipe;
+import net.dries007.tfc.config.TFCConfig;
+import net.dries007.tfc.fabric.Constants;
+import net.dries007.tfc.util.Helpers;
+import net.dries007.tfc.util.collections.BufferedList;
+import net.dries007.tfc.util.loot.TFCLoot;
+import net.dries007.tfc.util.tracker.Collapse;
+import net.dries007.tfc.util.tracker.TickEntry;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -17,34 +21,19 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilitySerializable;
-import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.common.util.LazyOptional;
 
-import net.dries007.tfc.client.TFCSounds;
-import net.dries007.tfc.common.TFCTags;
-import net.dries007.tfc.common.entities.TFCFallingBlockEntity;
-import net.dries007.tfc.common.recipes.CollapseRecipe;
-import net.dries007.tfc.common.recipes.LandslideRecipe;
-import net.dries007.tfc.config.TFCConfig;
-import net.dries007.tfc.util.Helpers;
-import net.dries007.tfc.util.collections.BufferedList;
-import net.dries007.tfc.util.loot.TFCLoot;
-import org.jetbrains.annotations.Nullable;
+import java.util.*;
 
-public class WorldTracker implements IWorldTracker, ICapabilitySerializable<CompoundTag>
-{
+public class WorldTrackerWorldComponent implements WorldTrackerComponent {
+
     private static final Random RANDOM = new Random();
 
-    private final LazyOptional<IWorldTracker> capability;
     private final BufferedList<TickEntry> landslideTicks;
     private final BufferedList<BlockPos> isolatedPositions;
     private final List<Collapse> collapsesInProgress;
 
-    public WorldTracker()
+    public WorldTrackerWorldComponent(World world)
     {
-        this.capability = LazyOptional.of(() -> this);
         this.landslideTicks = new BufferedList<>();
         this.isolatedPositions = new BufferedList<>();
         this.collapsesInProgress = new ArrayList<>();
@@ -97,11 +86,11 @@ public class WorldTracker implements IWorldTracker, ICapabilitySerializable<Comp
                 for (Collapse collapse : collapsesInProgress)
                 {
                     Set<BlockPos> updatedPositions = new HashSet<>();
-                    for (BlockPos posAt : collapse.nextPositions)
+                    for (BlockPos posAt : collapse.getNextPositions())
                     {
                         // Check the current position for collapsing
                         BlockState stateAt = world.getBlockState(posAt);
-                        if (TFCTags.Blocks.CAN_COLLAPSE.contains(stateAt.getBlock()) && TFCFallingBlockEntity.canFallThrough(world, posAt.down()) && posAt.getSquaredDistance(collapse.centerPos) < collapse.radiusSquared && RANDOM.nextFloat() < TFCConfig.SERVER.collapsePropagateChance.get())
+                        if (TFCTags.Blocks.CAN_COLLAPSE.contains(stateAt.getBlock()) && TFCFallingBlockEntity.canFallThrough(world, posAt.down()) && posAt.getSquaredDistance(collapse.getCenterPos()) < collapse.radiusSquared && RANDOM.nextFloat() < TFCConfig.SERVER.collapsePropagateChance.get())
                         {
                             if (CollapseRecipe.collapseBlock(world, posAt, stateAt))
                             {
@@ -110,15 +99,15 @@ public class WorldTracker implements IWorldTracker, ICapabilitySerializable<Comp
                             }
                         }
                     }
-                    collapse.nextPositions.clear();
+                    collapse.getNextPositions().clear();
                     if (!updatedPositions.isEmpty())
                     {
-                        world.playSound(null, collapse.centerPos, TFCSounds.ROCK_SLIDE_SHORT, SoundCategory.BLOCKS, 0.6f, 1.0f);
-                        collapse.nextPositions.addAll(updatedPositions);
+                        world.playSound(null, collapse.getCenterPos(), TFCSounds.ROCK_SLIDE_SHORT, SoundCategory.BLOCKS, 0.6f, 1.0f);
+                        collapse.getNextPositions().addAll(updatedPositions);
                         collapse.radiusSquared *= 0.8; // lower radius each successive time
                     }
                 }
-                collapsesInProgress.removeIf(collapse -> collapse.nextPositions.isEmpty());
+                collapsesInProgress.removeIf(collapse -> collapse.getNextPositions().isEmpty());
             }
 
             landslideTicks.flush();
@@ -150,12 +139,12 @@ public class WorldTracker implements IWorldTracker, ICapabilitySerializable<Comp
     }
 
     @Override
-    public CompoundTag serializeNBT()
+    public /*CompoundTag*/void writeToNbt(CompoundTag nbt)
     {
         landslideTicks.flush();
         isolatedPositions.flush();
 
-        CompoundTag nbt = new CompoundTag();
+        //CompoundTag nbt = new CompoundTag();
         ListTag landslideNbt = new ListTag();
         for (TickEntry entry : landslideTicks)
         {
@@ -169,14 +158,14 @@ public class WorldTracker implements IWorldTracker, ICapabilitySerializable<Comp
         ListTag collapseNbt = new ListTag();
         for (Collapse collapse : collapsesInProgress)
         {
-            collapseNbt.add(collapse.serializeNBT());
+            collapseNbt.add(collapse.serialize());
         }
         nbt.put("collapsesInProgress", collapseNbt);
-        return nbt;
+        //return nbt;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt)
+    public void readFromNbt(CompoundTag nbt)
     {
         if (nbt != null)
         {
@@ -184,7 +173,7 @@ public class WorldTracker implements IWorldTracker, ICapabilitySerializable<Comp
             collapsesInProgress.clear();
             isolatedPositions.clear();
 
-            ListTag landslideNbt = nbt.getList("landslideTicks", Constants.NBT.TAG_COMPOUND);
+            ListTag landslideNbt = nbt.getList("landslideTicks", Constants.NBT.COMPOUND_TAG);
             for (int i = 0; i < landslideNbt.size(); i++)
             {
                 landslideTicks.add(new TickEntry(landslideNbt.getCompound(i)));
@@ -193,7 +182,7 @@ public class WorldTracker implements IWorldTracker, ICapabilitySerializable<Comp
             long[] isolatedNbt = nbt.getLongArray("isolatedPositions");
             Arrays.stream(isolatedNbt).mapToObj(BlockPos::fromLong).forEach(isolatedPositions::add);
 
-            ListTag collapseNbt = nbt.getList("collapsesInProgress", Constants.NBT.TAG_COMPOUND);
+            ListTag collapseNbt = nbt.getList("collapsesInProgress", Constants.NBT.COMPOUND_TAG);
             for (int i = 0; i < collapseNbt.size(); i++)
             {
                 collapsesInProgress.add(new Collapse(collapseNbt.getCompound(i)));
@@ -201,11 +190,6 @@ public class WorldTracker implements IWorldTracker, ICapabilitySerializable<Comp
         }
     }
 
-    @Override
-    public <T> LazyOptional<T> getCapability(Capability<T> cap, @Nullable Direction side)
-    {
-        return WorldTrackerCapability.CAPABILITY.orEmpty(cap, capability);
-    }
 
     private boolean isIsolated(WorldAccess world, BlockPos pos)
     {

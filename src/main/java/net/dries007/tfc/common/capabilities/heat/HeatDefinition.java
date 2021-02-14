@@ -8,15 +8,14 @@ package net.dries007.tfc.common.capabilities.heat;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.google.gson.JsonObject;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.util.JSONUtils;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.recipe.Ingredient;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.JsonHelper;
 import net.minecraftforge.common.crafting.CraftingHelper;
 
 /**
@@ -24,21 +23,22 @@ import net.minecraftforge.common.crafting.CraftingHelper;
  */
 public class HeatDefinition
 {
-    private final ResourceLocation id;
-    private final Supplier<IHeat> capability;
+    private final Identifier id;
     private final Ingredient ingredient;
+    public final float heatCapactiy;
+    public final float forgingTemp;
+    public final float weldingTemp
 
-    public HeatDefinition(ResourceLocation id, JsonObject obj)
+    public HeatDefinition(Identifier id, JsonObject obj)
     {
         this.id = id;
-        float heatCapacity = JSONUtils.getAsFloat(obj, "heat_capacity");
-        float forgingTemp = JSONUtils.getAsFloat(obj, "forging_temperature", 0);
-        float weldingTemp = JSONUtils.getAsFloat(obj, "welding_temperature", 0);
-        this.ingredient = CraftingHelper.getIngredient(JSONUtils.getAsJsonObject(obj, "ingredient"));
-        this.capability = () -> new HeatHandler(heatCapacity, forgingTemp, weldingTemp);
+        this.heatCapactiy = JsonHelper.getFloat(obj, "heat_capacity");
+        this.forgingTemp = JsonHelper.getFloat(obj, "forging_temperature", 0);
+        this.weldingTemp = JsonHelper.getFloat(obj, "welding_temperature", 0);
+        this.ingredient = CraftingHelper.getIngredient(JsonHelper.getObject(obj, "ingredient"));
     }
 
-    public ResourceLocation getId()
+    public Identifier getId()
     {
         return id;
     }
@@ -46,11 +46,6 @@ public class HeatDefinition
     /**
      * Creates a new instance of the capability defined by this object.
      */
-    public IHeat create()
-    {
-        return capability.get();
-    }
-
     public boolean isValid(ItemStack stack)
     {
         return ingredient.test(stack);
@@ -58,6 +53,6 @@ public class HeatDefinition
 
     public Collection<Item> getValidItems()
     {
-        return Arrays.stream(this.ingredient.getItems()).map(ItemStack::getItem).collect(Collectors.toSet());
+        return Arrays.stream(this.ingredient.getMatchingStacksClient()).map(ItemStack::getItem).collect(Collectors.toSet());
     }
 }

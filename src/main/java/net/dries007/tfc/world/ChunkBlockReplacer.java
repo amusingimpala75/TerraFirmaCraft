@@ -27,7 +27,6 @@ import net.dries007.tfc.common.blocks.soil.SoilBlockType;
 import net.dries007.tfc.common.fluids.TFCFluids;
 import net.dries007.tfc.common.types.Rock;
 import net.dries007.tfc.world.biome.TFCBiomes;
-import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.dries007.tfc.world.chunkdata.RockData;
 
 /**

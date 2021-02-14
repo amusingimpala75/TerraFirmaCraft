@@ -11,6 +11,7 @@
     "entity.item.FallingBlockEntityAccessor",
     "fabric.MinecraftServerCache",
     "fabric.block.AbstractBlockStateAccessor",
+    "fabric.block.FireBlockAccessor",
     "fabric.client.gui.ScreenAccessor",
     "fabric.item.ItemAdditions",
     "fabric.world.BlockPlacerAccessor",

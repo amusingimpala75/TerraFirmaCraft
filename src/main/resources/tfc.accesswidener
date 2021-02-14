@@ -1,0 +1,7 @@
+accessWidener	v1	named
+
+extendable  class   net/minecraft/client/world/GeneratorType
+extendable  method  net/minecraft/world/gen/feature/IcebergFeature  method_13415    (IILnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/WorldAccess;ZDLnet/minecraft/util/math/BlockPos;II)V
+extendable  method  net/minecraft/world/gen/feature/IcebergFeature  method_13425    (Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/world/WorldAccess;Ljava/util/Random;IIZZLnet/minecraft/block/BlockState;)V
+extendable  method  net/minecraft/block/dispenser/ItemDispenserBehavior dispense        (Lnet/minecraft/util/math/BlockPointer;Lnet/minecraft/item/ItemStack;)Lnet/minecraft/item/ItemStack;
+accessible  method  net/minecraft/client/world/GeneratorType        <init>          (Ljava/lang/String;)V

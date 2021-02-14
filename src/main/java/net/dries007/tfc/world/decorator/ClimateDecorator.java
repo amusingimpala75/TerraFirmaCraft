@@ -15,7 +15,6 @@ import net.minecraft.world.gen.decorator.DecoratorContext;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.mixin.world.gen.feature.WorldDecoratingHelperAccessor;
-import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.dries007.tfc.world.chunkdata.ChunkDataProvider;
 
 public class ClimateDecorator extends Decorator<ClimateConfig>

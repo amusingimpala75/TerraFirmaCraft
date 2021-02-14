@@ -17,7 +17,6 @@ import com.mojang.serialization.Codec;
 import net.dries007.tfc.world.biome.BiomeVariants;
 import net.dries007.tfc.world.biome.TFCBiomes;
 import net.dries007.tfc.world.biome.VolcanoNoise;
-import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.dries007.tfc.world.noise.Cellular2D;
 import net.dries007.tfc.world.noise.CellularNoiseType;
 

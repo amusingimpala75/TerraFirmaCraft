@@ -125,7 +125,20 @@ public abstract class SnowBlockMixin extends Block
     /**
      * Add behavior to snow blocks - when they are destroyed, they should only destroy one layer.
      */
+    //TODO: Confirm
     @Override
+    public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+        super.onBreak(world, pos, state, player);
+        final int prevLayers = state.get(SnowBlock.LAYERS);
+        if (prevLayers > 1)
+        {
+            world.setBlockState(pos, state.with(SnowBlock.LAYERS, prevLayers - 1), world.isClient ? 11 : 3);
+        }
+        //world.setBlockState(pos, fluid.getBlockState(), world.isClient ? 11 : 3);
+    }
+
+
+    /*@Override
     public boolean removedByPlayer(BlockState state, World world, BlockPos pos, PlayerEntity player, boolean willHarvest, FluidState fluid)
     {
         onBreak(world, pos, state, player);
@@ -135,5 +148,5 @@ public abstract class SnowBlockMixin extends Block
             return world.setBlockState(pos, state.with(SnowBlock.LAYERS, prevLayers - 1), world.isClient ? 11 : 3);
         }
         return world.setBlockState(pos, fluid.getBlockState(), world.isClient ? 11 : 3);
-    }
+    }*/
 }

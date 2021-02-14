@@ -7,11 +7,11 @@
 package net.dries007.tfc.common.blocks;
 
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.shape.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 
 public enum GroundcoverBlockType
 {
@@ -32,7 +32,8 @@ public enum GroundcoverBlockType
     STICK(GroundcoverBlock.FLAT, () -> Items.STICK);
 
     private final VoxelShape shape;
-    @Nullable private final Supplier<? extends Item> vanillaItem; // The vanilla item this corresponds to
+    @Nullable
+    private final Supplier<? extends Item> vanillaItem; // The vanilla item this corresponds to
 
     GroundcoverBlockType(VoxelShape shape)
     {

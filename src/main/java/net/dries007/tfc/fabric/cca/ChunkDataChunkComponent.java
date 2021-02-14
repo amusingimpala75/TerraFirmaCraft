@@ -1,32 +1,24 @@
-/*
- * Licensed under the EUPL, Version 1.2.
- * You may obtain a copy of the Licence at:
- * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
- */
+package net.dries007.tfc.fabric.cca;
 
-package net.dries007.tfc.world.chunkdata;
+import dev.onyxstudios.cca.api.v3.component.Component;
+import net.dries007.tfc.network.ChunkWatchPacket;
+import net.dries007.tfc.world.chunkdata.*;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.WorldChunk;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.WorldChunk;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+@SuppressWarnings("unused")
+public class ChunkDataChunkComponent implements Component {
+    public static final ChunkDataChunkComponent EMPTY = new ChunkDataChunkComponent.Immutable();
 
-import net.dries007.tfc.network.ChunkWatchPacket;
-import org.jetbrains.annotations.Nullable;
-
-public class ChunkData implements ICapabilitySerializable<CompoundTag>
-{
-    public static final ChunkData EMPTY = new ChunkData.Immutable();
-
-    public static ChunkData get(WorldAccess world, BlockPos pos)
+    public static ChunkDataChunkComponent get(WorldAccess world, BlockPos pos)
     {
         return get(world, new ChunkPos(pos));
     }
@@ -36,16 +28,16 @@ public class ChunkData implements ICapabilitySerializable<CompoundTag>
      * If on client, will query capability, falling back to cache, and send request packets if necessary
      * If on server, will either query capability falling back to cache, or query provider to generate the data.
      *
-     * @see ChunkDataProvider#get(ChunkPos, Status) to directly force chunk generation, or if a world is not available
+     * @see ChunkDataProvider#get(BlockPos, ChunkDataChunkComponent.Status)  to directly force chunk generation, or if a world is not available
      * @see ChunkDataCache#get(ChunkPos) to directly access the cache
      */
-    public static ChunkData get(WorldAccess world, ChunkPos pos)
+    public static ChunkDataChunkComponent get(WorldAccess world, ChunkPos pos)
     {
         // Query cache first, picking the correct cache for the current logical side
-        ChunkData data = ChunkDataCache.get(world).get(pos);
+        ChunkDataChunkComponent data = ChunkDataCache.get(world).get(pos);
         if (data == null)
         {
-            return getCapability(world.isChunkLoaded(pos.x, pos.z) ? world.getChunk(pos.getStartPos()) : null).orElse(ChunkData.EMPTY);
+            return getCapability(world.isChunkLoaded(pos.x, pos.z) ? world.getChunk(pos.getStartPos()) : null).orElse(ChunkDataChunkComponent.EMPTY);
         }
         return data;
     }
@@ -53,19 +45,18 @@ public class ChunkData implements ICapabilitySerializable<CompoundTag>
     /**
      * Helper method, since lazy optionals and instanceof checks together are ugly
      */
-    public static Optional<ChunkData> getCapability(@Nullable Chunk chunk)
+    public static Optional<ChunkDataChunkComponent> getCapability(@Nullable Chunk chunk)
     {
         if (chunk instanceof WorldChunk)
         {
-            return ((Chunk) chunk).getCapability(ChunkDataCapability.CAPABILITY);
+            return Components.CHUNK_DATA.maybeGet(chunk);
         }
         return Optional.empty();
     }
 
-    private final Optional<ChunkData> capability;
     private final ChunkPos pos;
 
-    private Status status;
+    private ChunkDataChunkComponent.Status status;
 
     private RockData rockData;
     private LerpFloatLayer rainfallLayer;
@@ -75,12 +66,15 @@ public class ChunkData implements ICapabilitySerializable<CompoundTag>
     private float forestDensity;
     private PlateTectonicsClassification plateTectonicsInfo;
 
-    public ChunkData(ChunkPos pos)
+    public ChunkDataChunkComponent(ChunkPos pos)
     {
         this.pos = pos;
-        this.capability = Optional.of(() -> this);
 
         reset();
+    }
+
+    public ChunkDataChunkComponent(Chunk chunk) {
+        this(chunk.getPos());
     }
 
     public ChunkPos getPos()
@@ -160,12 +154,12 @@ public class ChunkData implements ICapabilitySerializable<CompoundTag>
         this.plateTectonicsInfo = plateTectonicsInfo;
     }
 
-    public Status getStatus()
+    public ChunkDataChunkComponent.Status getStatus()
     {
         return status;
     }
 
-    public void setStatus(Status status)
+    public void setStatus(ChunkDataChunkComponent.Status status)
     {
         this.status = status;
     }
@@ -173,9 +167,9 @@ public class ChunkData implements ICapabilitySerializable<CompoundTag>
     /**
      * @return If the current chunk data is empty, then return other
      */
-    public ChunkData ifEmptyGet(Supplier<ChunkData> other)
+    public ChunkDataChunkComponent ifEmptyGet(Supplier<ChunkDataChunkComponent> other)
     {
-        return status != Status.EMPTY ? this : other.get();
+        return status != ChunkDataChunkComponent.Status.EMPTY ? this : other.get();
     }
 
     /**
@@ -198,9 +192,9 @@ public class ChunkData implements ICapabilitySerializable<CompoundTag>
         this.forestWeirdness = forestWeirdness;
         this.plateTectonicsInfo = plateTectonicsInfo;
 
-        if (status == Status.CLIENT || status == Status.EMPTY)
+        if (status == ChunkDataChunkComponent.Status.CLIENT || status == ChunkDataChunkComponent.Status.EMPTY)
         {
-            this.status = Status.CLIENT;
+            this.status = ChunkDataChunkComponent.Status.CLIENT;
         }
         else
         {
@@ -209,59 +203,53 @@ public class ChunkData implements ICapabilitySerializable<CompoundTag>
     }
 
     @Override
-    public <T> Optional<T> getCapability(Capability<T> cap, @Nullable Direction side)
+    public /*CompoundTag*/ void writeToNbt(CompoundTag nbt)
     {
-        return ChunkDataCapability.CAPABILITY.orEmpty(cap, capability);
-    }
-
-    @Override
-    public CompoundTag serializeNBT()
-    {
-        CompoundTag nbt = new CompoundTag();
+        //CompoundTag nbt = new CompoundTag();
 
         nbt.putByte("status", (byte) status.ordinal());
-        if (status.isAtLeast(Status.PLATE_TECTONICS))
+        if (status.isAtLeast(ChunkDataChunkComponent.Status.PLATE_TECTONICS))
         {
             nbt.putByte("plateTectonicsInfo", (byte) plateTectonicsInfo.ordinal());
         }
-        if (status.isAtLeast(Status.CLIMATE))
+        if (status.isAtLeast(ChunkDataChunkComponent.Status.CLIMATE))
         {
             nbt.put("rainfall", rainfallLayer.serialize());
             nbt.put("temperature", temperatureLayer.serialize());
         }
-        if (status.isAtLeast(Status.ROCKS))
+        if (status.isAtLeast(ChunkDataChunkComponent.Status.ROCKS))
         {
-            nbt.put("rockData", rockData.serializeNBT());
+            nbt.put("rockData", rockData.serialize());
         }
-        if (status.isAtLeast(Status.FLORA))
+        if (status.isAtLeast(ChunkDataChunkComponent.Status.FLORA))
         {
             nbt.putByte("forestType", (byte) forestType.ordinal());
             nbt.putFloat("forestWeirdness", forestWeirdness);
             nbt.putFloat("forestDensity", forestDensity);
         }
-        return nbt;
+        //return nbt;
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt)
+    public void readFromNbt(CompoundTag nbt)
     {
         if (nbt != null)
         {
-            status = Status.valueOf(nbt.getByte("status"));
-            if (status.isAtLeast(Status.PLATE_TECTONICS))
+            status = ChunkDataChunkComponent.Status.valueOf(nbt.getByte("status"));
+            if (status.isAtLeast(ChunkDataChunkComponent.Status.PLATE_TECTONICS))
             {
                 plateTectonicsInfo = PlateTectonicsClassification.valueOf(nbt.getByte("plateTectonicsInfo"));
             }
-            if (status.isAtLeast(Status.CLIMATE))
+            if (status.isAtLeast(ChunkDataChunkComponent.Status.CLIMATE))
             {
                 rainfallLayer.deserialize(nbt.getCompound("rainfall"));
                 temperatureLayer.deserialize(nbt.getCompound("temperature"));
             }
-            if (status.isAtLeast(Status.ROCKS))
+            if (status.isAtLeast(ChunkDataChunkComponent.Status.ROCKS))
             {
-                rockData.deserializeNBT(nbt.getCompound("rockData"));
+                rockData.deserialize(nbt.getCompound("rockData"));
             }
-            if (status.isAtLeast(Status.FLORA))
+            if (status.isAtLeast(ChunkDataChunkComponent.Status.FLORA))
             {
                 forestType = ForestType.valueOf(nbt.getByte("forestType"));
                 forestWeirdness = nbt.getFloat("forestWeirdness");
@@ -284,7 +272,7 @@ public class ChunkData implements ICapabilitySerializable<CompoundTag>
         forestWeirdness = 0.5f;
         forestDensity = 0.5f;
         forestType = ForestType.NONE;
-        status = Status.EMPTY;
+        status = ChunkDataChunkComponent.Status.EMPTY;
         plateTectonicsInfo = PlateTectonicsClassification.OCEANIC;
     }
 
@@ -297,19 +285,19 @@ public class ChunkData implements ICapabilitySerializable<CompoundTag>
         ROCKS, // Rock layer information, used for surface builder and rock block replacement
         FLORA; // Flora and fauna information, used for features
 
-        private static final Status[] VALUES = values();
+        private static final ChunkDataChunkComponent.Status[] VALUES = values();
 
-        public static Status valueOf(int i)
+        public static ChunkDataChunkComponent.Status valueOf(int i)
         {
             return i >= 0 && i < VALUES.length ? VALUES[i] : EMPTY;
         }
 
-        public Status next()
+        public ChunkDataChunkComponent.Status next()
         {
             return this == FLORA ? FLORA : VALUES[this.ordinal() + 1];
         }
 
-        public boolean isAtLeast(Status otherStatus)
+        public boolean isAtLeast(ChunkDataChunkComponent.Status otherStatus)
         {
             return this.ordinal() >= otherStatus.ordinal();
         }
@@ -319,7 +307,7 @@ public class ChunkData implements ICapabilitySerializable<CompoundTag>
      * Only used for the empty instance, this will enforce that it never leaks data
      * New empty instances can be constructed via constructor, EMPTY instance is specifically for an immutable empty copy, representing invalid chunk data
      */
-    private static final class Immutable extends ChunkData
+    private static final class Immutable extends ChunkDataChunkComponent
     {
         private Immutable()
         {
@@ -369,7 +357,7 @@ public class ChunkData implements ICapabilitySerializable<CompoundTag>
         }
 
         @Override
-        public void deserializeNBT(CompoundTag nbt)
+        public void readFromNbt(CompoundTag nbt)
         {
             throw new UnsupportedOperationException("Tried to modify immutable chunk data");
         }

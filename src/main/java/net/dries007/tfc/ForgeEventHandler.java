@@ -13,7 +13,6 @@ import org.apache.logging.log4j.Logger;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.item.ItemStack;
 import net.minecraft.resources.IReloadableResourceManager;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -39,10 +38,6 @@ import net.minecraftforge.fml.network.PacketDistributor;
 
 import net.dries007.tfc.common.TFCTags;
 import net.dries007.tfc.common.blocks.TFCBlocks;
-import net.dries007.tfc.common.capabilities.forge.ForgingCapability;
-import net.dries007.tfc.common.capabilities.forge.ForgingHandler;
-import net.dries007.tfc.common.capabilities.heat.HeatCapability;
-import net.dries007.tfc.common.capabilities.heat.HeatDefinition;
 import net.dries007.tfc.common.capabilities.heat.HeatManager;
 import net.dries007.tfc.common.command.TFCCommands;
 import net.dries007.tfc.common.recipes.CollapseRecipe;
@@ -56,15 +51,9 @@ import net.dries007.tfc.network.PacketHandler;
 import net.dries007.tfc.util.CacheInvalidationListener;
 import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.util.support.SupportManager;
-import net.dries007.tfc.util.tracker.WorldTracker;
-import net.dries007.tfc.util.tracker.WorldTrackerCapability;
 import net.dries007.tfc.world.biome.ITFCBiomeProvider;
-import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.dries007.tfc.world.chunkdata.ChunkDataCache;
-import net.dries007.tfc.world.chunkdata.ChunkDataCapability;
 import net.dries007.tfc.world.chunkdata.ITFCChunkGenerator;
-
-import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
 
 //@Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public final class ForgeEventHandler
@@ -222,12 +211,6 @@ public final class ForgeEventHandler
     }
 
     @SubscribeEvent
-    public static void onAttachCapabilitiesWorld(AttachCapabilitiesEvent<World> event)
-    {
-        event.addCapability(WorldTrackerCapability.KEY, new WorldTracker());
-    }
-
-    @SubscribeEvent
     public static void addReloadListeners(AddReloadListenerEvent event)
     {
         // Resource reload listeners
@@ -335,24 +318,6 @@ public final class ForgeEventHandler
         if (!event.getWorld().isClientSide)
         {
             event.getWorld().getCapability(WorldTrackerCapability.CAPABILITY).ifPresent(cap -> cap.addCollapsePositions(new BlockPos(event.getExplosion().getPosition()), event.getAffectedBlocks()));
-        }
-    }
-
-    @SubscribeEvent
-    public static void attachItemCapabilities(AttachCapabilitiesEvent<ItemStack> event)
-    {
-        ItemStack stack = event.getObject();
-        if (!stack.isEmpty())
-        {
-            // Every item has a forging capability
-            event.addCapability(ForgingCapability.KEY, new ForgingHandler(stack));
-
-            // Attach heat capability to the ones defined by data packs
-            HeatDefinition def = HeatManager.get(stack);
-            if (def != null)
-            {
-                event.addCapability(HeatCapability.KEY, def.create());
-            }
         }
     }
 

@@ -14,8 +14,6 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.surfacebuilder.SurfaceConfig;
 
-import net.dries007.tfc.world.chunkdata.ChunkData;
-
 /**
  * Indicates that a surface builder requires more (or possibly just different) context in order to generate.
  * In order to support this with a custom world generator, call {@link TFCSurfaceBuilders# applyIfPresent(ConfiguredSurfaceBuilder, Random, ChunkData, net.minecraft.world.chunk.Chunk, Biome, int, int, int, double, long, BlockState, BlockState, int)} during surface building rather than {@link Biome# buildSurfaceAt(Random, IChunk, int, int, int, double, BlockState, BlockState, int, long)}

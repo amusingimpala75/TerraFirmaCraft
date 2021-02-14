@@ -6,6 +6,7 @@
 
 package net.dries007.tfc.common.command;
 
+import net.dries007.tfc.fabric.cca.Components;
 import net.minecraft.command.CommandSource;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.command.CommandManager;
@@ -15,7 +16,6 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.dries007.tfc.common.capabilities.heat.HeatCapability;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.TranslatableText;
 
@@ -37,7 +37,7 @@ public final class HeatCommand
         final ItemStack stack = player.getMainHandStack();
         if (!stack.isEmpty())
         {
-            stack.getCapability(HeatCapability.CAPABILITY).ifPresent(heat ->
+            Components.HEAT_COMPONENT.maybeGet(stack).ifPresent(heat ->
             {
                 heat.setTemperature(value);
                 ((ServerCommandSource) source).sendFeedback(new TranslatableText(QUERY_HEAT, value), true);

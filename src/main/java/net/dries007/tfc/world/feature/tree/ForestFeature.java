@@ -24,7 +24,6 @@ import net.minecraft.world.gen.feature.Feature;
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.common.TFCTags;
 import net.dries007.tfc.common.blocks.TFCBlockStateProperties;
-import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.dries007.tfc.world.chunkdata.ChunkDataProvider;
 import net.dries007.tfc.world.chunkdata.ForestType;
 import org.jetbrains.annotations.Nullable;

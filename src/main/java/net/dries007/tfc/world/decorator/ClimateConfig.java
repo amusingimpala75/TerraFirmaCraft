@@ -16,7 +16,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.dries007.tfc.util.Climate;
 import net.dries007.tfc.util.calendar.Calendars;
-import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.dries007.tfc.world.chunkdata.ForestType;
 
 public class ClimateConfig implements DecoratorConfig

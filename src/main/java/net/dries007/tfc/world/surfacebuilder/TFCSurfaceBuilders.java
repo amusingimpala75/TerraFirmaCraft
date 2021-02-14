@@ -28,7 +28,6 @@ import com.mojang.serialization.Codec;
 import net.dries007.tfc.common.blocks.TFCBlocks;
 import net.dries007.tfc.common.types.Rock;
 import net.dries007.tfc.world.Codecs;
-import net.dries007.tfc.world.chunkdata.ChunkData;
 
 @SuppressWarnings("unused")
 public class TFCSurfaceBuilders

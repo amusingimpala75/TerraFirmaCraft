@@ -7,16 +7,15 @@
 package net.dries007.tfc.common.blocks.plant;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.tags.BlockTags;
+import net.minecraft.tag.BlockTags;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.IWorldReader;
-import net.minecraftforge.common.Tags;
 
 import net.dries007.tfc.common.TFCTags;
+import net.minecraft.world.WorldView;
 
 public abstract class DryPlantBlock extends PlantBlock
 {
-    public static DryPlantBlock create(IPlant plant, Properties properties)
+    public static DryPlantBlock create(IPlant plant, Settings properties)
     {
         return new DryPlantBlock(properties)
         {
@@ -29,17 +28,17 @@ public abstract class DryPlantBlock extends PlantBlock
         };
     }
 
-    protected DryPlantBlock(Properties properties)
+    protected DryPlantBlock(Settings properties)
     {
         super(properties);
 
-        registerDefaultState(getStateDefinition().any().setValue(getPlant().getStageProperty(), 0).setValue(AGE, 0));
+        setDefaultState(getDefaultState().with(getPlant().getStageProperty(), 0).with(AGE, 0));
     }
 
     @Override
-    public boolean canSurvive(BlockState state, IWorldReader worldIn, BlockPos pos)
+    public boolean canPlaceAt(BlockState state, WorldView worldIn, BlockPos pos)
     {
-        BlockState belowState = worldIn.getBlockState(pos.below());
-        return belowState.is(BlockTags.SAND) || belowState.is(Tags.Blocks.SAND) || belowState.is(TFCTags.Blocks.BUSH_PLANTABLE_ON);
+        BlockState belowState = worldIn.getBlockState(pos.down());
+        return belowState.isIn(BlockTags.SAND) || belowState.isIn(Tags.Blocks.SAND) || belowState.isIn(TFCTags.Blocks.BUSH_PLANTABLE_ON);
     }
 }

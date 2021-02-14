@@ -352,13 +352,6 @@ public final class Helpers
         entity.fallDistance = 0;
     }
 
-    public static void registerSimpleCapability(Class<?> clazz)
-    {
-        CapabilityManager.INSTANCE.register(clazz, new NoopStorage<>(), () -> {
-            throw new UnsupportedOperationException("Creating default instances is not supported. Why would you ever do this");
-        });
-    }
-
     /**
      * Copy pasta from {@link SpawnLocating} except one that doesn't require the spawn block be equal to the surface builder config top block
      */

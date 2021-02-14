@@ -21,7 +21,6 @@ import net.dries007.tfc.util.calendar.Calendars;
 import net.dries007.tfc.util.calendar.Month;
 import net.dries007.tfc.util.calendar.Season;
 import net.dries007.tfc.world.TFCChunkGenerator;
-import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.dries007.tfc.world.chunkdata.ChunkDataCache;
 import net.dries007.tfc.world.noise.NoiseUtil;
 import org.jetbrains.annotations.Nullable;

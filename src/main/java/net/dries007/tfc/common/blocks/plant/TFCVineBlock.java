@@ -7,21 +7,21 @@
 package net.dries007.tfc.common.blocks.plant;
 
 import java.util.Random;
-import javax.annotation.Nonnull;
 
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.VineBlock;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.state.EnumProperty;
-import net.minecraft.state.StateContainer;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
 
 import net.dries007.tfc.common.blocks.TFCBlockStateProperties;
 import net.dries007.tfc.util.calendar.Calendars;
 import net.dries007.tfc.util.calendar.Season;
+import org.jetbrains.annotations.NotNull;
 
 public class TFCVineBlock extends VineBlock
 {
@@ -31,7 +31,7 @@ public class TFCVineBlock extends VineBlock
     {
         super(properties);
 
-        registerDefaultState(defaultBlockState().setValue(SEASON_NO_SPRING, Season.SUMMER));
+        setDefaultState(getDefaultState().with(SEASON_NO_SPRING, Season.SUMMER));
     }
 
     @Override
@@ -39,25 +39,25 @@ public class TFCVineBlock extends VineBlock
     {
         super.randomTick(state, worldIn, pos, random);
         // Adjust the season based on the current time
-        Season oldSeason = state.getValue(SEASON_NO_SPRING);
+        Season oldSeason = state.get(SEASON_NO_SPRING);
         Season newSeason = getSeasonForState();
         if (oldSeason != newSeason)
         {
-            worldIn.setBlockAndUpdate(pos, state.setValue(SEASON_NO_SPRING, newSeason));
+            worldIn.setBlockState(pos, state.with(SEASON_NO_SPRING, newSeason));
         }
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context)
+    public BlockState getPlacementState(ItemPlacementContext context)
     {
-        return super.getStateForPlacement(context).setValue(SEASON_NO_SPRING, getSeasonForState());
+        return super.getPlacementState(context).with(SEASON_NO_SPRING, getSeasonForState());
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder)
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder)
     {
-        super.createBlockStateDefinition(builder.add(SEASON_NO_SPRING));
+        super.appendProperties(builder.add(SEASON_NO_SPRING));
     }
 
     private Season getSeasonForState()

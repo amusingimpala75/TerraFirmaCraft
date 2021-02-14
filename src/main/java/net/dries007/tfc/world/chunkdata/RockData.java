@@ -12,19 +12,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import net.dries007.tfc.forgereplacements.NBTSerializable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.common.util.INBTSerializable;
 
 import net.dries007.tfc.common.types.Rock;
 import net.dries007.tfc.common.types.RockManager;
 import net.dries007.tfc.util.Helpers;
 
-public class RockData implements INBTSerializable<CompoundTag>
+public class RockData implements NBTSerializable<CompoundTag>
 {
     private final Rock[] bottomLayer;
     private final Rock[] middleLayer;
@@ -94,7 +93,7 @@ public class RockData implements INBTSerializable<CompoundTag>
     }
 
     @Override
-    public CompoundTag serializeNBT()
+    public CompoundTag serialize()
     {
         CompoundTag nbt = new CompoundTag();
 
@@ -122,7 +121,7 @@ public class RockData implements INBTSerializable<CompoundTag>
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt)
+    public void deserialize(CompoundTag nbt)
     {
         if (nbt != null)
         {

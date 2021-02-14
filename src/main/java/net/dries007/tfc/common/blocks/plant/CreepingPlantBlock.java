@@ -8,48 +8,44 @@ package net.dries007.tfc.common.blocks.plant;
 
 import java.util.Map;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
 
 import com.google.common.collect.ImmutableMap;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.SixWayBlock;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.Direction;
+import net.minecraft.block.*;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.BooleanProperty;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.IWorldReader;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 import net.dries007.tfc.common.TFCTags;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.WorldView;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class CreepingPlantBlock extends PlantBlock
 {
-    public static final BooleanProperty UP = BlockStateProperties.UP;
-    public static final BooleanProperty DOWN = BlockStateProperties.DOWN;
-    public static final BooleanProperty NORTH = BlockStateProperties.NORTH;
-    public static final BooleanProperty EAST = BlockStateProperties.EAST;
-    public static final BooleanProperty SOUTH = BlockStateProperties.SOUTH;
-    public static final BooleanProperty WEST = BlockStateProperties.WEST;
+    public static final BooleanProperty UP = Properties.UP;
+    public static final BooleanProperty DOWN = Properties.DOWN;
+    public static final BooleanProperty NORTH = Properties.NORTH;
+    public static final BooleanProperty EAST = Properties.EAST;
+    public static final BooleanProperty SOUTH = Properties.SOUTH;
+    public static final BooleanProperty WEST = Properties.WEST;
 
-    protected static final VoxelShape UP_SHAPE = box(0.0, 14.0, 0.0, 16.0, 16.0, 16.0);
-    protected static final VoxelShape DOWN_SHAPE = box(0.0, 0.0, 0.0, 16.0, 2.0, 16.0);
-    protected static final VoxelShape NORTH_SHAPE = box(0.0, 0.0, 0.0, 16.0, 16.0, 2.0);
-    protected static final VoxelShape EAST_SHAPE = box(14.0, 0.0, 0.0, 16.0, 16.0, 16.0);
-    protected static final VoxelShape SOUTH_SHAPE = box(0.0, 0.0, 14.0, 16.0, 16.0, 16.0);
-    protected static final VoxelShape WEST_SHAPE = box(0.0, 0.0, 0.0, 2.0, 16.0, 16.0);
+    protected static final VoxelShape UP_SHAPE = createCuboidShape(0.0, 14.0, 0.0, 16.0, 16.0, 16.0);
+    protected static final VoxelShape DOWN_SHAPE = createCuboidShape(0.0, 0.0, 0.0, 16.0, 2.0, 16.0);
+    protected static final VoxelShape NORTH_SHAPE = createCuboidShape(0.0, 0.0, 0.0, 16.0, 16.0, 2.0);
+    protected static final VoxelShape EAST_SHAPE = createCuboidShape(14.0, 0.0, 0.0, 16.0, 16.0, 16.0);
+    protected static final VoxelShape SOUTH_SHAPE = createCuboidShape(0.0, 0.0, 14.0, 16.0, 16.0, 16.0);
+    protected static final VoxelShape WEST_SHAPE = createCuboidShape(0.0, 0.0, 0.0, 2.0, 16.0, 16.0);
 
     protected static final Map<BooleanProperty, VoxelShape> SHAPES_BY_PROPERTY = ImmutableMap.<BooleanProperty, VoxelShape>builder().put(UP, UP_SHAPE).put(DOWN, DOWN_SHAPE).put(NORTH, NORTH_SHAPE).put(SOUTH, SOUTH_SHAPE).put(EAST, EAST_SHAPE).put(WEST, WEST_SHAPE).build();
 
-    public static CreepingPlantBlock create(IPlant plant, Properties properties)
+    public static CreepingPlantBlock create(IPlant plant, Settings properties)
     {
         return new CreepingPlantBlock(properties)
         {
@@ -63,29 +59,29 @@ public abstract class CreepingPlantBlock extends PlantBlock
 
     protected final Map<BlockState, VoxelShape> shapeCache;
 
-    protected CreepingPlantBlock(Properties properties)
+    protected CreepingPlantBlock(Settings properties)
     {
         super(properties);
 
-        shapeCache = getStateDefinition().getPossibleStates().stream().collect(Collectors.toMap(state -> state, state -> SHAPES_BY_PROPERTY.entrySet().stream().filter(entry -> state.getValue(entry.getKey())).map(Map.Entry::getValue).reduce(VoxelShapes::or).orElseGet(VoxelShapes::empty)));
+        shapeCache = getStateManager().getStates().stream().collect(Collectors.toMap(state -> state, state -> SHAPES_BY_PROPERTY.entrySet().stream().filter(entry -> state.get(entry.getKey())).map(Map.Entry::getValue).reduce(VoxelShapes::union).orElseGet(VoxelShapes::empty)));
 
-        registerDefaultState(defaultBlockState().setValue(UP, false).setValue(DOWN, false).setValue(EAST, false).setValue(WEST, false).setValue(NORTH, false).setValue(SOUTH, false));
+        setDefaultState(getDefaultState().with(UP, false).with(DOWN, false).with(EAST, false).with(WEST, false).with(NORTH, false).with(SOUTH, false));
     }
 
     @Override
-    public BlockState updateShape(BlockState stateIn, Direction direction, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos)
+    public BlockState getStateForNeighborUpdate(BlockState stateIn, Direction direction, BlockState facingState, WorldAccess worldIn, BlockPos currentPos, BlockPos facingPos)
     {
-        stateIn = stateIn.setValue(SixWayBlock.PROPERTY_BY_DIRECTION.get(direction), facingState.is(TFCTags.Blocks.CREEPING_PLANTABLE_ON));
-        return isEmpty(stateIn) ? Blocks.AIR.defaultBlockState() : stateIn;
+        stateIn = stateIn.with(ConnectingBlock.FACING_PROPERTIES.get(direction), facingState.isIn(TFCTags.Blocks.CREEPING_PLANTABLE_ON));
+        return isEmpty(stateIn) ? Blocks.AIR.getDefaultState() : stateIn;
     }
 
     @Override
-    public boolean canSurvive(BlockState state, IWorldReader worldIn, BlockPos pos)
+    public boolean canPlaceAt(BlockState state, WorldView worldIn, BlockPos pos)
     {
         final BlockPos.Mutable mutablePos = new BlockPos.Mutable();
-        for (Direction direction : UPDATE_SHAPE_ORDER)
+        for (Direction direction : FACINGS)
         {
-            if (worldIn.getBlockState(mutablePos.setWithOffset(pos, direction)).is(TFCTags.Blocks.CREEPING_PLANTABLE_ON))
+            if (worldIn.getBlockState(mutablePos.set(pos, direction)).isIn(TFCTags.Blocks.CREEPING_PLANTABLE_ON))
             {
                 return true;
             }
@@ -95,53 +91,53 @@ public abstract class CreepingPlantBlock extends PlantBlock
 
     @Override
     @SuppressWarnings("deprecation")
-    public void neighborChanged(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving)
+    public void neighborUpdate(BlockState state, World worldIn, BlockPos pos, Block blockIn, BlockPos fromPos, boolean isMoving)
     {
-        if (!canSurvive(state, worldIn, pos))
+        if (!canPlaceAt(state, worldIn, pos))
         {
-            worldIn.destroyBlock(pos, false);
+            worldIn.breakBlock(pos, false);
         }
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getOutlineShape(BlockState state, BlockView worldIn, BlockPos pos, ShapeContext context)
     {
         return shapeCache.get(state);
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder)
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder)
     {
-        super.createBlockStateDefinition(builder.add(UP, DOWN, NORTH, SOUTH, EAST, WEST));
+        super.appendProperties(builder.add(UP, DOWN, NORTH, SOUTH, EAST, WEST));
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context)
+    public BlockState getPlacementState(ItemPlacementContext context)
     {
-        return updateStateFromSides(context.getLevel(), context.getClickedPos(), updateStateWithCurrentMonth(defaultBlockState()));
+        return updateStateFromSides(context.getWorld(), context.getBlockPos(), updateStateWithCurrentMonth(getDefaultState()));
     }
 
-    private BlockState updateStateFromSides(IWorld world, BlockPos pos, BlockState state)
+    private BlockState updateStateFromSides(WorldAccess world, BlockPos pos, BlockState state)
     {
         final BlockPos.Mutable mutablePos = new BlockPos.Mutable();
         boolean hasEarth = false;
-        for (Direction direction : UPDATE_SHAPE_ORDER)
+        for (Direction direction : FACINGS)
         {
-            mutablePos.setWithOffset(pos, direction);
-            boolean ground = world.getBlockState(mutablePos).is(TFCTags.Blocks.CREEPING_PLANTABLE_ON);
+            mutablePos.set(pos, direction);
+            boolean ground = world.getBlockState(mutablePos).isIn(TFCTags.Blocks.CREEPING_PLANTABLE_ON);
 
-            state = state.setValue(SixWayBlock.PROPERTY_BY_DIRECTION.get(direction), ground);
+            state = state.with(ConnectingBlock.FACING_PROPERTIES.get(direction), ground);
             hasEarth |= ground;
         }
-        return hasEarth ? state : Blocks.AIR.defaultBlockState();
+        return hasEarth ? state : Blocks.AIR.getDefaultState();
     }
 
     private boolean isEmpty(BlockState state)
     {
         for (BooleanProperty property : SHAPES_BY_PROPERTY.keySet())
         {
-            if (state.getValue(property))
+            if (state.get(property))
             {
                 return false;
             }

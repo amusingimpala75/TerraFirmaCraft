@@ -26,7 +26,6 @@ import net.dries007.tfc.common.types.Rock;
 import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.util.IArtist;
 import net.dries007.tfc.world.Codecs;
-import net.dries007.tfc.world.chunkdata.ChunkData;
 import net.dries007.tfc.world.chunkdata.ChunkDataProvider;
 import net.dries007.tfc.world.layer.LayerFactory;
 import net.dries007.tfc.world.layer.TFCLayerUtil;

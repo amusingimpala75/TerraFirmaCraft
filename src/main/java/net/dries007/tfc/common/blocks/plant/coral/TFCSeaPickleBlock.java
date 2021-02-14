@@ -6,97 +6,92 @@
 
 package net.dries007.tfc.common.blocks.plant.coral;
 
-import javax.annotation.Nullable;
-
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
+import net.minecraft.block.*;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
-import net.minecraft.item.BlockItemUseContext;
-import net.minecraft.state.IntegerProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.util.Direction;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.state.StateManager;
+import net.minecraft.state.property.IntProperty;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.IWorldReader;
 
 import net.dries007.tfc.common.blocks.TFCBlockStateProperties;
 import net.dries007.tfc.common.fluids.FluidProperty;
 import net.dries007.tfc.common.fluids.IFluidLoggable;
 import net.dries007.tfc.common.fluids.TFCFluids;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.world.BlockView;
+import net.minecraft.world.WorldAccess;
+import net.minecraft.world.WorldView;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * {@link net.minecraft.block.SeaPickleBlock}
  */
 public class TFCSeaPickleBlock extends Block implements IFluidLoggable
 {
-    public static final IntegerProperty PICKLES = BlockStateProperties.PICKLES;
+    public static final IntProperty PICKLES = Properties.PICKLES;
     public static final FluidProperty FLUID = TFCBlockStateProperties.SALT_WATER;
-    protected static final VoxelShape ONE_AABB = Block.box(6.0D, 0.0D, 6.0D, 10.0D, 6.0D, 10.0D);
-    protected static final VoxelShape TWO_AABB = Block.box(3.0D, 0.0D, 3.0D, 13.0D, 6.0D, 13.0D);
-    protected static final VoxelShape THREE_AABB = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 6.0D, 14.0D);
-    protected static final VoxelShape FOUR_AABB = Block.box(2.0D, 0.0D, 2.0D, 14.0D, 7.0D, 14.0D);
+    protected static final VoxelShape ONE_AABB = Block.createCuboidShape(6.0D, 0.0D, 6.0D, 10.0D, 6.0D, 10.0D);
+    protected static final VoxelShape TWO_AABB = Block.createCuboidShape(3.0D, 0.0D, 3.0D, 13.0D, 6.0D, 13.0D);
+    protected static final VoxelShape THREE_AABB = Block.createCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 6.0D, 14.0D);
+    protected static final VoxelShape FOUR_AABB = Block.createCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 7.0D, 14.0D);
 
     public TFCSeaPickleBlock(AbstractBlock.Settings properties)
     {
         super(properties);
-        registerDefaultState(getStateDefinition().any().setValue(PICKLES, 1));
+        setDefaultState(getStateManager().getDefaultState().with(PICKLES, 1));
     }
 
     @Nullable
     @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context)
+    public BlockState getPlacementState(ItemPlacementContext context)
     {
-        BlockState blockstate = context.getLevel().getBlockState(context.getClickedPos());
-        if (blockstate.is(this))
+        BlockState blockstate = context.getWorld().getBlockState(context.getBlockPos());
+        if (blockstate.isOf(this))
         {
-            return blockstate.setValue(PICKLES, Math.min(4, blockstate.getValue(PICKLES) + 1));
+            return blockstate.with(PICKLES, Math.min(4, blockstate.get(PICKLES) + 1));
         }
         else
         {
-            FluidState fluidstate = context.getLevel().getFluidState(context.getClickedPos());
-            boolean flag = fluidstate.getType() == TFCFluids.SALT_WATER.getSource();
-            return defaultBlockState().setValue(getFluidProperty(), flag ? getFluidProperty().keyFor(TFCFluids.SALT_WATER.getSource()) : getFluidProperty().keyFor(Fluids.EMPTY));
+            FluidState fluidstate = context.getWorld().getFluidState(context.getBlockPos());
+            boolean flag = fluidstate.getFluid() == TFCFluids.SALT_WATER.getSource();
+            return getDefaultState().with(getFluidProperty(), flag ? getFluidProperty().keyFor(TFCFluids.SALT_WATER.getSource()) : getFluidProperty().keyFor(Fluids.EMPTY));
         }
     }
 
     public static boolean isDead(BlockState state)
     {
         FluidProperty property = ((TFCSeaPickleBlock) state.getBlock()).getFluidProperty();
-        return state.getValue(property) == property.keyFor(Fluids.EMPTY);
+        return state.get(property) == property.keyFor(Fluids.EMPTY);
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public boolean canBeReplaced(BlockState state, BlockItemUseContext useContext)
+    public boolean canReplace(BlockState state, ItemPlacementContext useContext)
     {
-        return useContext.getItemInHand().getItem() == this.asItem() && state.getValue(PICKLES) < 4 || super.canBeReplaced(state, useContext);
+        return useContext.getStack().getItem() == this.asItem() && state.get(PICKLES) < 4 || super.canReplace(state, useContext);
     }
 
-    protected boolean mayPlaceOn(BlockState state, IBlockReader worldIn, BlockPos pos)
+    protected boolean mayPlaceOn(BlockState state, BlockView worldIn, BlockPos pos)
     {
-        return !state.getCollisionShape(worldIn, pos).getFaceShape(Direction.UP).isEmpty() || state.isFaceSturdy(worldIn, pos, Direction.UP);
+        return !state.getCollisionShape(worldIn, pos).getFace(Direction.UP).isEmpty() || state.isSideSolidFullSquare(worldIn, pos, Direction.UP);
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public boolean canSurvive(BlockState state, IWorldReader worldIn, BlockPos pos)
+    public boolean canPlaceAt(BlockState state, WorldView worldIn, BlockPos pos)
     {
-        BlockPos blockpos = pos.below();
+        BlockPos blockpos = pos.down();
         return mayPlaceOn(worldIn.getBlockState(blockpos), worldIn, blockpos);
     }
 
     @Override
     @SuppressWarnings("deprecation")
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getOutlineShape(BlockState state, BlockView worldIn, BlockPos pos, ShapeContext context)
     {
-        switch (state.getValue(PICKLES))
+        switch (state.get(PICKLES))
         {
             case 1:
             default:
@@ -112,20 +107,20 @@ public class TFCSeaPickleBlock extends Block implements IFluidLoggable
 
     @Override
     @SuppressWarnings("deprecation")
-    public BlockState updateShape(BlockState stateIn, Direction facing, BlockState facingState, IWorld worldIn, BlockPos currentPos, BlockPos facingPos)
+    public BlockState getStateForNeighborUpdate(BlockState stateIn, Direction facing, BlockState facingState, WorldAccess worldIn, BlockPos currentPos, BlockPos facingPos)
     {
-        if (!stateIn.canSurvive(worldIn, currentPos))
+        if (!stateIn.canPlaceAt(worldIn, currentPos))
         {
-            return Blocks.AIR.defaultBlockState();
+            return Blocks.AIR.getDefaultState();
         }
         else
         {
-            if (stateIn.getValue(getFluidProperty()).getFluid() != Fluids.EMPTY)
+            if (stateIn.get(getFluidProperty()).getFluid() != Fluids.EMPTY)
             {
-                worldIn.getLiquidTicks().scheduleTick(currentPos, TFCFluids.SALT_WATER.getSource(), TFCFluids.SALT_WATER.getSource().getTickDelay(worldIn));
+                worldIn.getFluidTickScheduler().schedule(currentPos, TFCFluids.SALT_WATER.getSource(), TFCFluids.SALT_WATER.getSource().getTickRate(worldIn));
             }
 
-            return super.updateShape(stateIn, facing, facingState, worldIn, currentPos, facingPos);
+            return super.getStateForNeighborUpdate(stateIn, facing, facingState, worldIn, currentPos, facingPos);
         }
     }
 
@@ -143,7 +138,7 @@ public class TFCSeaPickleBlock extends Block implements IFluidLoggable
     }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder)
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder)
     {
         builder.add(PICKLES, getFluidProperty());
     }

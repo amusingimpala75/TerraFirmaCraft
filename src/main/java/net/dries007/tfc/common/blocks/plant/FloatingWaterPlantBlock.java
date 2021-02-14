@@ -11,21 +11,21 @@ import java.util.function.Supplier;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.LilyPadBlock;
+import net.minecraft.block.ShapeContext;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.item.BoatEntity;
+import net.minecraft.entity.vehicle.BoatEntity;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.Fluids;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorldReader;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.world.WorldView;
 
 public abstract class FloatingWaterPlantBlock extends PlantBlock
 {
-    protected static final VoxelShape SHAPE = Block.box(1.0D, 0.0D, 1.0D, 15.0D, 1.5D, 15.0D);
+    protected static final VoxelShape SHAPE = Block.createCuboidShape(1.0D, 0.0D, 1.0D, 15.0D, 1.5D, 15.0D);
     private final Supplier<? extends Fluid> fluid;
 
     public static FloatingWaterPlantBlock create(IPlant plant, Supplier<? extends Fluid> fluid, Settings properties)
@@ -47,34 +47,34 @@ public abstract class FloatingWaterPlantBlock extends PlantBlock
     }
 
     @Override
-    public boolean canSurvive(BlockState state, IWorldReader worldIn, BlockPos pos)
+    public boolean canPlaceAt(BlockState state, WorldView worldIn, BlockPos pos)
     {
-        BlockState belowState = worldIn.getBlockState(pos.below());
-        return (belowState.getFluidState() != Fluids.EMPTY.defaultFluidState() && isValidFluid(belowState.getFluidState().getType()));
+        BlockState belowState = worldIn.getBlockState(pos.down());
+        return (belowState.getFluidState() != Fluids.EMPTY.getDefaultState() && isValidFluid(belowState.getFluidState().getFluid()));
     }
 
     /**
-     * {@link LilyPadBlock#entityInside}
+     * {@link LilyPadBlock#onEntityCollision}
      */
     @Override
     @SuppressWarnings("deprecation")
-    public void entityInside(BlockState state, World worldIn, BlockPos pos, Entity entityIn)
+    public void onEntityCollision(BlockState state, World worldIn, BlockPos pos, Entity entityIn)
     {
-        super.entityInside(state, worldIn, pos, entityIn);
+        super.onEntityCollision(state, worldIn, pos, entityIn);
         if (worldIn instanceof ServerWorld && entityIn instanceof BoatEntity)
         {
-            worldIn.destroyBlock(new BlockPos(pos), true, entityIn);
+            worldIn.breakBlock(new BlockPos(pos), true, entityIn);
         }
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader worldIn, BlockPos pos, ISelectionContext context)
+    public VoxelShape getOutlineShape(BlockState state, BlockView worldIn, BlockPos pos, ShapeContext context)
     {
         return SHAPE;
     }
 
     private boolean isValidFluid(Fluid fluidIn)
     {
-        return fluidIn.isSame(fluid.get());
+        return fluidIn.matchesType(fluid.get());
     }
 }

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Random;
 
 import com.google.common.annotations.VisibleForTesting;
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.util.math.ChunkPos;
 
 import net.dries007.tfc.common.types.Rock;
@@ -79,7 +80,7 @@ public class ChunkDataGenerator implements IChunkDataGenerator
     }
 
     @Override
-    public void generate(ChunkData data, ChunkData.Status status)
+    public void generate(ChunkDataChunkComponent data, ChunkDataChunkComponent.Status status)
     {
         ChunkPos pos = data.getPos();
         int chunkX = pos.getStartX(), chunkZ = pos.getStartZ();
@@ -115,12 +116,12 @@ public class ChunkDataGenerator implements IChunkDataGenerator
         return rainfallNoise;
     }
 
-    private void generatePlateTectonics(ChunkData data)
+    private void generatePlateTectonics(ChunkDataChunkComponent data)
     {
         data.setPlateTectonicsInfo(plateTectonicsInfo.get(data.getPos().x, data.getPos().z));
     }
 
-    private void generateClimate(ChunkData data, int chunkX, int chunkZ)
+    private void generateClimate(ChunkDataChunkComponent data, int chunkX, int chunkZ)
     {
         // Temperature / Rainfall
         float rainNW = rainfallNoise.noise(chunkX, chunkZ);
@@ -136,7 +137,7 @@ public class ChunkDataGenerator implements IChunkDataGenerator
         data.setAverageTemp(tempNW, tempNE, tempSW, tempSE);
     }
 
-    private void generateRocks(ChunkData data, int chunkX, int chunkZ)
+    private void generateRocks(ChunkDataChunkComponent data, int chunkX, int chunkZ)
     {
         // Rocks
         Rock[] bottomLayer = new Rock[256];
@@ -159,7 +160,7 @@ public class ChunkDataGenerator implements IChunkDataGenerator
         data.setRockData(new RockData(bottomLayer, middleLayer, topLayer, rockLayerHeight));
     }
 
-    private void generateFlora(ChunkData data, int chunkX, int chunkZ)
+    private void generateFlora(ChunkDataChunkComponent data, int chunkX, int chunkZ)
     {
         final ForestType forestType = forestTypeLayer.get(chunkX >> 4, chunkZ >> 4); // This layer is sampled per-chunk, to avoid the waste of two additional zoom layers
         final float forestWeirdness = forestWeirdnessNoise.noise(chunkX + 8, chunkZ + 8);

@@ -8,6 +8,7 @@ package net.dries007.tfc.world.chunkdata;
 
 import com.google.common.annotations.VisibleForTesting;
 import net.dries007.tfc.TerraFirmaCraft;
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -67,7 +68,7 @@ public final class ChunkDataProvider
      * @param requiredStatus The minimum status of the chunk data returned
      * @return A chunk data for the provided chunk pos
      */
-    public final ChunkData get(BlockPos pos, ChunkData.Status requiredStatus)
+    public final ChunkDataChunkComponent get(BlockPos pos, ChunkDataChunkComponent.Status requiredStatus)
     {
         return get(new ChunkPos(pos), requiredStatus);
     }
@@ -81,12 +82,12 @@ public final class ChunkDataProvider
      * @param requiredStatus The minimum status of the chunk data returned
      * @return A chunk data for the provided chunk pos
      */
-    public final ChunkData get(ChunkPos pos, ChunkData.Status requiredStatus)
+    public final ChunkDataChunkComponent get(ChunkPos pos, ChunkDataChunkComponent.Status requiredStatus)
     {
-        final ChunkData data = ChunkDataCache.WORLD_GEN.getOrCreate(pos);
+        final ChunkDataChunkComponent data = ChunkDataCache.WORLD_GEN.getOrCreate(pos);
         while (!data.getStatus().isAtLeast(requiredStatus))
         {
-            final ChunkData.Status next = data.getStatus().next();
+            final ChunkDataChunkComponent.Status next = data.getStatus().next();
             generator.generate(data, next);
             data.setStatus(next);
         }

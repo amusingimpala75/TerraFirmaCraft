@@ -32,7 +32,6 @@ import net.minecraftforge.fml.common.Mod;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import net.dries007.tfc.TerraFirmaCraft;
 import net.dries007.tfc.client.screen.button.PlayerInventoryTabButton;
-import net.dries007.tfc.common.capabilities.heat.HeatCapability;
 import net.dries007.tfc.common.types.MetalItemManager;
 import net.dries007.tfc.config.TFCConfig;
 import net.dries007.tfc.mixin.client.world.ClientWorldAccessor;
@@ -42,7 +41,6 @@ import net.dries007.tfc.util.Climate;
 import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.util.calendar.Calendars;
 import net.dries007.tfc.util.calendar.ICalendar;
-import net.dries007.tfc.world.chunkdata.ChunkData;
 
 import static net.minecraft.util.Formatting.*;
 

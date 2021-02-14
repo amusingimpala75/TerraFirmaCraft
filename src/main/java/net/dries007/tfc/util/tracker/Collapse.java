@@ -10,16 +10,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import net.minecraft.nbt.CompoundNBT;
+import net.dries007.tfc.forgereplacements.NBTSerializable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.common.util.INBTSerializable;
 
-public class Collapse implements INBTSerializable<CompoundTag>
+public class Collapse implements NBTSerializable<CompoundTag>
 {
     BlockPos centerPos;
     List<BlockPos> nextPositions;
-    double radiusSquared;
+    public double radiusSquared;
 
     public Collapse(BlockPos centerPos, List<BlockPos> nextPositions, double radiusSquared)
     {
@@ -30,11 +29,11 @@ public class Collapse implements INBTSerializable<CompoundTag>
 
     public Collapse(CompoundTag nbt)
     {
-        deserializeNBT(nbt);
+        deserialize(nbt);
     }
 
     @Override
-    public CompoundTag serializeNBT()
+    public CompoundTag serialize()
     {
         CompoundTag nbt = new CompoundTag();
         nbt.putLong("centerPos", centerPos.asLong());
@@ -44,7 +43,7 @@ public class Collapse implements INBTSerializable<CompoundTag>
     }
 
     @Override
-    public void deserializeNBT(CompoundTag nbt)
+    public void deserialize(CompoundTag nbt)
     {
         if (nbt != null)
         {
@@ -52,5 +51,13 @@ public class Collapse implements INBTSerializable<CompoundTag>
             nextPositions = Arrays.stream(nbt.getLongArray("nextPositions")).mapToObj(BlockPos::fromLong).collect(Collectors.toList());
             radiusSquared = nbt.getDouble("radiusSquared");
         }
+    }
+
+    public List<BlockPos> getNextPositions() {
+        return nextPositions;
+    }
+
+    public BlockPos getCenterPos() {
+        return centerPos;
     }
 }

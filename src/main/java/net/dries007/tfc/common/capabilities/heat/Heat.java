@@ -6,27 +6,26 @@
 
 package net.dries007.tfc.common.capabilities.heat;
 
-import javax.annotation.Nullable;
-
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Formatting;
 
 import net.dries007.tfc.TerraFirmaCraft;
+import org.jetbrains.annotations.Nullable;
 
 public enum Heat
 {
-    WARMING(1f, 80f, TextFormatting.GRAY, TextFormatting.DARK_GRAY),
-    HOT(80f, 210f, TextFormatting.GRAY, TextFormatting.DARK_GRAY),
-    VERY_HOT(210f, 480f, TextFormatting.GRAY, TextFormatting.DARK_GRAY),
-    FAINT_RED(480f, 580f, TextFormatting.DARK_RED),
-    DARK_RED(580f, 730f, TextFormatting.DARK_RED),
-    BRIGHT_RED(730f, 930f, TextFormatting.RED),
-    ORANGE(930f, 1100f, TextFormatting.GOLD),
-    YELLOW(1100f, 1300f, TextFormatting.YELLOW),
-    YELLOW_WHITE(1300f, 1400f, TextFormatting.YELLOW),
-    WHITE(1400f, 1500f, TextFormatting.WHITE),
-    BRILLIANT_WHITE(1500f, 1601f, TextFormatting.WHITE);
+    WARMING(1f, 80f, Formatting.GRAY, Formatting.DARK_GRAY),
+    HOT(80f, 210f, Formatting.GRAY, Formatting.DARK_GRAY),
+    VERY_HOT(210f, 480f, Formatting.GRAY, Formatting.DARK_GRAY),
+    FAINT_RED(480f, 580f, Formatting.DARK_RED),
+    DARK_RED(580f, 730f, Formatting.DARK_RED),
+    BRIGHT_RED(730f, 930f, Formatting.RED),
+    ORANGE(930f, 1100f, Formatting.GOLD),
+    YELLOW(1100f, 1300f, Formatting.YELLOW),
+    YELLOW_WHITE(1300f, 1400f, Formatting.YELLOW),
+    WHITE(1400f, 1500f, Formatting.WHITE),
+    BRILLIANT_WHITE(1500f, 1601f, Formatting.WHITE);
 
     private static final Heat[] VALUES = values();
 
@@ -54,12 +53,12 @@ public enum Heat
     }
 
     @Nullable
-    public static IFormattableTextComponent getTooltipColorless(float temperature)
+    public static MutableText getTooltipColorless(float temperature)
     {
         Heat heat = Heat.getHeat(temperature);
         if (heat != null)
         {
-            IFormattableTextComponent base = heat.getDisplayName();
+            MutableText base = heat.getDisplayName();
             if (heat != Heat.BRILLIANT_WHITE)
             {
                 for (int i = 1; i <= 4; i++)
@@ -75,34 +74,34 @@ public enum Heat
     }
 
     @Nullable
-    public static IFormattableTextComponent getTooltip(float temperature)
+    public static MutableText getTooltip(float temperature)
     {
         Heat heat = Heat.getHeat(temperature);
-        IFormattableTextComponent tooltip = getTooltipColorless(temperature);
+        MutableText tooltip = getTooltipColorless(temperature);
         if (tooltip != null && heat != null)
         {
-            tooltip.withStyle(heat.format);
+            tooltip.formatted(heat.format);
         }
         return tooltip;
     }
 
     @Nullable
-    public static IFormattableTextComponent getTooltipAlternate(float temperature)
+    public static MutableText getTooltipAlternate(float temperature)
     {
         Heat heat = Heat.getHeat(temperature);
-        IFormattableTextComponent tooltip = getTooltipColorless(temperature);
+        MutableText tooltip = getTooltipColorless(temperature);
         if (tooltip != null && heat != null)
         {
-            tooltip.withStyle(heat.alternate);
+            tooltip.formatted(heat.alternate);
         }
         return tooltip;
     }
 
-    final TextFormatting format, alternate;
+    final Formatting format, alternate;
     private final float min;
     private final float max;
 
-    Heat(float min, float max, TextFormatting format, TextFormatting alternate)
+    Heat(float min, float max, Formatting format, Formatting alternate)
     {
         this.min = min;
         this.max = max;
@@ -110,7 +109,7 @@ public enum Heat
         this.alternate = alternate;
     }
 
-    Heat(float min, float max, TextFormatting format)
+    Heat(float min, float max, Formatting format)
     {
         this(min, max, format, format);
     }
@@ -125,8 +124,8 @@ public enum Heat
         return max;
     }
 
-    public IFormattableTextComponent getDisplayName()
+    public MutableText getDisplayName()
     {
-        return new TranslationTextComponent(TerraFirmaCraft.MOD_ID + ".enum.heat." + this.name().toLowerCase());
+        return new TranslatableText(TerraFirmaCraft.MOD_ID + ".enum.heat." + this.name().toLowerCase());
     }
 }

@@ -12,9 +12,9 @@ import java.util.function.Supplier;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.GrassPathBlock;
-import net.minecraft.item.BlockItemUseContext;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
 
 import net.dries007.tfc.common.blocks.TFCBlocks;
 
@@ -25,7 +25,7 @@ public class TFCGrassPathBlock extends GrassPathBlock implements ISoilBlock
 
     public TFCGrassPathBlock(Settings builder, SoilBlockType soil, SoilBlockType.Variant variant)
     {
-        this(builder, TFCBlocks.SOIL.get(soil).get(variant));
+        this(builder, () -> TFCBlocks.SOIL.get(soil).get(variant));
     }
 
     protected TFCGrassPathBlock(Settings builder, Supplier<Block> dirtBlock)
@@ -36,25 +36,25 @@ public class TFCGrassPathBlock extends GrassPathBlock implements ISoilBlock
     }
 
     @Override
-    public BlockState getStateForPlacement(BlockItemUseContext context)
+    public BlockState getPlacementState(ItemPlacementContext context)
     {
-        BlockState state = defaultBlockState();
-        if (!state.canSurvive(context.getLevel(), context.getClickedPos()))
+        BlockState state = getDefaultState();
+        if (!state.canPlaceAt(context.getWorld(), context.getBlockPos()))
         {
-            return Block.pushEntitiesUp(state, getDirt(), context.getLevel(), context.getClickedPos());
+            return Block.pushEntitiesUpBeforeBlockChange(state, getDirt(), context.getWorld(), context.getBlockPos());
         }
-        return super.getStateForPlacement(context);
+        return super.getPlacementState(context);
     }
 
     @Override
-    public void tick(BlockState state, ServerWorld worldIn, BlockPos pos, Random rand)
+    public void scheduledTick(BlockState state, ServerWorld worldIn, BlockPos pos, Random rand)
     {
-        worldIn.setBlockAndUpdate(pos, Block.pushEntitiesUp(state, getDirt(), worldIn, pos));
+        worldIn.setBlockState(pos, Block.pushEntitiesUpBeforeBlockChange(state, getDirt(), worldIn, pos));
     }
 
     @Override
     public BlockState getDirt()
     {
-        return dirtBlock.get().defaultBlockState();
+        return dirtBlock.get().getDefaultState();
     }
 }

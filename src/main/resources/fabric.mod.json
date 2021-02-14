@@ -22,8 +22,12 @@
     ],
     "client": [
       "net.dries.tfc.client.TerraFirmaCraftClient"
+    ],
+    "cardinal-components": [
+      "net.dries.tfc.fabric.cca.Components"
     ]
   },
+  "accessWidener" : "tfc.accesswidener",
   "mixins": [
     "tfc.mixins.json"
   ],
@@ -32,5 +36,13 @@
     "fabricloader": ">=0.7.4",
     "fabric": "*",
     "minecraft": "1.16.x"
+  },
+
+  "custom": {
+    "cardinal-components": [
+      "tfc:forge",
+      "tfc:heat",
+      "tfc:world_tracking"
+    ]
   }
 }

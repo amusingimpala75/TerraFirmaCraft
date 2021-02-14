@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import net.dries007.tfc.fabric.cca.Components;
+import net.dries007.tfc.fabric.duck.WorldDuck;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.recipe.RecipeSerializer;
@@ -26,9 +28,7 @@ import net.dries007.tfc.config.TFCConfig;
 import net.dries007.tfc.util.collections.IndirectHashCollection;
 import net.dries007.tfc.util.support.SupportManager;
 import net.dries007.tfc.util.tracker.Collapse;
-import net.dries007.tfc.util.tracker.WorldTrackerCapability;
 import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldView;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -63,7 +63,7 @@ public class CollapseRecipe extends SimpleBlockRecipe
      */
     public static boolean tryTriggerCollapse(World world, BlockPos pos)
     {
-        if (!world.isClient && world.isRegionLoaded(pos, 32))
+        if (!world.isClient && ((WorldDuck)world).inject$isAreaLoaded(pos, 32))
         {
             if (RANDOM.nextFloat() < TFCConfig.SERVER.collapseTriggerChance.get())
             {
@@ -135,7 +135,7 @@ public class CollapseRecipe extends SimpleBlockRecipe
 
         if (!secondaryPositions.isEmpty())
         {
-            world.getCapability(WorldTrackerCapability.CAPABILITY).ifPresent(cap -> cap.addCollapseData(new Collapse(centerPos, secondaryPositions, radiusSquared)));
+            Components.WORLD_TRACKING.maybeGet(world).get().addCollapseData(new Collapse(centerPos, secondaryPositions, radiusSquared));//.getCapability(WorldTrackerCapability.CAPABILITY).ifPresent(cap -> cap.addCollapseData(new Collapse(centerPos, secondaryPositions, radiusSquared)));
         }
     }
 
