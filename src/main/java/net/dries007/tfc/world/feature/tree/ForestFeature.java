@@ -11,6 +11,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import net.dries007.tfc.common.blocks.FluidBlockStateProprties;
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.HorizontalFacingBlock;
 import net.minecraft.util.math.BlockPos;
@@ -23,7 +25,6 @@ import net.minecraft.world.gen.feature.Feature;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.common.TFCTags;
-import net.dries007.tfc.common.blocks.TFCBlockStateProperties;
 import net.dries007.tfc.world.chunkdata.ChunkDataProvider;
 import net.dries007.tfc.world.chunkdata.ForestType;
 import org.jetbrains.annotations.Nullable;
@@ -39,7 +40,7 @@ public class ForestFeature extends Feature<ForestConfig>
     public boolean generate(StructureWorldAccess worldIn, ChunkGenerator generator, Random rand, BlockPos pos, ForestConfig config)
     {
         final ChunkDataProvider provider = ChunkDataProvider.getOrThrow(generator);
-        final ChunkData data = provider.get(pos, ChunkData.Status.FLORA);
+        final ChunkDataChunkComponent data = provider.get(pos, ChunkDataChunkComponent.Status.FLORA);
         final BlockPos.Mutable mutablePos = new BlockPos.Mutable();
         final ForestType forestType = data.getForestType();
 
@@ -98,7 +99,7 @@ public class ForestFeature extends Feature<ForestConfig>
         return placedTrees || placedBushes;
     }
 
-    private boolean placeTree(StructureWorldAccess worldIn, ChunkGenerator generator, Random random, BlockPos chunkBlockPos, ForestConfig config, ChunkData data, BlockPos.Mutable mutablePos, boolean allowOldGrowth)
+    private boolean placeTree(StructureWorldAccess worldIn, ChunkGenerator generator, Random random, BlockPos chunkBlockPos, ForestConfig config, ChunkDataChunkComponent data, BlockPos.Mutable mutablePos, boolean allowOldGrowth)
     {
         final int chunkX = chunkBlockPos.getX();
         final int chunkZ = chunkBlockPos.getZ();
@@ -123,7 +124,7 @@ public class ForestFeature extends Feature<ForestConfig>
         return false;
     }
 
-    private boolean placeBush(StructureWorldAccess worldIn, ChunkGenerator generator, Random random, BlockPos chunkBlockPos, ForestConfig config, ChunkData data, BlockPos.Mutable mutablePos)
+    private boolean placeBush(StructureWorldAccess worldIn, ChunkGenerator generator, Random random, BlockPos chunkBlockPos, ForestConfig config, ChunkDataChunkComponent data, BlockPos.Mutable mutablePos)
     {
         final int chunkX = chunkBlockPos.getX();
         final int chunkZ = chunkBlockPos.getZ();
@@ -149,7 +150,7 @@ public class ForestFeature extends Feature<ForestConfig>
         return false;
     }
 
-    private void placeGroundcover(StructureWorldAccess worldIn, Random random, BlockPos chunkBlockPos, ForestConfig config, ChunkData data, BlockPos.Mutable mutablePos, int tries)
+    private void placeGroundcover(StructureWorldAccess worldIn, Random random, BlockPos chunkBlockPos, ForestConfig config, ChunkDataChunkComponent data, BlockPos.Mutable mutablePos, int tries)
     {
         final int chunkX = chunkBlockPos.getX();
         final int chunkZ = chunkBlockPos.getZ();
@@ -170,7 +171,7 @@ public class ForestFeature extends Feature<ForestConfig>
                 if ((worldIn.isAir(mutablePos) || worldIn.isWater(mutablePos)) && worldIn.getBlockState(mutablePos.down()).isSideSolidFullSquare(worldIn, mutablePos, Direction.UP))
                 {
                     setBlockState(worldIn, mutablePos, setState
-                        .with(TFCBlockStateProperties.WATER, TFCBlockStateProperties.WATER.keyFor(worldIn.getFluidState(mutablePos).getFluid()))
+                        .with(FluidBlockStateProprties.WATER, FluidBlockStateProprties.WATER.keyFor(worldIn.getFluidState(mutablePos).getFluid()))
                         .with(HorizontalFacingBlock.FACING, Direction.Type.HORIZONTAL.random(random)));
                 }
             }
@@ -178,7 +179,7 @@ public class ForestFeature extends Feature<ForestConfig>
     }
 
     @Nullable
-    private ForestConfig.Entry getTree(ChunkData chunkData, Random random, ForestConfig config, BlockPos pos)
+    private ForestConfig.Entry getTree(ChunkDataChunkComponent chunkData, Random random, ForestConfig config, BlockPos pos)
     {
         List<ForestConfig.Entry> entries = new ArrayList<>(4);
         float rainfall = chunkData.getRainfall(pos);

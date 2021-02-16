@@ -13,6 +13,8 @@ import net.dries007.tfc.config.TFCConfig;
 import net.minecraft.util.thread.ReentrantThreadExecutor;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 
 @Mixin(MinecraftClient.class)
@@ -28,14 +30,29 @@ public abstract class MinecraftMixin extends ReentrantThreadExecutor<Runnable>
      *
      * Fixed by https://github.com/MinecraftForge/MinecraftForge/pull/7275
      */
-    @ModifyVariable(method = "startIntegratedServer(Ljava/lang/String;Lnet/minecraft/util/registry/DynamicRegistryManager$Impl;Ljava/util/function/Function;Lcom/mojang/datafixers/util/Function4;ZLnet/minecraft/client/MinecraftClient$WorldLoadAction;)V", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft$WorldLoadAction;NONE:Lnet/minecraft/client/Minecraft$WorldLoadAction;", ordinal = 0), ordinal = 3, index = 13, name = "flag1")
+    /*@ModifyVariable(method = "startIntegratedServer(Ljava/lang/String;Lnet/minecraft/util/registry/DynamicRegistryManager$Impl;Ljava/util/function/Function;Lcom/mojang/datafixers/util/Function4;ZLnet/minecraft/client/MinecraftClient$WorldLoadAction;)V", at = @At(value = "FIELD", target = "Lnet/minecraft/client/MinecraftClient$WorldLoadAction;NONE:Lnet/minecraft/client/MinecraftClient$WorldLoadAction;", ordinal = 0), ordinal = 3, index = 13, name = "bl2")
     private boolean modify$doLoadLevel$flag1(boolean flag1)
     {
-        if (TFCConfig.CLIENT.ignoreExperimentalWorldGenWarning.get())
+        if (TerraFirmaCraft.getConfig().clientConfig.ignoreExperimentalWorldGenWarning)
         {
             TerraFirmaCraft.LOGGER.warn("Experimental world gen... dragons or some such.. blah blah.");
             return false;
         }
         return flag1;
+    }*/
+
+    @ModifyVariable(
+        method = "startIntegratedServer(Ljava/lang/String;Lnet/minecraft/util/registry/DynamicRegistryManager$Impl;Ljava/util/function/Function;Lcom/mojang/datafixers/util/Function4;ZLnet/minecraft/client/MinecraftClient$WorldLoadAction;)V",
+        at=@At(value = "STORE"),
+        ordinal = 2
+    )
+    public boolean modify$theseAreNotTheDragonsYoureLookingFor(boolean bl2)
+    {
+        if (TerraFirmaCraft.getConfig().clientConfig.ignoreExperimentalWorldGenWarning)
+        {
+            TerraFirmaCraft.LOGGER.warn("Experimental world gen... dragons or some such.. blah blah.");
+            return false;
+        }
+        return bl2;
     }
 }

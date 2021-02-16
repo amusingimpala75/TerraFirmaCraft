@@ -12,6 +12,7 @@ import java.util.Random;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -142,7 +143,7 @@ public class TFCBiomeProvider extends BiomeSource implements ITFCBiomeProvider
     {
         final ChunkPos chunkPos = new ChunkPos(biomeCoordX >> 2, biomeCoordZ >> 2);
         final BlockPos pos = chunkPos.getStartPos();
-        final ChunkData data = chunkDataProvider.get(chunkPos, ChunkData.Status.CLIMATE);
+        final ChunkDataChunkComponent data = chunkDataProvider.get(chunkPos, ChunkDataChunkComponent.Status.CLIMATE);
         final BiomeVariants variants = biomeLayer.get(biomeCoordX, biomeCoordZ);
         final BiomeTemperature temperature = calculateTemperature(data.getAverageTemp(pos));
         final BiomeRainfall rainfall = calculateRainfall(data.getRainfall(pos));

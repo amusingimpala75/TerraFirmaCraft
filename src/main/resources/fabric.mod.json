@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "id": "tfc",
-  "version": "${file.jarVersion}",
+  "version": "${version}",
 
   "name": "TerraFirmaCraft",
-  "description": "TerraFirmaCraft - The Next Generation /n By: /n AlcatrazEscapee, Disastermoo, /n Dries007, Bunsan, Claycorp, /n DavidTriphon, EERussianGuy, /n Gaelmare, and many others. /n Based on the original work by Bioxx, Dunk, and Kitty.",
+  "description": "TerraFirmaCraft - The Next Generation By: AlcatrazEscapee, Disastermoo, Dries007, Bunsan, Claycorp, DavidTriphon, EERussianGuy, Gaelmare, and many others. Based on the original work by Bioxx, Dunk, and Kitty. Port to Fabric by AmusingImpala75",
   "authors": [
     "AlcatrazEscapee"
   ],
@@ -18,13 +18,16 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.dries007.tfc.TerrFirmaCraft"
+      "net.dries007.tfc.TerraFirmaCraft"
     ],
     "client": [
-      "net.dries.tfc.client.TerraFirmaCraftClient"
+      "net.dries007.tfc.client.TerraFirmaCraftClient"
     ],
     "cardinal-components": [
-      "net.dries.tfc.fabric.cca.Components"
+      "net.dries007.tfc.fabric.cca.Components"
+    ],
+    "modmenu": [
+      "net.dries007.tfc.config.ModMenuIntegration"
     ]
   },
   "accessWidener" : "tfc.accesswidener",
@@ -42,7 +45,8 @@
     "cardinal-components": [
       "tfc:forge",
       "tfc:heat",
-      "tfc:world_tracking"
+      "tfc:world_tracking",
+      "tfc:chunk_data"
     ]
   }
 }

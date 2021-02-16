@@ -6,6 +6,7 @@
 
 package net.dries007.tfc.mixin.client.world;
 
+import net.dries007.tfc.TerraFirmaCraft;
 import net.minecraft.client.world.ClientWorld;
 
 import net.dries007.tfc.config.TFCConfig;
@@ -28,7 +29,7 @@ public class ClientWorldInfoMixin
     @Inject(method = "getSkyDarknessHeight", at = @At("HEAD"), cancellable = true)
     private void inject$getHorizonHeight(CallbackInfoReturnable<Double> cir)
     {
-        if (TFCConfig.CLIENT.assumeTFCWorld.get())
+        if (TerraFirmaCraft.getConfig().clientConfig.assumeTFCWorld)
         {
             cir.setReturnValue(this.flatWorld ? 0 : (double) TFCChunkGenerator.SEA_LEVEL);
         }

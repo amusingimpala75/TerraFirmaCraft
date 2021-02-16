@@ -8,6 +8,8 @@ package net.dries007.tfc.util;
 
 import java.util.Random;
 
+import net.dries007.tfc.TerraFirmaCraft;
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.WorldAccess;
@@ -88,14 +90,14 @@ public final class Climate
      */
     public static float getTemperature(WorldAccess world, BlockPos pos)
     {
-        ChunkData data = ChunkData.get(world, pos);
+        ChunkDataChunkComponent data = ChunkDataChunkComponent.get(world, pos);
         ICalendar calendar = Calendars.get(world);
         return calculateTemperature(pos.getZ(), pos.getY(), data.getAverageTemp(pos), calendar.getCalendarTicks(), calendar.getCalendarDaysInMonth());
     }
 
     public static Biome.Precipitation getPrecipitation(WorldAccess world, BlockPos pos)
     {
-        ChunkData data = ChunkData.get(world, pos);
+        ChunkDataChunkComponent data = ChunkDataChunkComponent.get(world, pos);
         ICalendar calendar = Calendars.get(world);
         float rainfall = data.getRainfall(pos);
         if (rainfall < 100)
@@ -194,7 +196,7 @@ public final class Climate
      */
     private static float calculateMonthlyTemperature(int z, float monthTemperatureModifier)
     {
-        float temperatureScale = TFCConfig.SERVER.temperatureScale.get();
+        float temperatureScale = TerraFirmaCraft.getConfig().serverConfig.climate.temperatureScale;
         return monthTemperatureModifier * INoise1D.triangle(LATITUDE_TEMPERATURE_VARIANCE_AMPLITUDE, LATITUDE_TEMPERATURE_VARIANCE_MEAN, 1 / (2 * temperatureScale), 0, z);
     }
 

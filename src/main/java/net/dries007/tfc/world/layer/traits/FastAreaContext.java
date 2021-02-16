@@ -51,9 +51,10 @@ public class FastAreaContext implements LayerSampleContext<FastArea>
     }
 
     @Override
+    //DO NOT REMOVE INT CAST OTHERWISE: incompatible types: possible lossy conversion from long to int
     public int nextInt(int bound)
     {
-        final int value = Math.floorMod(rval >> 24, bound);
+        final int value = (int) Math.floorMod(rval >> 24, bound);
         rval = SeedMixer.mixSeed(rval, seed);
         return value;
     }

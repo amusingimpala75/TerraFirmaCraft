@@ -6,17 +6,15 @@
 
 package net.dries007.tfc.client.screen.button;
 
-import net.dries007.tfc.mixin.fabric.client.gui.ScreenAccessor;
+import net.dries007.tfc.mixin.fabric.client.gui.HandledScreenAccessor;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.LiteralText;
 import net.minecraft.util.Identifier;
-import net.minecraftforge.fml.network.PacketDistributor;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.dries007.tfc.network.PacketHandler;
 import net.dries007.tfc.network.SwitchInventoryTabPacket;
 
 import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
@@ -37,7 +35,7 @@ public class PlayerInventoryTabButton extends ButtonWidget
 
     public PlayerInventoryTabButton(int guiLeft, int guiTop, int xIn, int yIn, int widthIn, int heightIn, int textureU, int textureV, int iconX, int iconY, int iconU, int iconV, SwitchInventoryTabPacket.Type type)
     {
-        this(guiLeft, guiTop, xIn, yIn, widthIn, heightIn, textureU, textureV, iconX, iconY, iconU, iconV, button -> PacketHandler.send(PacketDistributor.SERVER.noArg(), new SwitchInventoryTabPacket(type)));
+        this(guiLeft, guiTop, xIn, yIn, widthIn, heightIn, textureU, textureV, iconX, iconY, iconU, iconV, button -> new SwitchInventoryTabPacket(type).send());//PacketHandler.send(PacketDistributor.SERVER.noArg(), new SwitchInventoryTabPacket(type)));
     }
 
     public PlayerInventoryTabButton(int guiLeft, int guiTop, int xIn, int yIn, int widthIn, int heightIn, int textureU, int textureV, int iconX, int iconY, int iconU, int iconV, PressAction onPressIn)
@@ -68,7 +66,7 @@ public class PlayerInventoryTabButton extends ButtonWidget
                 if (newRecipeBookVisible != recipeBookVisible)
                 {
                     recipeBookVisible = newRecipeBookVisible;
-                    PlayerInventoryTabButton.this.updateGuiSize(((ScreenAccessor) screen).accessor$x(), ((ScreenAccessor) screen).accessor$y());
+                    PlayerInventoryTabButton.this.updateGuiSize(((HandledScreenAccessor) screen).accessor$getX(), ((HandledScreenAccessor) screen).accessor$getY());
                 }
             }
         };

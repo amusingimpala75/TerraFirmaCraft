@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import net.dries007.tfc.TerraFirmaCraft;
 import net.dries007.tfc.fabric.cca.Components;
 import net.dries007.tfc.fabric.duck.WorldDuck;
 import net.minecraft.block.Block;
@@ -65,7 +66,7 @@ public class CollapseRecipe extends SimpleBlockRecipe
     {
         if (!world.isClient && ((WorldDuck)world).inject$isAreaLoaded(pos, 32))
         {
-            if (RANDOM.nextFloat() < TFCConfig.SERVER.collapseTriggerChance.get())
+            if (RANDOM.nextFloat() < TerraFirmaCraft.getConfig().serverConfig.mechanics.collapses.getCollapseTriggerChance())
             {
                 // Random radius
                 int radX = (RANDOM.nextInt(5) + 4) / 2;
@@ -101,7 +102,7 @@ public class CollapseRecipe extends SimpleBlockRecipe
      */
     public static void startCollapse(World world, BlockPos centerPos)
     {
-        int radius = TFCConfig.SERVER.collapseMinRadius.get() + RANDOM.nextInt(TFCConfig.SERVER.collapseRadiusVariance.get());
+        int radius = TerraFirmaCraft.getConfig().serverConfig.mechanics.collapses.collapseMinRadius + RANDOM.nextInt(TerraFirmaCraft.getConfig().serverConfig.mechanics.collapses.collapseRadiusVariance);
         int radiusSquared = radius * radius;
         List<BlockPos> secondaryPositions = new ArrayList<>();
 
@@ -116,7 +117,7 @@ public class CollapseRecipe extends SimpleBlockRecipe
                 if (foundEmpty && TFCTags.Blocks.CAN_COLLAPSE.contains(stateAt.getBlock()))
                 {
                     // Check for a possible collapse
-                    if (posAt.getSquaredDistance(centerPos) < radiusSquared && RANDOM.nextFloat() < TFCConfig.SERVER.collapsePropagateChance.get())
+                    if (posAt.getSquaredDistance(centerPos) < radiusSquared && RANDOM.nextFloat() < TerraFirmaCraft.getConfig().serverConfig.mechanics.collapses.getCollapsePropagateChance())
                     {
                         if (collapseBlock(world, posAt, stateAt))
                         {
@@ -135,7 +136,7 @@ public class CollapseRecipe extends SimpleBlockRecipe
 
         if (!secondaryPositions.isEmpty())
         {
-            Components.WORLD_TRACKING.maybeGet(world).get().addCollapseData(new Collapse(centerPos, secondaryPositions, radiusSquared));//.getCapability(WorldTrackerCapability.CAPABILITY).ifPresent(cap -> cap.addCollapseData(new Collapse(centerPos, secondaryPositions, radiusSquared)));
+            Components.WORLD_TRACKING.maybeGet(world).ifPresent(comp -> comp.addCollapseData(new Collapse(centerPos, secondaryPositions, radiusSquared)));//.getCapability(WorldTrackerCapability.CAPABILITY).ifPresent(cap -> cap.addCollapseData(new Collapse(centerPos, secondaryPositions, radiusSquared)));
         }
     }
 

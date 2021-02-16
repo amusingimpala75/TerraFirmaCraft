@@ -8,6 +8,7 @@ package net.dries007.tfc.common.blocks.rock;
 
 import java.util.Random;
 
+import net.dries007.tfc.common.blocks.FluidBlockStateProprties;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
@@ -17,6 +18,7 @@ import net.minecraft.fluid.Fluids;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.state.StateManager;
+import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.EnumProperty;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.BlockPos;
@@ -36,7 +38,7 @@ import net.dries007.tfc.common.recipes.CollapseRecipe;
 public class RockSpikeBlock extends Block implements IFluidLoggable, IFallableBlock
 {
     public static final EnumProperty<Part> PART = TFCBlockStateProperties.ROCK_SPIKE_PART;
-    public static final FluidProperty FLUID = TFCBlockStateProperties.WATER_AND_LAVA;
+    public static final FluidProperty FLUID = FluidBlockStateProprties.WATER_AND_LAVA;
 
     public static final VoxelShape BASE_SHAPE = createCuboidShape(2, 0, 2, 14, 16, 14);
     public static final VoxelShape MIDDLE_SHAPE = createCuboidShape(4, 0, 4, 12, 16, 12);

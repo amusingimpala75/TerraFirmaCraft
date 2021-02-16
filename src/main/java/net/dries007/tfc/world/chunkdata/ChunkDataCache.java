@@ -152,17 +152,19 @@ public final class ChunkDataCache
             queue.computeIfAbsent(pos, key -> new HashSet<>()).add(player);
         }
 
-        public void dequeueChunk(ChunkPos pos, ServerPlayerEntity player)
+        public boolean dequeueChunk(ChunkPos pos, ServerPlayerEntity player)
         {
             Set<ServerPlayerEntity> players = queue.get(pos);
             if (players != null)
             {
-                players.remove(player);
+                boolean b = players.remove(player);
                 if (players.isEmpty())
                 {
                     queue.remove(pos);
                 }
+                return b;
             }
+            return false;
         }
 
         public void dequeueLoadedChunk(ChunkPos pos, ChunkDataChunkComponent data)

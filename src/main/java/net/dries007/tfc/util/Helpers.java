@@ -46,18 +46,11 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.Chunk;
-import net.minecraftforge.common.ForgeHooks;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.common.util.NonNullFunction;
-import net.minecraftforge.registries.IForgeRegistry;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -411,9 +404,10 @@ public final class Helpers
         return copyTo;
     }
 
+    //TODO: FIX
     public static void damageCraftingItem(ItemStack stack, int amount)
     {
-        PlayerEntity player = ForgeHooks.getCraftingPlayer(); // Mods may not set this properly
+        PlayerEntity player = null;// = ForgeHooks.getCraftingPlayer(); // Mods may not set this properly
         if (player != null)
         {
             stack.damage(amount, player, entity -> {});

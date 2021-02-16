@@ -12,6 +12,8 @@ import java.util.Set;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import net.dries007.tfc.util.Helpers;
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -19,7 +21,7 @@ import net.minecraft.world.BlockView;
 
 import net.dries007.tfc.util.data.DataManager;
 
-public class SupportManager extends DataManager<Support>
+public class SupportManager extends DataManager<Support> implements IdentifiableResourceReloadListener
 {
     public static final SupportManager INSTANCE = new SupportManager();
 
@@ -107,5 +109,10 @@ public class SupportManager extends DataManager<Support>
             maxSupportHorizontal = Math.max(support.getSupportHorizontal(), maxSupportHorizontal);
         }
         super.postProcess();
+    }
+
+    @Override
+    public Identifier getFabricId() {
+        return Helpers.identifier("data_listener/support_manager");
     }
 }

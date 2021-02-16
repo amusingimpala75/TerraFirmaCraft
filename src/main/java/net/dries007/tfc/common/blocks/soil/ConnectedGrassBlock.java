@@ -11,6 +11,7 @@ import java.util.Random;
 import java.util.function.Supplier;
 
 import com.google.common.collect.ImmutableMap;
+import net.dries007.tfc.TerraFirmaCraft;
 import net.dries007.tfc.fabric.duck.WorldDuck;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.block.Block;
@@ -181,11 +182,11 @@ public class ConnectedGrassBlock extends Block implements IGrassBlock
     //@Override
     public BlockState getToolModifiedState(BlockState state, World world, BlockPos pos, PlayerEntity player, ItemStack stack, Item toolType)
     {
-        if (toolType.isIn(FabricToolTags.HOES) && TFCConfig.SERVER.enableFarmlandCreation.get() && farmland != null)
+        if (toolType.isIn(FabricToolTags.HOES) && TerraFirmaCraft.getConfig().serverConfig.blocks.farmland.enableFarmlandCreation && farmland != null)
         {
             return farmland.get().getDefaultState();
         }
-        else if (toolType.isIn(FabricToolTags.SHOVELS) && TFCConfig.SERVER.enableGrassPathCreation.get() && grassPath != null)
+        else if (toolType.isIn(FabricToolTags.SHOVELS) && TerraFirmaCraft.getConfig().serverConfig.blocks.grassPath.enableGrassPathCreation && grassPath != null)
         {
             return grassPath.get().getDefaultState();
         }

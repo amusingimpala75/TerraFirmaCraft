@@ -1,7 +1,7 @@
 {
   "__comment__": "This file was automatically created by mcresources",
   "ingredient": {
-    "tag": "forge:rods/tin"
+    "tag": "c:wooden_rods/tin"
   },
   "metal": "tfc:tin",
   "amount": 100

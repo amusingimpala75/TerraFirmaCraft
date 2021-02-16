@@ -1,7 +1,7 @@
 {
   "__comment__": "This file was automatically created by mcresources",
   "ingredient": {
-    "tag": "forge:rods/sterling_silver"
+    "tag": "c:wooden_rods/sterling_silver"
   },
   "heat_capacity": 0.35,
   "forging_temperature": 570.0,

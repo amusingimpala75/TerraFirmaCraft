@@ -6,6 +6,10 @@
 
 package net.dries007.tfc.network;
 
+import net.dries007.tfc.fabric.Networking;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 
@@ -60,6 +64,13 @@ public class SwitchInventoryTabPacket
                 }
             }
         //});
+    }
+
+    public void send()
+    {
+        PacketByteBuf buf = PacketByteBufs.create();
+        encode(buf);
+        ClientPlayNetworking.send(Networking.SWITCH_TAB_PACKET_ID, buf);
     }
 
     public enum Type

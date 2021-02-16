@@ -8,6 +8,7 @@ package net.dries007.tfc.mixin.block;
 
 import java.util.Random;
 
+import net.dries007.tfc.TerraFirmaCraft;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -89,7 +90,7 @@ public abstract class SnowBlockMixin extends Block
     @Inject(method = "randomTick", at = @At(value = "RETURN"))
     private void inject$randomTick(BlockState state, ServerWorld worldIn, BlockPos pos, Random random, CallbackInfo ci)
     {
-        if (TFCConfig.SERVER.enableSnowAffectedByTemperature.get())
+        if (TerraFirmaCraft.getConfig().serverConfig.blocks.snow.enableSnowAffectedByTemperature)
         {
             // Only run this if the default logic hasn't already set the block to air
             BlockState prevState = worldIn.getBlockState(pos);
@@ -115,7 +116,7 @@ public abstract class SnowBlockMixin extends Block
     @Override
     public float getVelocityMultiplier()
     {
-        if (TFCConfig.SERVER.enableSnowSlowEntities.get())
+        if (TerraFirmaCraft.getConfig().serverConfig.blocks.snow.enableSnowSlowEntities)
         {
             return 0.6f;
         }

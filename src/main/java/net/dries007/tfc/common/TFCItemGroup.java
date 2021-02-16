@@ -8,6 +8,8 @@ package net.dries007.tfc.common;
 
 import java.util.function.Supplier;
 
+import net.dries007.tfc.util.Helpers;
+import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -22,31 +24,21 @@ import net.minecraft.util.Lazy;
 
 import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
 
-public final class TFCItemGroup extends ItemGroup
+public abstract class TFCItemGroup extends ItemGroup
 {
     // todo: replace this eventually with actual items
     public static final Supplier<ItemStack> MISSING_ITEM = () -> new ItemStack(Items.JACK_O_LANTERN);
 
-    public static final ItemGroup EARTH = new TFCItemGroup("earth", () -> new ItemStack(TFCBlocks.ROCK_BLOCKS.get(Rock.Default.QUARTZITE).get(Rock.BlockType.RAW).get()));
-    public static final ItemGroup ORES = new TFCItemGroup("ores", MISSING_ITEM);
-    public static final ItemGroup ROCK_STUFFS = new TFCItemGroup("rock", MISSING_ITEM);
-    public static final ItemGroup METAL = new TFCItemGroup("metals", () -> new ItemStack(TFCItems.METAL_ITEMS.get(Metal.Default.WROUGHT_IRON).get(Metal.ItemType.INGOT).get()));
-    public static final ItemGroup WOOD = new TFCItemGroup("wood", () -> new ItemStack(TFCBlocks.WOODS.get(Wood.Default.DOUGLAS_FIR).get(Wood.BlockType.LOG).get()));
-    public static final ItemGroup FOOD = new TFCItemGroup("food", MISSING_ITEM);
-    public static final ItemGroup FLORA = new TFCItemGroup("flora", () -> new ItemStack(TFCBlocks.PLANTS.get(Plant.GOLDENROD)));
-    public static final ItemGroup MISC = new TFCItemGroup("misc", MISSING_ITEM);
+    public static final ItemGroup EARTH = FabricItemGroupBuilder.build(Helpers.identifier("earth"), () -> new ItemStack(TFCBlocks.ROCK_BLOCKS.get(Rock.Default.QUARTZITE).get(Rock.BlockType.RAW)));
+    public static final ItemGroup ORES = FabricItemGroupBuilder.build(Helpers.identifier("ores"), MISSING_ITEM);
+    public static final ItemGroup ROCK_STUFFS = FabricItemGroupBuilder.build(Helpers.identifier("rock"), MISSING_ITEM);
+    public static final ItemGroup METAL = FabricItemGroupBuilder.build(Helpers.identifier("metals"), () -> new ItemStack(TFCItems.METAL_ITEMS.get(Metal.Default.WROUGHT_IRON).get(Metal.ItemType.INGOT)));
+    public static final ItemGroup WOOD = FabricItemGroupBuilder.build(Helpers.identifier("wood"), () -> new ItemStack(TFCBlocks.WOODS.get(Wood.Default.DOUGLAS_FIR).get(Wood.BlockType.LOG)));
+    public static final ItemGroup FOOD = FabricItemGroupBuilder.build(Helpers.identifier("food"), MISSING_ITEM);
+    public static final ItemGroup FLORA = FabricItemGroupBuilder.build(Helpers.identifier("flora"), () -> new ItemStack(TFCBlocks.PLANTS.get(Plant.GOLDENROD)));
+    public static final ItemGroup MISC = FabricItemGroupBuilder.build(Helpers.identifier("misc"), MISSING_ITEM);
 
-    private final Lazy<ItemStack> iconStack;
-
-    private TFCItemGroup(String label, Supplier<ItemStack> iconSupplier)
-    {
-        super(MOD_ID + "." + label);
-        this.iconStack = new Lazy<>(iconSupplier);
-    }
-
-    @Override
-    public ItemStack makeIcon()
-    {
-        return iconStack.get();
+    public TFCItemGroup(int index, String id) {
+        super(index, id);
     }
 }

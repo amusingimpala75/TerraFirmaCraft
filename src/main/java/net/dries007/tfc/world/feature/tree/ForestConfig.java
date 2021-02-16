@@ -7,9 +7,15 @@
 package net.dries007.tfc.world.feature.tree;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import net.dries007.tfc.util.Helpers;
 import net.minecraft.block.BlockState;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.registry.BuiltinRegistries;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
 import net.minecraft.world.gen.feature.FeatureConfig;
 
@@ -46,8 +52,10 @@ public class ForestConfig implements FeatureConfig
             Codecs.LENIENT_BLOCKSTATE.fieldOf("leaves").forGetter(c -> c.leaves),
             Codecs.LENIENT_BLOCKSTATE.fieldOf("twig").forGetter(c -> c.twig),
             Codecs.LENIENT_BLOCKSTATE.fieldOf("fallen_leaves").forGetter(c -> c.fallen_leaves),
-            ConfiguredFeature.CODEC.fieldOf("normal_tree").forGetter(c -> c.treeFeature),
-            ConfiguredFeature.CODEC.optionalFieldOf("old_growth_tree").forGetter(c -> c.oldGrowthFeature)
+            //ConfiguredFeature.CODEC.fieldOf("normal_tree").forGetter(c -> c.treeFeature),
+            Identifier.CODEC.fieldOf("normal_tree").forGetter(c -> c.treeFeature),
+            //ConfiguredFeature.CODEC.optionalFieldOf("old_growth_tree").forGetter(c -> c.oldGrowthFeature)
+            Identifier.CODEC.optionalFieldOf("old_growth_tree").forGetter(c -> c.oldGrowthFeature)
         ).apply(instance, Entry::new));
 
         private final float minRainfall;
@@ -58,10 +66,12 @@ public class ForestConfig implements FeatureConfig
         private final BlockState leaves;
         private final BlockState twig;
         private final BlockState fallen_leaves;
-        private final ConfiguredFeature<?, ?> treeFeature;
-        private final Optional<ConfiguredFeature<?, ?>> oldGrowthFeature;
+        //private final ConfiguredFeature<?, ?> treeFeature;
+        private final Identifier treeFeature;
+        //private final Optional<ConfiguredFeature<?, ?>> oldGrowthFeature;
+        private final Optional<Identifier> oldGrowthFeature;
 
-        public Entry(float minRainfall, float maxRainfall, float minAverageTemp, float maxAverageTemp, BlockState log, BlockState leaves, BlockState twig, BlockState fallen_leaves, ConfiguredFeature<?, ?> treeFeature, Optional<ConfiguredFeature<?, ?>> oldGrowthFeature)
+        public Entry(float minRainfall, float maxRainfall, float minAverageTemp, float maxAverageTemp, BlockState log, BlockState leaves, BlockState twig, BlockState fallen_leaves, /*ConfiguredFeature<?, ?> treeFeature*/Identifier treeFeature, Optional<Identifier> oldGrowthFeature)
         {
             this.minRainfall = minRainfall;
             this.maxRainfall = maxRainfall;
@@ -97,12 +107,12 @@ public class ForestConfig implements FeatureConfig
 
         public ConfiguredFeature<?, ?> getFeature()
         {
-            return treeFeature;
+            return getOrThrow(BuiltinRegistries.CONFIGURED_FEATURE, treeFeature);
         }
 
         public ConfiguredFeature<?, ?> getOldGrowthFeature()
         {
-            return oldGrowthFeature.orElse(treeFeature);
+            return getOrThrow(BuiltinRegistries.CONFIGURED_FEATURE, oldGrowthFeature.orElse(treeFeature));
         }
 
         public BlockState getLog()
@@ -123,6 +133,20 @@ public class ForestConfig implements FeatureConfig
         public BlockState getFallenLeaves()
         {
             return fallen_leaves;
+        }
+
+        private <T> T getOrThrow(Registry<T> registry, Identifier id)
+        {
+            T t = registry.get(id);
+            if (t != null)
+            {
+                return t;
+            }
+            for (Map.Entry<RegistryKey<T>, T> e : registry.getEntries())
+            {
+                System.out.println(e.getKey().getValue().toString());
+            }
+            throw new IllegalStateException("Could not find entry "+id.toString()+" in registry "+registry.toString()+"!");
         }
     }
 }

@@ -11,13 +11,15 @@ import java.util.Map;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import net.dries007.tfc.util.Helpers;
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.block.Block;
 
 import net.dries007.tfc.util.data.DataManager;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
-public class RockManager extends DataManager<Rock>
+public class RockManager extends DataManager<Rock> implements IdentifiableResourceReloadListener
 {
     public static final RockManager INSTANCE = new RockManager();
 
@@ -63,5 +65,10 @@ public class RockManager extends DataManager<Rock>
         {
             throw new IllegalStateException("Something went badly wrong... There are no rocks. This cannot be.");
         }
+    }
+
+    @Override
+    public Identifier getFabricId() {
+        return Helpers.identifier("data_listener/rock_manager");
     }
 }

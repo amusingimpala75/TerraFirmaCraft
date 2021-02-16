@@ -39,6 +39,6 @@ public abstract class DryPlantBlock extends PlantBlock
     public boolean canPlaceAt(BlockState state, WorldView worldIn, BlockPos pos)
     {
         BlockState belowState = worldIn.getBlockState(pos.down());
-        return belowState.isIn(BlockTags.SAND) || belowState.isIn(Tags.Blocks.SAND) || belowState.isIn(TFCTags.Blocks.BUSH_PLANTABLE_ON);
+        return belowState.isIn(BlockTags.SAND) || belowState.isIn(TFCTags.Common.SAND) || belowState.isIn(TFCTags.Blocks.BUSH_PLANTABLE_ON);
     }
 }

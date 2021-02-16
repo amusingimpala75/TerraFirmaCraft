@@ -6,6 +6,7 @@
 
 package net.dries007.tfc.common.fluids;
 
+import net.dries007.tfc.fabric.event.FluidReactCallback;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.fluid.FlowableFluid;
@@ -17,7 +18,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldView;
-import net.minecraftforge.event.ForgeEventFactory;
 
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -81,7 +81,7 @@ public class FluidHelpers
             // canPassThroughWall detects if a fluid state has a barrier - e.g. via a stair edge - that would prevent it from connecting to the current block.
             if (offsetFluid.getFluid() instanceof FlowableFluid && ((FlowingFluidAccessor) self).invoke$canPassThroughWall(direction, worldIn, pos, blockStateIn, offsetPos, offsetState))
             {
-                if (offsetFluid.isStill() && ForgeEventFactory.canCreateFluidSource(worldIn, offsetPos, offsetState, canConvertToSource))
+                if (offsetFluid.isStill() )//&& ForgeEventFactory.canCreateFluidSource(worldIn, offsetPos, offsetState, canConvertToSource))
                 {
                     adjacentSourceBlocks++;
                     adjacentSourceBlocksByFluid.mergeInt((FlowableFluid) offsetFluid.getFluid(), 1, Integer::sum);
@@ -170,14 +170,14 @@ public class FluidHelpers
                 BlockPos adjacentPos = pos.offset(direction);
                 if (worldIn.getFluidState(adjacentPos).isIn(FluidTags.WATER))
                 {
-                    worldIn.setBlockState(pos, ForgeEventFactory.fireFluidPlaceBlockEvent(worldIn, pos, pos, Blocks.OBSIDIAN.getDefaultState()));
+                    worldIn.setBlockState(pos, FluidReactCallback.EVENT.invoker().modifyBlockState(Blocks.OBSIDIAN.getDefaultState()).get());
                     worldIn.syncWorldEvent(1501, pos, 0);
                     return true;
                 }
 
                 if (soulSoilBelow && worldIn.getBlockState(adjacentPos).isOf(Blocks.BLUE_ICE))
                 {
-                    worldIn.setBlockState(pos, ForgeEventFactory.fireFluidPlaceBlockEvent(worldIn, pos, pos, Blocks.BASALT.getDefaultState()));
+                    worldIn.setBlockState(pos, FluidReactCallback.EVENT.invoker().modifyBlockState(Blocks.BASALT.getDefaultState()).get());
                     worldIn.syncWorldEvent(1501, pos, 0);
                     return true;
                 }

@@ -8,6 +8,7 @@ package net.dries007.tfc.common.blocks.plant;
 
 import java.util.Random;
 
+import net.dries007.tfc.TerraFirmaCraft;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -60,7 +61,7 @@ public abstract class PlantBlock extends TFCBushBlock
     @SuppressWarnings("deprecation")
     public void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random)
     {
-        if (random.nextDouble() < TFCConfig.SERVER.plantGrowthChance.get())
+        if (random.nextDouble() < TerraFirmaCraft.getConfig().serverConfig.blocks.plants.getPlantGrowthChance())
         {
             state = state.with(AGE, Math.min(state.get(AGE) + 1, 3));
         }

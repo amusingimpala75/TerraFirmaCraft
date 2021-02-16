@@ -8,6 +8,7 @@ package net.dries007.tfc.world.feature;
 
 import java.util.*;
 
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -35,7 +36,7 @@ public class FissureFeature extends Feature<SingleStateFeatureConfig>
     {
         final BlockPos pos = startPos.down(); // start slightly below the surface
         final ChunkDataProvider provider = ChunkDataProvider.getOrThrow(generator);
-        final ChunkData data = provider.get(pos, ChunkData.Status.ROCKS);
+        final ChunkDataChunkComponent data = provider.get(pos, ChunkDataChunkComponent.Status.ROCKS);
         final Rock bottomRock = data.getRockData().getBottomRock(pos.getX(), pos.getZ());
         final BlockState rockState = bottomRock.getBlock(Rock.BlockType.RAW).getDefaultState();
 

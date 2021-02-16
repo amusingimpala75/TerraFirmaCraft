@@ -1,5 +1,12 @@
+/*
+ * Licensed under the EUPL, Version 1.2.
+ * You may obtain a copy of the Licence at:
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ */
+
 package net.dries007.tfc.fabric.cca;
 
+import net.dries007.tfc.TerraFirmaCraft;
 import net.dries007.tfc.client.TFCSounds;
 import net.dries007.tfc.common.TFCTags;
 import net.dries007.tfc.common.entities.TFCFallingBlockEntity;
@@ -69,7 +76,7 @@ public class WorldTrackerWorldComponent implements WorldTrackerComponent {
             {
                 maxRadiusSquared = distSquared;
             }
-            if (RANDOM.nextFloat() < TFCConfig.SERVER.collapseExplosionPropagateChance.get())
+            if (RANDOM.nextFloat() < TerraFirmaCraft.getConfig().serverConfig.mechanics.collapses.getCollapseExplosionPropagateChance())
             {
                 collapsePositions.add(pos.up()); // Check the above position
             }
@@ -90,7 +97,7 @@ public class WorldTrackerWorldComponent implements WorldTrackerComponent {
                     {
                         // Check the current position for collapsing
                         BlockState stateAt = world.getBlockState(posAt);
-                        if (TFCTags.Blocks.CAN_COLLAPSE.contains(stateAt.getBlock()) && TFCFallingBlockEntity.canFallThrough(world, posAt.down()) && posAt.getSquaredDistance(collapse.getCenterPos()) < collapse.radiusSquared && RANDOM.nextFloat() < TFCConfig.SERVER.collapsePropagateChance.get())
+                        if (TFCTags.Blocks.CAN_COLLAPSE.contains(stateAt.getBlock()) && TFCFallingBlockEntity.canFallThrough(world, posAt.down()) && posAt.getSquaredDistance(collapse.getCenterPos()) < collapse.radiusSquared && RANDOM.nextFloat() < TerraFirmaCraft.getConfig().serverConfig.mechanics.collapses.getCollapsePropagateChance())
                         {
                             if (CollapseRecipe.collapseBlock(world, posAt, stateAt))
                             {

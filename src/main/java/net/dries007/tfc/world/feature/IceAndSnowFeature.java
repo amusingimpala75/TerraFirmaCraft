@@ -9,6 +9,7 @@ package net.dries007.tfc.world.feature;
 import java.util.Random;
 
 import com.google.common.annotations.VisibleForTesting;
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SnowyBlock;
@@ -54,7 +55,7 @@ public class IceAndSnowFeature extends Feature<DefaultFeatureConfig>
 
         // Since this feature may be run *both* during world generation, and after during climate updates, we need to query both the existing data, and fallback to the world gen data if empty.
         final ChunkPos chunkPos = new ChunkPos(pos);
-        final ChunkData chunkData = ChunkData.get(worldIn, chunkPos).ifEmptyGet(() -> ChunkDataProvider.getOrThrow(chunkGenerator).get(chunkPos, ChunkData.Status.CLIMATE));
+        final ChunkDataChunkComponent chunkData = ChunkDataChunkComponent.get(worldIn, chunkPos).ifEmptyGet(() -> ChunkDataProvider.getOrThrow(chunkGenerator).get(chunkPos, ChunkDataChunkComponent.Status.CLIMATE));
         final BlockPos.Mutable mutablePos = new BlockPos.Mutable();
 
         final BlockState snowState = Blocks.SNOW.getDefaultState();

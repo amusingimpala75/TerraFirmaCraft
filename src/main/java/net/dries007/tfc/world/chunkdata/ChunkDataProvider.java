@@ -9,6 +9,7 @@ package net.dries007.tfc.world.chunkdata;
 import com.google.common.annotations.VisibleForTesting;
 import net.dries007.tfc.TerraFirmaCraft;
 import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
+import net.dries007.tfc.forgereplacements.world.ServerUtil;
 import net.minecraft.server.world.ServerChunkManager;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -27,7 +28,7 @@ public final class ChunkDataProvider
      */
     public static ChunkDataProvider getOrThrow()
     {
-        return getOrThrow(TerraFirmaCraft.cache.getOverworld());
+        return getOrThrow(ServerUtil.getCurrentServer().getOverworld());
     }
 
     public static ChunkDataProvider getOrThrow(WorldAccess world)

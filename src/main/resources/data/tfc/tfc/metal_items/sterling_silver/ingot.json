@@ -1,7 +1,7 @@
 {
   "__comment__": "This file was automatically created by mcresources",
   "ingredient": {
-    "tag": "forge:ingots/sterling_silver"
+    "tag": "c:ingots/sterling_silver"
   },
   "metal": "tfc:sterling_silver",
   "amount": 100

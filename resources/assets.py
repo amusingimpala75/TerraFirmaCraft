@@ -486,11 +486,11 @@ def generate(rm: ResourceManager):
         for fence_namespace in ('tfc:wood/planks/' + wood + '_fence', log_fence_namespace):
             rm.block_tag('minecraft:wooden_fences', fence_namespace)
             rm.block_tag('minecraft:fences', fence_namespace)
-            rm.block_tag('forge:fences', fence_namespace)
-            rm.block_tag('forge:fences/wooden', fence_namespace)
+            rm.block_tag('c:fences', fence_namespace)
+            rm.block_tag('c:fences/wooden', fence_namespace)
         fence_gate_namespace = 'tfc:wood/planks/' + wood + '_fence_gate'
-        rm.block_tag('forge:fence_gates/wooden', fence_gate_namespace)
-        rm.block_tag('forge:fence_gates', fence_gate_namespace)
+        rm.block_tag('c:fence_gates/wooden', fence_gate_namespace)
+        rm.block_tag('c:fence_gates', fence_gate_namespace)
         rm.block_tag('minecraft:doors', 'tfc:wood/planks/' + wood + '_door')
         rm.block_tag('minecraft:buttons', 'tfc:wood/planks/' + wood + '_button')
         rm.block_tag('minecraft:wooden_buttons', 'tfc:wood/planks/' + wood + '_button')
@@ -512,8 +512,8 @@ def generate(rm: ResourceManager):
     def bucket_item_model(name_parts, fluid):
         res = utils.resource_location(rm.domain, name_parts)
         rm.write((*rm.resource_dir, 'assets', res.domain, 'models', 'item', res.path), {
-            'parent': 'forge:item/bucket',
-            'loader': 'forge:bucket',
+            #//'parent': 'forge:item/bucket',
+            #'loader': 'forge:bucket',
             'fluid': fluid
         })
         return rm.item(name_parts)

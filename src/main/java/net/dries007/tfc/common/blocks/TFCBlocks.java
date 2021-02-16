@@ -190,9 +190,13 @@ public final class TFCBlocks {
     private static Block register(String name, Supplier<Block> blockSupplier, Function<Block, ? extends BlockItem> blockItemFactory, boolean hasItemBlock) {
         Block block = Registry.register(Registry.BLOCK, Helpers.identifier(name), blockSupplier.get());
         if (hasItemBlock) {
-            TFCItems.register(name, () -> blockItemFactory.apply(block));
+            registerItem(name, () -> blockItemFactory.apply(block));
         }
         return block;
+    }
+
+    public static Item registerItem(String name, Supplier<Item> item) {
+        return Registry.register(Registry.ITEM, Helpers.identifier(name), item.get());
     }
 
     public static void register() {}

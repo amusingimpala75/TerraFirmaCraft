@@ -1,7 +1,7 @@
 {
   "__comment__": "This file was automatically created by mcresources",
   "ingredient": {
-    "tag": "forge:double_ingots/blue_steel"
+    "tag": "c:double_ingots/blue_steel"
   },
   "metal": "tfc:blue_steel",
   "amount": 200

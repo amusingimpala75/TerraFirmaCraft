@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.function.BiFunction;
 
 import com.google.common.annotations.VisibleForTesting;
+import net.dries007.tfc.common.blocks.FluidBlockStateProprties;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Material;
@@ -254,18 +255,18 @@ public enum Plant implements IPlant
         TWISTING_SOLID((plant, type) -> new BodyPlantBlock(solidTallPlant(), () -> TFCBlocks.PLANTS.get(plant.transform()), getBodyShape(), Direction.UP)),
         TWISTING_SOLID_TOP((plant, type) -> new TopPlantBlock(solidTallPlant(), () -> TFCBlocks.PLANTS.get(plant.transform()), Direction.UP, getTwistingShape())),
         //Water
-        KELP((plant, type) -> TFCKelpBlock.create(nonSolidTallPlant(plant), () -> TFCBlocks.PLANTS.get(plant.transform()), Direction.UP, getThinBodyShape(), TFCBlockStateProperties.SALT_WATER)),
-        KELP_TOP(((plant, type) -> TFCKelpTopBlock.create(nonSolidTallPlant(plant), () -> TFCBlocks.PLANTS.get(plant.transform()), Direction.UP, getTwistingThinShape(), TFCBlockStateProperties.SALT_WATER))),
-        KELP_TREE((plant, type) -> KelpTreeBlock.create(kelp(plant), TFCBlockStateProperties.SALT_WATER)),
-        KELP_TREE_FLOWER((plant, type) -> KelpTreeFlowerBlock.create(kelp(plant), () -> TFCBlocks.PLANTS.get(plant.transform()), TFCBlockStateProperties.SALT_WATER)),
+        KELP((plant, type) -> TFCKelpBlock.create(nonSolidTallPlant(plant), () -> TFCBlocks.PLANTS.get(plant.transform()), Direction.UP, getThinBodyShape(), FluidBlockStateProprties.SALT_WATER)),
+        KELP_TOP(((plant, type) -> TFCKelpTopBlock.create(nonSolidTallPlant(plant), () -> TFCBlocks.PLANTS.get(plant.transform()), Direction.UP, getTwistingThinShape(), FluidBlockStateProprties.SALT_WATER))),
+        KELP_TREE((plant, type) -> KelpTreeBlock.create(kelp(plant), FluidBlockStateProprties.SALT_WATER)),
+        KELP_TREE_FLOWER((plant, type) -> KelpTreeFlowerBlock.create(kelp(plant), () -> TFCBlocks.PLANTS.get(plant.transform()), FluidBlockStateProprties.SALT_WATER)),
         FLOATING((plant, type) -> FloatingWaterPlantBlock.create(plant, TFCFluids.SALT_WATER::getSecond, solid()), LilyPadItem::new),
         FLOATING_FRESH((plant, type) -> FloatingWaterPlantBlock.create(plant, () -> Fluids.WATER, solid()), LilyPadItem::new),
-        TALL_WATER((plant, type) -> TallWaterPlantBlock.create(plant, TFCBlockStateProperties.SALT_WATER, nonSolid(plant))),
-        TALL_WATER_FRESH((plant, type) -> TallWaterPlantBlock.create(plant, TFCBlockStateProperties.FRESH_WATER, nonSolid(plant))),
-        WATER((plant, type) -> WaterPlantBlock.create(plant, TFCBlockStateProperties.SALT_WATER, nonSolid(plant))),
-        WATER_FRESH((plant, type) -> WaterPlantBlock.create(plant, TFCBlockStateProperties.FRESH_WATER, nonSolid(plant))),
-        GRASS_WATER((plant, type) -> TFCSeagrassBlock.create(plant, TFCBlockStateProperties.SALT_WATER, nonSolid(plant))),
-        GRASS_WATER_FRESH((plant, type) -> TFCSeagrassBlock.create(plant, TFCBlockStateProperties.FRESH_WATER, nonSolid(plant)));
+        TALL_WATER((plant, type) -> TallWaterPlantBlock.create(plant, FluidBlockStateProprties.SALT_WATER, nonSolid(plant))),
+        TALL_WATER_FRESH((plant, type) -> TallWaterPlantBlock.create(plant, FluidBlockStateProprties.FRESH_WATER, nonSolid(plant))),
+        WATER((plant, type) -> WaterPlantBlock.create(plant, FluidBlockStateProprties.SALT_WATER, nonSolid(plant))),
+        WATER_FRESH((plant, type) -> WaterPlantBlock.create(plant, FluidBlockStateProprties.FRESH_WATER, nonSolid(plant))),
+        GRASS_WATER((plant, type) -> TFCSeagrassBlock.create(plant, FluidBlockStateProprties.SALT_WATER, nonSolid(plant))),
+        GRASS_WATER_FRESH((plant, type) -> TFCSeagrassBlock.create(plant, FluidBlockStateProprties.FRESH_WATER, nonSolid(plant)));
 
         public int getFallFoliageCoords()
         {

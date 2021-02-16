@@ -10,6 +10,7 @@ import java.util.Map;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
+import net.dries007.tfc.TerraFirmaCraft;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeManager;
 import net.minecraft.recipe.RecipeType;
@@ -39,7 +40,7 @@ public abstract class RecipeManagerMixin extends JsonDataLoader
     @Redirect(method = "apply", at = @At(value = "INVOKE", target = "Lorg/apache/logging/log4j/Logger;error(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V", remap = false), require = 0)
     private void redirect$apply$error(Logger logger, String message, Object p0, Object p1)
     {
-        if (TFCConfig.COMMON.enableDevTweaks.get())
+        if (TerraFirmaCraft.getConfig().commonConfig.general.enableDevTweaks)
         {
             logger.error(message + " {}: {}", p0, p1.getClass().getSimpleName(), ((Exception) p1).getMessage());
         }
@@ -56,7 +57,7 @@ public abstract class RecipeManagerMixin extends JsonDataLoader
     @Redirect(method = "apply", at = @At(value = "INVOKE", target = "Ljava/util/Map;size()I"), require = 0)
     private int redirect$apply$size(Map<RecipeType<?>, ImmutableMap.Builder<Identifier, Recipe<?>>> map)
     {
-        if (TFCConfig.COMMON.enableDevTweaks.get())
+        if (TerraFirmaCraft.getConfig().commonConfig.general.enableDevTweaks)
         {
             return this.recipes.values().stream().mapToInt(Map::size).sum();
         }

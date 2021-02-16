@@ -6,37 +6,36 @@
 
 package net.dries007.tfc.util.calendar;
 
-import java.util.List;
-
+import net.dries007.tfc.mixin.fabric.ServerLoginHandlerAccessor;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerLoginConnectionEvents;
+import net.minecraft.server.network.ServerPlayerEntity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.World;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerWakeUpEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 
-import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
+import java.util.List;
 
 /**
  * Event handler for calendar related ticking
  *
  * @see ServerCalendar
  */
-@Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
+//@Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class CalendarEventHandler
 {
     public static final Logger LOGGER = LogManager.getLogger();
 
-    @SubscribeEvent
+    /*@SubscribeEvent
     public static void onServerStart(FMLServerStartingEvent event)
     {
         Calendars.SERVER.onServerStart(event.getServer());
+    }*/
+
+    public static void registerServerStartEvent()
+    {
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> Calendars.SERVER.onServerStart(server));
     }
 
     /**
@@ -44,18 +43,22 @@ public class CalendarEventHandler
      * Responsible for primary time tracking for player time
      * Synced to client every second
      *
-     * @param event {@link TickEvent.ServerTickEvent}
+     * param event @link TickEvent.ServerTickEvent
      */
-    @SubscribeEvent
+    /*@SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent event)
     {
         if (event.phase == TickEvent.Phase.START)
         {
             Calendars.SERVER.onServerTick();
         }
+    }*/
+    public static void registerServerTickEvent()
+    {
+        ServerTickEvents.START_SERVER_TICK.register(server -> Calendars.SERVER.onServerTick());
     }
 
-    @SubscribeEvent
+    /*@SubscribeEvent
     public static void onOverworldTick(TickEvent.WorldTickEvent event)
     {
         World world = event.world;
@@ -64,14 +67,24 @@ public class CalendarEventHandler
         {
             Calendars.SERVER.onOverworldTick((ServerWorld) world);
         }
+    }*/
+    public static void registerOverworldTick()
+    {
+        ServerTickEvents.END_WORLD_TICK.register(world -> {
+            if (world.getRegistryKey() == World.OVERWORLD)
+            {
+                Calendars.SERVER.onOverworldTick(world);
+                LOGGER.info("Overworld tick!");
+            }
+        });
     }
 
-    /**
+    /* MOVED TO MIXIN
      * This allows beds to function correctly with TFCs calendar
      *
      * @param event {@link PlayerWakeUpEvent}
      */
-    @SubscribeEvent
+    /*@SubscribeEvent
     public static void onPlayerWakeUp(PlayerWakeUpEvent event)
     {
         if (!event.getEntity().getCommandSenderWorld().isClientSide() && !event.updateWorld())
@@ -85,16 +98,16 @@ public class CalendarEventHandler
                 event.getEntity().getEntityWorld().getPlayers()
                     .forEach(player -> player.addExhaustion(FoodStatsTFC.PASSIVE_EXHAUSTION * jump / FoodStatsTFC.EXHAUSTION_MULTIPLIER * (float) ConfigTFC.GENERAL.foodPassiveExhaustionMultiplier));
                 */
-            }
-        }
-    }
+    //        }
+    //    }
+    //}
 
     /**
      * Fired on server only when a player logs out
      *
-     * @param event {@link PlayerEvent.PlayerLoggedOutEvent}
+     * param event @link PlayerEvent.PlayerLoggedOutEvent
      */
-    @SubscribeEvent
+    /*@SubscribeEvent
     public static void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event)
     {
         if (event.getPlayer() instanceof ServerPlayerEntity)
@@ -115,14 +128,36 @@ public class CalendarEventHandler
                 Calendars.SERVER.setPlayersLoggedOn(playerCount > 0);
             }
         }
+    }*/
+    public static void registerPlayerLogoutEvent()
+    {
+        ServerLoginConnectionEvents.DISCONNECT.register((handler, server) -> {
+            if (((ServerLoginHandlerAccessor) handler).accessor$getPlayer() != null)
+            {
+                ServerPlayerEntity player = ((ServerLoginHandlerAccessor) handler).accessor$getPlayer();
+                // Check total players and reset player / calendar time ticking
+                if (server != null)
+                {
+                    LOGGER.info("Player Logged Out - Checking for Calendar Updates.");
+                    List<ServerPlayerEntity> players = server.getPlayerManager().getPlayerList();
+                    int playerCount = players.size();
+                    // The player logging out doesn't count
+                    if (players.contains(player))
+                    {
+                        playerCount--;
+                    }
+                    Calendars.SERVER.setPlayersLoggedOn(playerCount > 0);
+                }
+            }
+        });
     }
 
     /**
      * Fired on server only when a player logs in
      *
-     * @param event {@link PlayerEvent.PlayerLoggedInEvent}
+     * param event @link PlayerEvent.PlayerLoggedInEvent
      */
-    @SubscribeEvent
+    /*@SubscribeEvent
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event)
     {
         if (event.getPlayer() instanceof ServerPlayerEntity)
@@ -136,5 +171,30 @@ public class CalendarEventHandler
                 Calendars.SERVER.setPlayersLoggedOn(server.getPlayerList().getPlayerCount() > 0);
             }
         }
+    }*/
+
+    public static void registerPlayerLoginEvent()
+    {
+        ServerLoginConnectionEvents.QUERY_START.register((handler, server, sender, synchronizer) -> {
+            if (((ServerLoginHandlerAccessor) handler).accessor$getPlayer() != null)
+            {
+                ServerPlayerEntity player = ((ServerLoginHandlerAccessor) handler).accessor$getPlayer();
+                // Check total players and reset player / calendar time ticking
+                if (server != null)
+                {
+                    LOGGER.info("Player Logged In - Checking for Calendar Updates.");
+                    Calendars.SERVER.setPlayersLoggedOn(server.getPlayerManager().getCurrentPlayerCount() > 0);
+                }
+            }
+        });
+    }
+
+    public static void registerCalendarEvents()
+    {
+        registerPlayerLogoutEvent();
+        registerOverworldTick();
+        registerPlayerLoginEvent();
+        registerServerTickEvent();
+        registerServerStartEvent();
     }
 }

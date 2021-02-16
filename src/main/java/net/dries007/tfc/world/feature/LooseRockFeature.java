@@ -8,6 +8,7 @@ package net.dries007.tfc.world.feature;
 
 import java.util.Random;
 
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.HorizontalFacingBlock;
 import net.minecraft.fluid.Fluid;
@@ -41,7 +42,7 @@ public class LooseRockFeature extends Feature<DefaultFeatureConfig>
     public boolean generate(StructureWorldAccess worldIn, ChunkGenerator generator, Random rand, BlockPos pos, DefaultFeatureConfig config)
     {
         final ChunkDataProvider provider = ChunkDataProvider.getOrThrow(generator);
-        final ChunkData data = provider.get(pos, ChunkData.Status.ROCKS);
+        final ChunkDataChunkComponent data = provider.get(pos, ChunkDataChunkComponent.Status.ROCKS);
         final Rock rock = data.getRockData().getRock(pos.getX(), pos.getY(), pos.getZ());
         final BlockState stateAt = worldIn.getBlockState(pos);
         final BlockState state = getStateToPlace(rock.getBlock(Rock.BlockType.LOOSE).getDefaultState(), stateAt);

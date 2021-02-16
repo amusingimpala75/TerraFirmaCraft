@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Random;
 
 import com.google.common.annotations.VisibleForTesting;
+import net.dries007.tfc.TerraFirmaCraft;
 import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.util.math.ChunkPos;
 
@@ -54,19 +55,19 @@ public class ChunkDataGenerator implements IChunkDataGenerator
         this.layerHeightNoise = new OpenSimplex2D(seedGenerator.nextLong()).octaves(2).scaled(40, 60).spread(0.015f);
 
         // Climate
-        temperatureNoise = INoise1D.triangle(1, 0, 1f / (2f * TFCConfig.SERVER.temperatureScale.get()), 0)
+        temperatureNoise = INoise1D.triangle(1, 0, 1f / (2f * TerraFirmaCraft.getConfig().serverConfig.climate.temperatureScale), 0)
             .extendX()
             .scaled(Climate.MINIMUM_TEMPERATURE_SCALE, Climate.MAXIMUM_TEMPERATURE_SCALE)
             .add(new OpenSimplex2D(seedGenerator.nextLong())
                 .octaves(2)
-                .spread(12f / TFCConfig.SERVER.temperatureScale.get())
+                .spread(12f / TerraFirmaCraft.getConfig().serverConfig.climate.temperatureScale)
                 .scaled(-Climate.REGIONAL_TEMPERATURE_SCALE, Climate.REGIONAL_TEMPERATURE_SCALE));
-        rainfallNoise = INoise1D.triangle(1, 0, 1f / (2f * TFCConfig.SERVER.rainfallScale.get()), 0)
+        rainfallNoise = INoise1D.triangle(1, 0, 1f / (2f * TerraFirmaCraft.getConfig().serverConfig.climate.rainfallScale), 0)
             .extendY()
             .scaled(Climate.MINIMUM_RAINFALL, Climate.MAXIMUM_RAINFALL)
             .add(new OpenSimplex2D(seedGenerator.nextLong())
                 .octaves(2)
-                .spread(12f / TFCConfig.SERVER.rainfallScale.get())
+                .spread(12f / TerraFirmaCraft.getConfig().serverConfig.climate.rainfallScale)
                 .scaled(-Climate.REGIONAL_RAINFALL_SCALE, Climate.REGIONAL_RAINFALL_SCALE))
             .flattened(Climate.MINIMUM_RAINFALL, Climate.MAXIMUM_RAINFALL);
 

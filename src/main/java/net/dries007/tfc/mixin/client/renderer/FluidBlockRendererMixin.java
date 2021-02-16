@@ -22,7 +22,7 @@ public abstract class FluidBlockRendererMixin
      * We redirect the sameness call to one which compares for mixable fluids as well
      * Non-critical, so require none.
      */
-    @Redirect(method = "isSameFluid", at = @At(value = "INVOKE", target = "Lnet/minecraft/fluid/Fluid;isSame(Lnet/minecraft/fluid/Fluid;)Z"), require = 0)
+    @Redirect(method = "isSameFluid", at = @At(value = "INVOKE", target = "Lnet/minecraft/fluid/Fluid;matchesType(Lnet/minecraft/fluid/Fluid;)Z"), require = 0)
     private static boolean redirect$isNeighborSameFluid$isSame(Fluid fluid, Fluid fluidIn)
     {
         return fluid.matchesType(fluidIn) || FluidHelpers.canMixFluids(fluid, fluidIn);
@@ -33,7 +33,7 @@ public abstract class FluidBlockRendererMixin
      * We redirect the sameness call to one which compares for mixable fluids as well.
      * Non-critical, so require none.
      */
-    @Redirect(method = "getNorthWestCornerFluidHeight", at = @At(value = "INVOKE", target = "Lnet/minecraft/fluid/Fluid;isSame(Lnet/minecraft/fluid/Fluid;)Z"), require = 0)
+    @Redirect(method = "getNorthWestCornerFluidHeight", at = @At(value = "INVOKE", target = "Lnet/minecraft/fluid/Fluid;matchesType(Lnet/minecraft/fluid/Fluid;)Z"), require = 0)
     private boolean redirect$getWaterHeight$isSame(Fluid fluid, Fluid fluidIn)
     {
         return fluid.matchesType(fluidIn) || FluidHelpers.canMixFluids(fluid, fluidIn);

@@ -157,7 +157,7 @@ public class TFCFallingBlockEntity extends FallingBlockEntity
 
                                     if (TFCTags.Blocks.CAN_LANDSLIDE.contains(fallingBlockState.getBlock()))
                                     {
-                                        Components.WORLD_TRACKING.maybeGet(world).get().addLandslidePos(posAt);//.getCapability(WorldTrackerCapability.CAPABILITY).ifPresent(cap -> cap.addLandslidePos(posAt));
+                                        Components.WORLD_TRACKING.maybeGet(world).ifPresent(comp -> comp.addLandslidePos(posAt));//.getCapability(WorldTrackerCapability.CAPABILITY).ifPresent(cap -> cap.addLandslidePos(posAt));
                                     }
 
                                     // Sets the tile entity if it exists

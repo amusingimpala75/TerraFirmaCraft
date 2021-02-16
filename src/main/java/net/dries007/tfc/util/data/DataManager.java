@@ -21,7 +21,6 @@ import net.minecraft.util.JsonHelper;
 import net.minecraft.util.profiler.Profiler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import net.minecraftforge.common.crafting.CraftingHelper;
 
 import net.dries007.tfc.TerraFirmaCraft;
 import org.jetbrains.annotations.Nullable;
@@ -105,14 +104,14 @@ public abstract class DataManager<T> extends JsonDataLoader
             JsonObject json = JsonHelper.asObject(entry.getValue(), "root");
             try
             {
-                if (CraftingHelper.processConditions(json, "conditions"))
+                //if (CraftingHelper.processConditions(json, "conditions"))
                 {
                     T object = read(name, json);
                     types.put(name, object);
                 }
-                else
+                //else
                 {
-                    LOGGER.info("Skipping loading {} '{}' as it's conditions were not met", typeName, name);
+                //    LOGGER.info("Skipping loading {} '{}' as it's conditions were not met", typeName, name);
                 }
             }
             catch (IllegalArgumentException | JsonParseException e)

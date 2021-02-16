@@ -40,7 +40,7 @@ public abstract class WorldRendererMixin
     /**
      * Redirect the call to {@link Biome#getPrecipitation()} with one that has a position and world context
      */
-    @Redirect(method = "renderWeather", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/biome/Biome;getPrecipitation()Lnet/minecraft/world/biome/Biome$RainType;"))
+    @Redirect(method = "renderWeather", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/biome/Biome;getPrecipitation()Lnet/minecraft/world/biome/Biome$Precipitation;"))
     private Biome.Precipitation redirect$renderSnowAndRain$getPrecipitation(Biome biome, LightmapTextureManager lightmapIn, float partialTicks, double xIn, double yIn, double zIn)
     {
         mutablePos.set(xIn, yIn, zIn);
@@ -59,7 +59,7 @@ public abstract class WorldRendererMixin
     /**
      * Redirect the call to {@link Biome#getPrecipitation()} with one that has a position and world context
      */
-    @Redirect(method = "tickRainSplashing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/biome/Biome;getPrecipitation()Lnet/minecraft/world/biome/Biome$RainType;"))
+    @Redirect(method = "tickRainSplashing", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/biome/Biome;getPrecipitation()Lnet/minecraft/world/biome/Biome$Precipitation;"))
     private Biome.Precipitation redirect$tickRain$getPrecipitation(Biome biome, Camera activeRenderInfo)
     {
         return Climate.getVanillaBiomePrecipitation(biome, world, activeRenderInfo.getBlockPos());

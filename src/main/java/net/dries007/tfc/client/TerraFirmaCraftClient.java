@@ -1,3 +1,9 @@
+/*
+ * Licensed under the EUPL, Version 1.2.
+ * You may obtain a copy of the Licence at:
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ */
+
 package net.dries007.tfc.client;
 
 import net.dries007.tfc.client.screen.CalendarScreen;
@@ -12,28 +18,26 @@ import net.dries007.tfc.common.fluids.TFCFluids;
 import net.dries007.tfc.common.types.Metal;
 import net.dries007.tfc.common.types.Rock;
 import net.dries007.tfc.common.types.Wood;
+import net.dries007.tfc.fabric.Networking;
 import net.dries007.tfc.mixin.world.biome.BiomeColorsAccessor;
 import net.dries007.tfc.util.Helpers;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
-import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.screenhandler.v1.ScreenRegistry;
 import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.color.block.BlockColors;
-import net.minecraft.client.color.item.ItemColors;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.entity.FallingBlockEntityRenderer;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.texture.SpriteAtlasTexture;
-import net.minecraft.entity.FallingBlockEntity;
 import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
@@ -48,6 +52,8 @@ import net.minecraft.world.BlockRenderView;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -59,7 +65,7 @@ public class TerraFirmaCraftClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
 
-        for (Map.Entry<Metal.Default, TFCFluids.FluidPair<FlowableFluid>> set : TFCFluids.METALS.entrySet()) {
+        for (Map.Entry<Metal.Default, TFCFluids.FluidPair<net.dries007.tfc.forgereplacements.fluid.FlowableFluid>> set : TFCFluids.METALS.entrySet()) {
             setupFluidRendering(set.getValue().getSource(), set.getValue().getFlowing(), ALPHA_MASK | set.getKey().getColor());
         }
         setupFluidRendering(TFCFluids.SALT_WATER.getSource(), TFCFluids.SALT_WATER.getFlowing(), ALPHA_MASK | 0x3F76E4);
@@ -119,21 +125,16 @@ public class TerraFirmaCraftClient implements ClientModInitializer {
         // Misc
         BiomeColorsAccessor.accessor$setWaterColorResolver(TFCColors.FRESH_WATER);
 
-
-        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).addReloadListener(new SimpleSynchronousResourceReloadListener() {
-            @Override
-            public Identifier getFabricId() {
-                return Helpers.identifier("terrafirmacraft");
-            }
-
-            @Override
-            public void apply(ResourceManager manager) {
-                registerParticleFactoriesAndOtherStuff((ReloadableResourceManager) manager);
-            }
-        });
+        for (IdentifiableResourceReloadListener listener : registerResourceReloadListeners()) {
+            ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(listener);
+        }
 
         registerColorHandlerItems();
         registerColorHandlerBlocks();
+
+        Networking.clientRegister();
+
+        ClientForgeEventHandler.registerClientEvents();
     }
 
 
@@ -233,7 +234,7 @@ public class TerraFirmaCraftClient implements ClientModInitializer {
     }
 
     //@SubscribeEvent
-    public static void registerParticleFactoriesAndOtherStuff(ReloadableResourceManager resourceManager)
+    public static List<IdentifiableResourceReloadListener> registerResourceReloadListeners()
     {
         // Add client reload listeners here, as it's closest to the location where they are added in vanilla
         //ReloadableResourceManager resourceManager = (ReloadableResourceManager) MinecraftClient.getInstance().getResourceManager();
@@ -243,14 +244,16 @@ public class TerraFirmaCraftClient implements ClientModInitializer {
         // Sky, Fog, Water and Water Fog color to replace hardcoded per-biome water colors
         // Grass and foliage (which we replace vanilla's anyway, but use our own for better indexing)
         // Foliage winter and fall (for deciduous trees which have leaves which change color during those seasons)
+        List<IdentifiableResourceReloadListener> listeners = new ArrayList<>();
+        listeners.add(new ColorMapReloadListener(TFCColors::setSkyColors, TFCColors.SKY_COLORS_LOCATION, "colormap/sky_colors"));
+        listeners.add(new ColorMapReloadListener(TFCColors::setFogColors, TFCColors.FOG_COLORS_LOCATION, "colormap/fog_colors"));
+        listeners.add(new ColorMapReloadListener(TFCColors::setWaterColors, TFCColors.WATER_COLORS_LOCATION, "colormap/water_colors"));
+        listeners.add(new ColorMapReloadListener(TFCColors::setWaterFogColors, TFCColors.WATER_FOG_COLORS_LOCATION, "colormap/watr_fog_colors"));
+        listeners.add(new ColorMapReloadListener(TFCColors::setGrassColors, TFCColors.GRASS_COLORS_LOCATION, "colormap/grass_colors"));
+        listeners.add(new ColorMapReloadListener(TFCColors::setFoliageColors, TFCColors.FOLIAGE_COLORS_LOCATION, "colormap/foliage_colors"));
+        listeners.add(new ColorMapReloadListener(TFCColors::setFoliageFallColors, TFCColors.FOLIAGE_FALL_COLORS_LOCATION, "colormap/fall_foliage_colors"));
+        listeners.add(new ColorMapReloadListener(TFCColors::setFoliageWinterColors, TFCColors.FOLIAGE_WINTER_COLORS_LOCATION, "colormap/winter_foliage_colors"));
 
-        resourceManager.registerListener(new ColorMapReloadListener(TFCColors::setSkyColors, TFCColors.SKY_COLORS_LOCATION));
-        resourceManager.registerListener(new ColorMapReloadListener(TFCColors::setFogColors, TFCColors.FOG_COLORS_LOCATION));
-        resourceManager.registerListener(new ColorMapReloadListener(TFCColors::setWaterColors, TFCColors.WATER_COLORS_LOCATION));
-        resourceManager.registerListener(new ColorMapReloadListener(TFCColors::setWaterFogColors, TFCColors.WATER_FOG_COLORS_LOCATION));
-        resourceManager.registerListener(new ColorMapReloadListener(TFCColors::setGrassColors, TFCColors.GRASS_COLORS_LOCATION));
-        resourceManager.registerListener(new ColorMapReloadListener(TFCColors::setFoliageColors, TFCColors.FOLIAGE_COLORS_LOCATION));
-        resourceManager.registerListener(new ColorMapReloadListener(TFCColors::setFoliageFallColors, TFCColors.FOLIAGE_FALL_COLORS_LOCATION));
-        resourceManager.registerListener(new ColorMapReloadListener(TFCColors::setFoliageWinterColors, TFCColors.FOLIAGE_WINTER_COLORS_LOCATION));
+        return listeners;
     }
 }

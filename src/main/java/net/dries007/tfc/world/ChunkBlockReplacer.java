@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -97,7 +98,7 @@ public class ChunkBlockReplacer
         register(Blocks.WATER, (rockData, x, y, z, rainfall, temperature, salty) -> salty ? saltWater : freshWater);
     }
 
-    public void replace(ProtoChunk chunk, ChunkData data, StructureWorldAccess world)
+    public void replace(ProtoChunk chunk, ChunkDataChunkComponent data, StructureWorldAccess world)
     {
         final int xStart = chunk.getPos().getStartX();
         final int zStart = chunk.getPos().getStartZ();

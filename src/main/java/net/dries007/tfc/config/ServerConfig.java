@@ -6,14 +6,6 @@
 
 package net.dries007.tfc.config;
 
-import java.util.function.Function;
-
-import net.minecraftforge.common.ForgeConfigSpec;
-
-import net.dries007.tfc.util.Cache;
-
-import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
-
 /**
  * Server Config
  * - synced, stored per world, can be shipped per instance with default configs
@@ -22,7 +14,7 @@ import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
 public class ServerConfig extends CachingConfig
 {
     // General
-    public final Cache.Boolean enableNetherPortals;
+    /*public final Cache.Boolean enableNetherPortals;
     // Player
     public final Cache.Boolean enableVanillaNaturalRegeneration;
     // Climate
@@ -121,5 +113,5 @@ public class ServerConfig extends CachingConfig
         collapseRadiusVariance = wrap(builder.apply("collapseRadiusVariance").comment("Variance of the radius of a collapse. Total size is in [minRadius, minRadius + radiusVariance]").defineInRange("collapseRadiusVariance", 16, 1, 32));
 
         innerBuilder.pop().pop();
-    }
+    }*/
 }

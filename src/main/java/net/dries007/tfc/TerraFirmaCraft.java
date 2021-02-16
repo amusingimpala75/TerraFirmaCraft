@@ -6,7 +6,12 @@
 
 package net.dries007.tfc;
 
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.dries007.tfc.common.command.TFCCommands;
+import net.dries007.tfc.fabric.Networking;
+import net.dries007.tfc.forgereplacements.world.ServerUtil;
+import net.dries007.tfc.util.calendar.CalendarEventHandler;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.minecraft.server.MinecraftServer;
@@ -23,7 +28,6 @@ import net.dries007.tfc.common.items.TFCItems;
 import net.dries007.tfc.common.recipes.TFCRecipeSerializers;
 import net.dries007.tfc.common.tileentity.TFCTileEntities;
 import net.dries007.tfc.config.TFCConfig;
-import net.dries007.tfc.network.PacketHandler;
 import net.dries007.tfc.util.DispenserBehaviors;
 import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.util.InteractionManager;
@@ -45,9 +49,6 @@ public final class TerraFirmaCraft implements ModInitializer {
     public static final String MOD_ID = "tfc";
     public static final String MOD_NAME = "TerraFirmaCraft";
 
-    //Please no :concern:
-    public static MinecraftServer cache;
-
     public static final Logger LOGGER = LogManager.getLogger();
 
     //@SubscribeEvent
@@ -55,10 +56,6 @@ public final class TerraFirmaCraft implements ModInitializer {
         LOGGER.info("TFC Common Setup");
 
         // Setup methods
-        HeatCapability.setup();
-        ForgingCapability.setup();
-        ChunkDataCapability.setup();
-        WorldTrackerCapability.setup();
         ServerCalendar.setup();
         InteractionManager.setup();
         TFCWorldType.setup();
@@ -90,15 +87,18 @@ public final class TerraFirmaCraft implements ModInitializer {
         LOGGER.info("TFC Constructor");
         LOGGER.debug("Debug Logging Enabled");
 
+        AutoConfig.register(TFCConfig.class, GsonConfigSerializer::new);
+
         // Event bus subscribers
         //IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         //modEventBus.register(this);
+        TFCFluids.register();
 
         TFCBlocks.register();
         TFCItems.register();
         TFCContainerTypes.register();
         TFCEntities.register();
-        TFCFluids.register();
+
         TFCRecipeSerializers.register();
         TFCSounds.register();
         TFCTileEntities.register();
@@ -111,12 +111,22 @@ public final class TerraFirmaCraft implements ModInitializer {
         TFCBlockStateProviderTypes.register();
         TFCBlockPlacers.register();
         TFCWorldType.register();
-        CommandRegistrationCallback.EVENT.register((dispatcher, isDedicated) -> TFCCommands.register(dispatcher));
 
         // Init methods
-        TFCConfig.init();
-        PacketHandler.init();
+        //TFCConfig.init();
+        Networking.register();
+
+        ForgeEventHandler.registerEvents();
+
+        CalendarEventHandler.registerCalendarEvents();
+
+        ServerUtil.registerCacher();
 
         setup();
+    }
+
+    public static TFCConfig getConfig()
+    {
+        return AutoConfig.getConfigHolder(TFCConfig.class).getConfig();
     }
 }

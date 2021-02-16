@@ -57,9 +57,9 @@ def generate(rm: ResourceManager):
         def block(block_type: str):
             return 'tfc:rock/%s/%s' % (block_type, rock)
 
-        rm.block_tag('forge:gravel', block('gravel'))
-        rm.block_tag('forge:stone', block('raw'), block('hardened'))
-        rm.block_tag('forge:cobblestone', block('cobble'), block('mossy_cobble'))
+        rm.block_tag('c:gravel', block('gravel'))
+        rm.block_tag('c:stone', block('raw'), block('hardened'))
+        rm.block_tag('c:cobblestone', block('cobble'), block('mossy_cobble'))
         rm.block_tag('minecraft:base_stone_overworld', block('raw'), block('hardened'))
         rm.block_tag('tfc:breaks_when_isolated', block('raw'))  # only raw rock
 
@@ -74,14 +74,14 @@ def generate(rm: ResourceManager):
         rm.block_tag('minecraft:sand', 'tfc:sand/%s' % color)
 
     # Forge you dingus, use vanilla tags
-    rm.block_tag('forge:sand', '#minecraft:sand')
+    rm.block_tag('c:sand', '#minecraft:sand')
 
     # Tags
     rm.item_tag('forge:ingots/cast_iron', 'minecraft:iron_ingot')
-    rm.block_tag('tree_grows_on', 'minecraft:grass_block', '#forge:dirt', '#tfc:grass')
+    rm.block_tag('tree_grows_on', 'minecraft:grass_block', '#c:dirt', '#tfc:grass')
     rm.block_tag('supports_landslide', 'minecraft:grass_path')
-    rm.block_tag('bush_plantable_on', 'minecraft:grass_block', '#forge:dirt', '#tfc:grass')
-    rm.block_tag('sea_bush_plantable_on', '#forge:dirt', '#minecraft:sand', '#forge:gravel')
+    rm.block_tag('bush_plantable_on', 'minecraft:grass_block', '#c:dirt', '#tfc:grass')
+    rm.block_tag('sea_bush_plantable_on', '#c:dirt', '#minecraft:sand', '#c:gravel')
     rm.block_tag('creeping_plantable_on', 'minecraft:grass_block', '#tfc:grass', '#minecraft:base_stone_overworld', '#minecraft:logs')
     rm.block_tag('minecraft:bamboo_plantable_on', '#tfc:grass')
     rm.block_tag('minecraft:climbable', 'tfc:plant/hanging_vines', 'tfc:plant/hanging_vines_plant', 'tfc:plant/liana', 'tfc:plant/liana_plant')

@@ -46,49 +46,8 @@ PAUSED ON WOOD IN common/types!!
 ## Port TODO:
 - Package Info's Params nonnull and Methods nonnull
 
-- client
-  - screen - all network things
-  - ClientForgeEventHandler - migrate to fapi / mixins  
-
-- common
-  - block
-    - GroundcoverBlock - ItemHelperHandler call
-    - plant
-      - DryPlantBlock - Sand tag
-      - KelpTreeFlowerBlock - ForgeHooks pre/post plant growth calls
-      - TopPlantBlock - ^
-  - capability
-    - heat
-      - HeatDefinition - CraftingHelper call
-  - fluids
-    - FluidHelpers - ForgeEventFactory fluid related calls
-  - tileentity
-    - TFCTileEntity - Injected Forge patch calls
-  - TFCItemGroup - migrate -> fapi
-  - types
-    - MetalItem - CraftingHelper calls
-
 - config - migrate (which one tho)
-
-- mixin
-  - block
-    - SnowBlockMixin - cannot figure out super override removeByPlayer
     
-- network - fapi migration
-
 - util
-  - calendar
-    - CalendarEventHandler - transfer to fapi / mixins
-    - ServerCalendar - packets and current server calls
-  - data
-    - DataManager - CraftingHelper calls
-  - CacheInvalidationListener - current server calls
-  - Helpers - CraftingPlayer
+  - Helpers - CraftingPlayer - Suppressed for now
     
-- ForgeEventHandler - transfer to fapi / mixins
-  
-- world
-  - chunkdata
-    - ChunkDataCache - networking
-    
-- Item/Block tags Forge -> common

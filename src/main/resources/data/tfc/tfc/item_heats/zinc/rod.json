@@ -1,7 +1,7 @@
 {
   "__comment__": "This file was automatically created by mcresources",
   "ingredient": {
-    "tag": "forge:rods/zinc"
+    "tag": "c:wooden_rods/zinc"
   },
   "heat_capacity": 0.21,
   "forging_temperature": 252.0,

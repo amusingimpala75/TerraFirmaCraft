@@ -6,6 +6,7 @@
 
 package net.dries007.tfc.common.tileentity;
 
+import net.dries007.tfc.forgereplacements.block.ForgeBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.CompoundTag;
@@ -20,7 +21,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class TFCTileEntity extends BlockEntity
+public abstract class TFCTileEntity extends BlockEntity implements ForgeBlockEntity
 {
     protected static final Logger LOGGER = LogManager.getLogger();
 
@@ -71,7 +72,7 @@ public abstract class TFCTileEntity extends BlockEntity
 
     /**
      * Marks a tile entity for syncing without sending a block update.
-     * Use preferentially over {@link InventoryTileEntity#markForBlockUpdate()} if there's no reason to have a block update.
+     * Use preferentially over @link InventoryTileEntity#markForBlockUpdate() if there's no reason to have a block update.
      * For container based integer synchronization, see ITileFields
      * DO NOT call every tick
      */
@@ -103,5 +104,10 @@ public abstract class TFCTileEntity extends BlockEntity
         {
             ((ServerChunkManager) world.getChunkManager()).threadedAnvilChunkStorage.getPlayersWatchingChunk(new ChunkPos(pos), false).forEach(e -> e.networkHandler.sendPacket(packet));
         }
+    }
+
+    @Override
+    public BlockEntity getBlockEntity() {
+        return this;
     }
 }

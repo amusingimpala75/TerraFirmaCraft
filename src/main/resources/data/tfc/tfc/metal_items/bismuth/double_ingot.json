@@ -1,7 +1,7 @@
 {
   "__comment__": "This file was automatically created by mcresources",
   "ingredient": {
-    "tag": "forge:double_ingots/bismuth"
+    "tag": "c:double_ingots/bismuth"
   },
   "metal": "tfc:bismuth",
   "amount": 200

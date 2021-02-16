@@ -22,7 +22,7 @@ import net.minecraft.world.WorldAccess;
  */
 public interface IFluidLoggable extends Waterloggable, FluidFillable, FluidDrainable
 {
-    default boolean canPlaceLiquid(BlockView worldIn, BlockPos pos, BlockState state, Fluid fluidIn)
+    default boolean canFillWithFluid(BlockView worldIn, BlockPos pos, BlockState state, Fluid fluidIn)
     {
         final Fluid containedFluid = state.get(getFluidProperty()).getFluid();
         if (containedFluid == Fluids.EMPTY)
@@ -32,7 +32,7 @@ public interface IFluidLoggable extends Waterloggable, FluidFillable, FluidDrain
         return false;
     }
 
-    default boolean placeLiquid(WorldAccess worldIn, BlockPos pos, BlockState state, FluidState fluidStateIn)
+    default boolean tryFillWithFluid(WorldAccess worldIn, BlockPos pos, BlockState state, FluidState fluidStateIn)
     {
         final Fluid containedFluid = state.get(getFluidProperty()).getFluid();
         if (containedFluid == Fluids.EMPTY && getFluidProperty().getPossibleFluids().contains(fluidStateIn.getFluid()))
@@ -47,7 +47,7 @@ public interface IFluidLoggable extends Waterloggable, FluidFillable, FluidDrain
         return false;
     }
 
-    default Fluid takeLiquid(WorldAccess worldIn, BlockPos pos, BlockState state)
+    default Fluid tryDrainFluid(WorldAccess worldIn, BlockPos pos, BlockState state)
     {
         final Fluid containedFluid = state.get(getFluidProperty()).getFluid();
         if (containedFluid != Fluids.EMPTY)

@@ -75,11 +75,11 @@ METAL_BLOCKS: Dict[str, MetalItem] = {
     'lamp': MetalItem('utility', 100, 'tfc:block/lamp', None)
 }
 METAL_ITEMS: Dict[str, MetalItem] = {
-    'ingot': MetalItem('all', 100, 'item/generated', 'forge:ingots'),
-    'double_ingot': MetalItem('part', 200, 'item/generated', 'forge:double_ingots'),
-    'sheet': MetalItem('part', 200, 'item/generated', 'forge:sheets'),
-    'double_sheet': MetalItem('part', 400, 'item/generated', 'forge:double_sheets'),
-    'rod': MetalItem('part', 100, 'item/generated', 'forge:rods'),
+    'ingot': MetalItem('all', 100, 'item/generated', 'c:ingots'),
+    'double_ingot': MetalItem('part', 200, 'item/generated', 'c:double_ingots'),
+    'sheet': MetalItem('part', 200, 'item/generated', 'c:sheets'),
+    'double_sheet': MetalItem('part', 400, 'item/generated', 'c:double_sheets'),
+    'rod': MetalItem('part', 100, 'item/generated', 'c:wooden_rods'),
 
     'tuyere': MetalItem('tool', 100, 'item/generated', None),
     'pickaxe': MetalItem('tool', 100, 'item/handheld', None),

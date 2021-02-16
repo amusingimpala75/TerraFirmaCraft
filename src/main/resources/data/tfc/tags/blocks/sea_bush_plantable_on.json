@@ -2,8 +2,8 @@
   "__comment__": "This file was automatically created by mcresources",
   "replace": false,
   "values": [
-    "#forge:dirt",
+    "#c:dirt",
     "#minecraft:sand",
-    "#forge:gravel"
+    "#c:gravel"
   ]
 }

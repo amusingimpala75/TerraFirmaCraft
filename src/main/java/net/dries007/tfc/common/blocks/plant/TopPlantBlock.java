@@ -18,8 +18,6 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.WorldView;
 
-import net.dries007.tfc.config.TFCConfig;
-
 public class TopPlantBlock extends AbstractPlantStemBlock
 {
     private final Supplier<? extends Block> bodyBlock;
@@ -33,13 +31,13 @@ public class TopPlantBlock extends AbstractPlantStemBlock
     @Override
     public void randomTick(BlockState state, ServerWorld worldIn, BlockPos pos, Random random)
     {
-        if (state.get(AGE) < 25 && ForgeHooks.onCropsGrowPre(worldIn, pos.offset(growthDirection), worldIn.getBlockState(pos.offset(growthDirection)), random.nextDouble() < TFCConfig.SERVER.plantGrowthChance.get()))
+        if (state.get(AGE) < 25 )//&& ForgeHooks.onCropsGrowPre(worldIn, pos.offset(growthDirection), worldIn.getBlockState(pos.offset(growthDirection)), random.nextDouble() < TFCConfig.SERVER.plantGrowthChance.get()))
         {
             BlockPos blockpos = pos.offset(growthDirection);
             if (chooseStemState(worldIn.getBlockState(blockpos)))
             {
                 worldIn.setBlockState(blockpos, state.cycle(AGE));
-                ForgeHooks.onCropsGrowPost(worldIn, blockpos, worldIn.getBlockState(blockpos));
+                //ForgeHooks.onCropsGrowPost(worldIn, blockpos, worldIn.getBlockState(blockpos));
             }
         }
     }

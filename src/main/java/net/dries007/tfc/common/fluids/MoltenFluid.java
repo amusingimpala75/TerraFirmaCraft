@@ -28,9 +28,9 @@ public abstract class MoltenFluid extends FlowableFluid
 {
     private final LavaFluid lava;
 
-    protected MoltenFluid(FluidProperties properties)
+    protected MoltenFluid()
     {
-        super(properties);
+        super();
         this.lava = (LavaFluid) Fluids.LAVA;
     }
 
@@ -92,9 +92,9 @@ public abstract class MoltenFluid extends FlowableFluid
 
     public static class Flowing extends MoltenFluid
     {
-        public Flowing(FluidProperties properties)
+        public Flowing()
         {
-            super(properties);
+            super();
         }
 
         public boolean isStill(FluidState state)
@@ -115,9 +115,9 @@ public abstract class MoltenFluid extends FlowableFluid
 
     public static class Source extends MoltenFluid
     {
-        public Source(FluidProperties properties)
+        public Source()
         {
-            super(properties);
+            super();
         }
 
         public boolean isStill(FluidState state)

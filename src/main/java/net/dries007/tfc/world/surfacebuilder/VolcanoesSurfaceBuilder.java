@@ -8,6 +8,7 @@ package net.dries007.tfc.world.surfacebuilder;
 
 import java.util.Random;
 
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.block.BlockState;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.biome.Biome;
@@ -30,7 +31,7 @@ public class VolcanoesSurfaceBuilder extends SeededSurfaceBuilder<ParentedSurfac
     }
 
     @Override
-    public void applyWithContext(WorldAccess worldIn, ChunkData chunkData, Random random, Chunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double noise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, ParentedSurfaceBuilderConfig config)
+    public void applyWithContext(WorldAccess worldIn, ChunkDataChunkComponent chunkData, Random random, Chunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double noise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, ParentedSurfaceBuilderConfig config)
     {
         final BiomeVariants variants = TFCBiomes.getExtensionOrThrow(worldIn, biomeIn).getVariants();
         if (variants.isVolcanic())

@@ -8,6 +8,7 @@ package net.dries007.tfc.mixin.block;
 
 import java.util.Random;
 
+import net.dries007.tfc.TerraFirmaCraft;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.IceBlock;
 import net.minecraft.block.TransparentBlock;
@@ -39,7 +40,7 @@ public abstract class IceBlockMixin extends TransparentBlock
     @Inject(method = "randomTick", at = @At(value = "RETURN"))
     private void inject$randomTick(BlockState state, ServerWorld worldIn, BlockPos pos, Random random, CallbackInfo ci)
     {
-        if (TFCConfig.SERVER.enableIceAffectedByTemperature.get())
+        if (TerraFirmaCraft.getConfig().serverConfig.blocks.ice.enableIceAffectedByTemperature)
         {
             // Only run this if the default logic hasn't already set the block to air
             BlockState prevState = worldIn.getBlockState(pos);

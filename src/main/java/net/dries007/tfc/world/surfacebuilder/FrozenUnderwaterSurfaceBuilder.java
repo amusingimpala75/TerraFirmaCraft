@@ -10,6 +10,7 @@ import java.util.Random;
 import java.util.stream.IntStream;
 
 import com.google.common.collect.ImmutableList;
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.Material;
@@ -46,7 +47,7 @@ public class FrozenUnderwaterSurfaceBuilder extends SeededSurfaceBuilder<Ternary
     }
 
     @Override
-    public void applyWithContext(WorldAccess worldIn, ChunkData chunkData, Random random, Chunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double surfaceNoise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, TernarySurfaceConfig config)
+    public void applyWithContext(WorldAccess worldIn, ChunkDataChunkComponent chunkData, Random random, Chunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double surfaceNoise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, TernarySurfaceConfig config)
     {
         final BlockState packedIce = Blocks.PACKED_ICE.getDefaultState();
         final BlockState snowBlock = Blocks.SNOW_BLOCK.getDefaultState();

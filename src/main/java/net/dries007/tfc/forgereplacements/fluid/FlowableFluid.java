@@ -1,3 +1,9 @@
+/*
+ * Licensed under the EUPL, Version 1.2.
+ * You may obtain a copy of the Licence at:
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ */
+
 package net.dries007.tfc.forgereplacements.fluid;
 
 import net.minecraft.block.Block;
@@ -9,6 +15,7 @@ import net.minecraft.item.BucketItem;
 import net.minecraft.item.Item;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.Properties;
+import net.minecraft.util.Lazy;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.BlockView;
@@ -17,18 +24,23 @@ import net.minecraft.world.WorldView;
 
 public abstract class FlowableFluid extends net.minecraft.fluid.FlowableFluid {
 
-    private final Fluid flow;
-    private final Fluid still;
-    private final boolean isInfinite;
-    private final int flowSpeed;
-    private final int decreasePerBlock;
-    private final BucketItem bucketItem;
-    private final int tickRate;
-    private final Block blockToGet;
-    private final float blastResistance;
+    private Fluid flow;
+    private Fluid still;
+    private boolean isInfinite;
+    private int flowSpeed;
+    private int decreasePerBlock;
+    private Lazy<BucketItem> bucketItem;
+    private int tickRate;
+    private Lazy<Block> blockToGet;
+    private float blastResistance;
 
 
-    public FlowableFluid(FluidProperties properties) {
+    public FlowableFluid() {
+
+    }
+
+    public void init(FluidProperties properties)
+    {
         this.flow = properties.getFlow();
         this.still = properties.getStill();
         this.isInfinite = properties.isInfinite();
@@ -39,6 +51,7 @@ public abstract class FlowableFluid extends net.minecraft.fluid.FlowableFluid {
         this.blockToGet = properties.getBlockToGet();
         this.blastResistance = properties.getBlastResistance();
     }
+
     @Override
     public Fluid getFlowing() {
         return flow;
@@ -72,7 +85,7 @@ public abstract class FlowableFluid extends net.minecraft.fluid.FlowableFluid {
 
     @Override
     public Item getBucketItem() {
-        return bucketItem;
+        return bucketItem.get();
     }
 
     @Override
@@ -92,7 +105,7 @@ public abstract class FlowableFluid extends net.minecraft.fluid.FlowableFluid {
 
     @Override
     protected BlockState toBlockState(FluidState state) {
-        return blockToGet.getDefaultState().with(Properties.LEVEL_15, method_15741(state));
+        return blockToGet.get().getDefaultState().with(Properties.LEVEL_15, method_15741(state));
     }
 
     public static class Flowing extends FlowableFluid {
@@ -103,8 +116,8 @@ public abstract class FlowableFluid extends net.minecraft.fluid.FlowableFluid {
             builder.add(LEVEL);
         }
 
-        public Flowing(FluidProperties properties) {
-            super(properties);
+        public Flowing() {
+            super();
         }
 
         @Override
@@ -120,8 +133,8 @@ public abstract class FlowableFluid extends net.minecraft.fluid.FlowableFluid {
 
     public static class Still extends FlowableFluid {
 
-        public Still(FluidProperties properties) {
-            super(properties);
+        public Still() {
+            super();
         }
 
         @Override

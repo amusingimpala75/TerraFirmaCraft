@@ -108,13 +108,13 @@ public abstract class TFCKelpTopBlock extends TopPlantBlock implements IFluidLog
     }
 
     @Override
-    public boolean canPlaceLiquid(BlockView worldIn, BlockPos pos, BlockState state, Fluid fluidIn)
+    public boolean canFillWithFluid(BlockView worldIn, BlockPos pos, BlockState state, Fluid fluidIn)
     {
         return false;
     }
 
     @Override
-    public boolean placeLiquid(WorldAccess worldIn, BlockPos pos, BlockState state, FluidState fluidStateIn)
+    public boolean tryFillWithFluid(WorldAccess worldIn, BlockPos pos, BlockState state, FluidState fluidStateIn)
     {
         return false;
     }

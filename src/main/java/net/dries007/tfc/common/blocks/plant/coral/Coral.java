@@ -9,6 +9,7 @@ package net.dries007.tfc.common.blocks.plant.coral;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
+import net.dries007.tfc.util.Helpers;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.Material;
@@ -18,6 +19,7 @@ import net.minecraft.item.Item;
 
 import net.dries007.tfc.common.blocks.TFCBlocks;
 import net.minecraft.sound.BlockSoundGroup;
+import net.minecraft.util.registry.Registry;
 
 public class Coral {
     public enum Color {
@@ -37,11 +39,14 @@ public class Coral {
 
     public enum BlockType {
         DEAD_CORAL((color, type) -> new TFCDeadCoralPlantBlock(AbstractBlock.Settings.of(Material.STONE, MaterialColor.GRAY).requiresTool().noCollision().breakInstantly())),
-        CORAL((color, type) -> new TFCCoralPlantBlock(() -> TFCBlocks.CORAL.get(color).get(DEAD_CORAL), AbstractBlock.Settings.of(Material.UNDERWATER_PLANT, color.material).noCollision().breakInstantly().sounds(BlockSoundGroup.WET_GRASS))),
+        //CORAL((color, type) -> new TFCCoralPlantBlock(() -> TFCBlocks.CORAL.get(color).get(DEAD_CORAL), AbstractBlock.Settings.of(Material.UNDERWATER_PLANT, color.material).noCollision().breakInstantly().sounds(BlockSoundGroup.WET_GRASS))),
+        CORAL((color, type) -> new TFCCoralPlantBlock(() -> Registry.BLOCK.get(Helpers.identifier("coral/" + color.toString().toLowerCase() + "_" + DEAD_CORAL.toString().toLowerCase())), AbstractBlock.Settings.of(Material.UNDERWATER_PLANT, color.material).noCollision().breakInstantly().sounds(BlockSoundGroup.WET_GRASS))),
         DEAD_CORAL_FAN((color, type) -> new TFCCoralFanBlock(AbstractBlock.Settings.of(Material.STONE, MaterialColor.GRAY).requiresTool().noCollision().breakInstantly())),
-        CORAL_FAN((color, type) -> new TFCCoralFinBlock(() -> TFCBlocks.CORAL.get(color).get(DEAD_CORAL_FAN), AbstractBlock.Settings.of(Material.UNDERWATER_PLANT, color.material).noCollision().breakInstantly().sounds(BlockSoundGroup.WET_GRASS))),
-        DEAD_CORAL_WALL_FAN((color, type) -> new TFCDeadCoralWallFanBlock(AbstractBlock.Settings.of(Material.STONE, MaterialColor.GRAY).requiresTool().noCollision().breakInstantly().dropsLike(TFCBlocks.CORAL.get(color).get(DEAD_CORAL_FAN)))),
-        CORAL_WALL_FAN((color, type) -> new TFCCoralWallFanBlock(() -> TFCBlocks.CORAL.get(color).get(DEAD_CORAL_WALL_FAN), AbstractBlock.Settings.of(Material.UNDERWATER_PLANT, color.material).noCollision().breakInstantly().sounds(BlockSoundGroup.WET_GRASS).dropsLike(TFCBlocks.CORAL.get(color).get(CORAL_FAN))));
+        //CORAL_FAN((color, type) -> new TFCCoralFinBlock(() -> TFCBlocks.CORAL.get(color).get(DEAD_CORAL_FAN), AbstractBlock.Settings.of(Material.UNDERWATER_PLANT, color.material).noCollision().breakInstantly().sounds(BlockSoundGroup.WET_GRASS))),
+        CORAL_FAN((color, type) -> new TFCCoralFinBlock(() -> Registry.BLOCK.get(Helpers.identifier("coral/" + color.toString().toLowerCase() + "_" + DEAD_CORAL_FAN.toString().toLowerCase())), AbstractBlock.Settings.of(Material.UNDERWATER_PLANT, color.material).noCollision().breakInstantly().sounds(BlockSoundGroup.WET_GRASS))),
+        DEAD_CORAL_WALL_FAN((color, type) -> new TFCDeadCoralWallFanBlock(AbstractBlock.Settings.of(Material.STONE, MaterialColor.GRAY).requiresTool().noCollision().breakInstantly().dropsLike(Registry.BLOCK.get(Helpers.identifier("coral/" + color.toString().toLowerCase() + "_" + DEAD_CORAL_FAN.toString().toLowerCase()))))),
+        //CORAL_WALL_FAN((color, type) -> new TFCCoralWallFanBlock(() -> TFCBlocks.CORAL.get(color).get(DEAD_CORAL_WALL_FAN), AbstractBlock.Settings.of(Material.UNDERWATER_PLANT, color.material).noCollision().breakInstantly().sounds(BlockSoundGroup.WET_GRASS).dropsLike(TFCBlocks.CORAL.get(color).get(CORAL_FAN))));
+        CORAL_WALL_FAN((color, type) -> new TFCCoralWallFanBlock(() -> Registry.BLOCK.get(Helpers.identifier("coral/" + color.toString().toLowerCase() + "_" + DEAD_CORAL_WALL_FAN.toString().toLowerCase())), AbstractBlock.Settings.of(Material.UNDERWATER_PLANT, color.material).noCollision().breakInstantly().sounds(BlockSoundGroup.WET_GRASS).dropsLike(Registry.BLOCK.get(Helpers.identifier("coral/" + color.toString().toLowerCase() + "_" + CORAL_FAN.toString().toLowerCase())))));
 
         public boolean needsItem()
         {

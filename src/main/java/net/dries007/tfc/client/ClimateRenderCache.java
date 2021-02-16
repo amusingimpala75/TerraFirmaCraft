@@ -6,6 +6,7 @@
 
 package net.dries007.tfc.client;
 
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -39,7 +40,7 @@ public enum ClimateRenderCache
         if (world != null && player != null)
         {
             BlockPos pos = player.getBlockPos();
-            ChunkData data = ChunkDataCache.CLIENT.getOrEmpty(pos);
+            ChunkDataChunkComponent data = ChunkDataCache.CLIENT.getOrEmpty(pos);
 
             ticks = Calendars.CLIENT.getTicks();
             averageTemperature = data.getAverageTemp(pos);

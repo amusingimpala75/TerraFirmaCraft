@@ -8,6 +8,7 @@ package net.dries007.tfc.common.blocks.wood;
 
 import java.util.Random;
 
+import net.dries007.tfc.TerraFirmaCraft;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
@@ -152,7 +153,7 @@ public abstract class TFCLeavesBlock extends Block implements ILeavesBlock
     @SuppressWarnings("deprecation")
     public void onEntityCollision(BlockState state, World worldIn, BlockPos pos, Entity entityIn)
     {
-        if (TFCConfig.SERVER.enableLeavesSlowEntities.get())
+        if (TerraFirmaCraft.getConfig().serverConfig.blocks.leaves.enableLeavesSlowEntities)
         {
             Helpers.slowEntityInBlock(entityIn, 0.3f, 5);
         }

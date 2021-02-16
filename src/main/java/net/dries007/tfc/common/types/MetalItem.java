@@ -17,7 +17,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
-import net.minecraftforge.common.crafting.CraftingHelper;
 
 public class MetalItem
 {
@@ -29,7 +28,7 @@ public class MetalItem
     public MetalItem(Identifier id, JsonObject json)
     {
         this.id = id;
-        ingredient = CraftingHelper.getIngredient(JsonHelper.getObject(json, "ingredient"));
+        ingredient = Ingredient.fromJson(JsonHelper.getObject(json, "ingredient"));
         Identifier metalId = new Identifier(JsonHelper.getString(json, "metal"));
         metal = MetalManager.INSTANCE.get(metalId);
         if (metal == null)

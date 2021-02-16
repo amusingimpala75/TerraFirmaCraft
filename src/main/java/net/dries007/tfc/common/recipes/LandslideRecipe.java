@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import net.dries007.tfc.TerraFirmaCraft;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.recipe.RecipeSerializer;
@@ -62,7 +63,7 @@ public class LandslideRecipe extends SimpleBlockRecipe
     @SuppressWarnings("UnusedReturnValue")
     public static boolean tryLandslide(World world, BlockPos pos, BlockState state)
     {
-        if (!world.isClient && TFCConfig.SERVER.enableBlockLandslides.get())
+        if (!world.isClient && TerraFirmaCraft.getConfig().serverConfig.mechanics.collapses.enableBlockLandslides)
         {
             BlockPos fallPos = getLandSlidePos(world, pos);
             if (fallPos != null)

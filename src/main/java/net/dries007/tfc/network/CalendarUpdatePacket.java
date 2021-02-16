@@ -6,10 +6,11 @@
 
 package net.dries007.tfc.network;
 
-import java.util.function.Supplier;
-
+import net.dries007.tfc.fabric.Networking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.server.network.ServerPlayerEntity;
 
 import net.dries007.tfc.util.calendar.Calendar;
 import net.dries007.tfc.util.calendar.Calendars;
@@ -34,9 +35,18 @@ public class CalendarUpdatePacket
         instance.write(buffer);
     }
 
-    void handle(Supplier<NetworkEvent.Context> context)
+    //void handle(Supplier<NetworkEvent.Context> context)
+    public void handle()
     {
-        context.get().enqueueWork(() -> Calendars.CLIENT.reset(instance));
-        context.get().setPacketHandled(true);
+        //context.get().enqueueWork(() -> Calendars.CLIENT.reset(instance));
+        //context.get().setPacketHandled(true);
+        Calendars.CLIENT.reset(instance);
+    }
+
+    public void send(ServerPlayerEntity e)
+    {
+        PacketByteBuf buf = PacketByteBufs.create();
+        encode(buf);
+        ServerPlayNetworking.send(e, Networking.CALENDAR_UPDATE_PACKET_ID, buf);
     }
 }

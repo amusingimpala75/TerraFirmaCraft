@@ -84,13 +84,14 @@ public abstract class TFCKelpBlock extends BodyPlantBlock implements IFluidLogga
     }
 
     @Override
-    public boolean canPlaceLiquid(BlockView worldIn, BlockPos pos, BlockState state, Fluid fluidIn)
+    public boolean canFillWithFluid
+        (BlockView worldIn, BlockPos pos, BlockState state, Fluid fluidIn)
     {
         return false;
     }
 
     @Override
-    public boolean placeLiquid(WorldAccess worldIn, BlockPos pos, BlockState state, FluidState fluidStateIn)
+    public boolean tryFillWithFluid(WorldAccess worldIn, BlockPos pos, BlockState state, FluidState fluidStateIn)
     {
         return false;
     }

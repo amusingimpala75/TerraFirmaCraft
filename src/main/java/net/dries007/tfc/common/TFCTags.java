@@ -13,6 +13,7 @@ import net.minecraft.item.Item;
 import net.minecraft.tag.Tag;
 
 import net.dries007.tfc.util.Helpers;
+import net.minecraft.util.Identifier;
 
 public class TFCTags
 {
@@ -70,6 +71,16 @@ public class TFCTags
         private static Tag.Identified<Item> create(String id)
         {
             return (Tag.Identified<Item>) TagRegistry.item(Helpers.identifier(id));
+        }
+    }
+
+    public static class Common
+    {
+        public static final Tag.Identified<Block> SAND = block("sand");
+
+        private static Tag.Identified<Block> block(String id)
+        {
+            return (Tag.Identified<Block>) TagRegistry.block(new Identifier("c", id));
         }
     }
 }

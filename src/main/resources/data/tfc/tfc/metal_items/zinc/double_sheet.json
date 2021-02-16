@@ -1,7 +1,7 @@
 {
   "__comment__": "This file was automatically created by mcresources",
   "ingredient": {
-    "tag": "forge:double_sheets/zinc"
+    "tag": "c:double_sheets/zinc"
   },
   "metal": "tfc:zinc",
   "amount": 400

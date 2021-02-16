@@ -6,6 +6,7 @@
 
 package net.dries007.tfc.common.blocks.plant.coral;
 
+import net.dries007.tfc.common.blocks.FluidBlockStateProprties;
 import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
@@ -20,7 +21,6 @@ import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
-import net.dries007.tfc.common.blocks.TFCBlockStateProperties;
 import net.dries007.tfc.common.fluids.FluidProperty;
 import net.dries007.tfc.common.fluids.IFluidLoggable;
 import net.dries007.tfc.common.fluids.TFCFluids;
@@ -33,7 +33,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class TFCAbstractCoralPlantBlock extends Block implements IFluidLoggable
 {
-    public static final FluidProperty FLUID = TFCBlockStateProperties.SALT_WATER;
+    public static final FluidProperty FLUID = FluidBlockStateProprties.SALT_WATER;
     private static final VoxelShape AABB = Block.createCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 4.0D, 14.0D);
 
     public TFCAbstractCoralPlantBlock(AbstractBlock.Settings properties)

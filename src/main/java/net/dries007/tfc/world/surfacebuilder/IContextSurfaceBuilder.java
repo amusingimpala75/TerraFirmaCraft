@@ -8,6 +8,7 @@ package net.dries007.tfc.world.surfacebuilder;
 
 import java.util.Random;
 
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.block.BlockState;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.biome.Biome;
@@ -24,7 +25,7 @@ public interface IContextSurfaceBuilder<C extends SurfaceConfig>
 {
     /**
      * @param worldIn   The world, for querying biome extensions
-     * @param chunkData Chunk data, generated to at least {@link ChunkData.Status#ROCKS}
+     * @param chunkData Chunk data, generated to at least {@link ChunkDataChunkComponent.Status#ROCKS}
      */
-    void applyWithContext(WorldAccess worldIn, ChunkData chunkData, Random random, Chunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double noise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, C config);
+    void applyWithContext(WorldAccess worldIn, ChunkDataChunkComponent chunkData, Random random, Chunk chunkIn, Biome biomeIn, int x, int z, int startHeight, double noise, BlockState defaultBlock, BlockState defaultFluid, int seaLevel, long seed, C config);
 }

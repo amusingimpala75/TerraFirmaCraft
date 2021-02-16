@@ -16,7 +16,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.recipe.Ingredient;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.JsonHelper;
-import net.minecraftforge.common.crafting.CraftingHelper;
 
 /**
  * This is a definition (reloaded via {@link HeatManager}) of a heat that is applied to an item stack.
@@ -27,7 +26,7 @@ public class HeatDefinition
     private final Ingredient ingredient;
     public final float heatCapactiy;
     public final float forgingTemp;
-    public final float weldingTemp
+    public final float weldingTemp;
 
     public HeatDefinition(Identifier id, JsonObject obj)
     {
@@ -35,7 +34,7 @@ public class HeatDefinition
         this.heatCapactiy = JsonHelper.getFloat(obj, "heat_capacity");
         this.forgingTemp = JsonHelper.getFloat(obj, "forging_temperature", 0);
         this.weldingTemp = JsonHelper.getFloat(obj, "welding_temperature", 0);
-        this.ingredient = CraftingHelper.getIngredient(JsonHelper.getObject(obj, "ingredient"));
+        this.ingredient = Ingredient.fromJson(JsonHelper.getObject(obj, "ingredient"));
     }
 
     public Identifier getId()

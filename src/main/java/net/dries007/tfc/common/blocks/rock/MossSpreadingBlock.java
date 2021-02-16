@@ -8,6 +8,7 @@ package net.dries007.tfc.common.blocks.rock;
 
 import java.util.Random;
 
+import net.dries007.tfc.TerraFirmaCraft;
 import net.dries007.tfc.fabric.duck.WorldDuck;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -21,7 +22,7 @@ public class MossSpreadingBlock extends Block
 {
     public static void spreadMoss(World world, BlockPos pos, BlockState state, Random random)
     {
-        if (((WorldDuck)world).inject$isAreaLoaded(pos, 5) && TFCConfig.SERVER.enableMossyRockSpreading.get() && random.nextInt(TFCConfig.SERVER.mossyRockSpreadRate.get()) == 0)
+        if (((WorldDuck)world).inject$isAreaLoaded(pos, 5) && TerraFirmaCraft.getConfig().serverConfig.blocks.cobble.enableMossyRockSpreading && random.nextInt(TerraFirmaCraft.getConfig().serverConfig.blocks.cobble.mossyRockSpreadRate) == 0)
         {
             BlockPos targetPos = pos.add(random.nextInt(4) - random.nextInt(4), random.nextInt(4) - random.nextInt(4), random.nextInt(4) - random.nextInt(4));
             BlockState targetState = world.getBlockState(targetPos);

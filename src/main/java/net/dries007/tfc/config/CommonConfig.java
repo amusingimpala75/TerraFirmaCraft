@@ -6,14 +6,6 @@
 
 package net.dries007.tfc.config;
 
-import java.util.function.Function;
-
-import net.minecraftforge.common.ForgeConfigSpec;
-
-import net.dries007.tfc.util.Cache;
-
-import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
-
 /**
  * Common Config
  * - not synced, saved per instance
@@ -22,7 +14,7 @@ import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
 public class CommonConfig extends CachingConfig
 {
     // General
-    public final Cache.Int defaultMonthLength;
+    /*public final Cache.Int defaultMonthLength;
     public final Cache.Boolean enableDevTweaks;
     public final Cache.Boolean setTFCWorldTypeAsDefault;
 
@@ -51,5 +43,5 @@ public class CommonConfig extends CachingConfig
         ).define("setTFCWorldTypeAsDefault", true));
 
         innerBuilder.pop();
-    }
+    }*/
 }

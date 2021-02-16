@@ -13,6 +13,7 @@ import java.util.Map;
 
 import net.dries007.tfc.TerraFirmaCraft;
 import net.dries007.tfc.forgereplacements.world.BiomeType;
+import net.dries007.tfc.forgereplacements.world.ServerUtil;
 import net.minecraft.class_5423;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.BuiltinRegistries;
@@ -106,7 +107,7 @@ public final class TFCBiomes
     @Nullable
     public static BiomeExtension getExtension(Biome biome)
     {
-        return getExtension(TerraFirmaCraft.cache.getRegistryManager(), biome);
+        return getExtension(ServerUtil.getCurrentServer().getRegistryManager(), biome);
     }
 
     @Nullable

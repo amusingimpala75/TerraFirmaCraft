@@ -8,13 +8,12 @@ package net.dries007.tfc.config;
 
 import java.util.ArrayList;
 
-import net.minecraftforge.common.ForgeConfigSpec;
 
 import net.dries007.tfc.util.Cache;
 
 public class CachingConfig
 {
-    private final ArrayList<Cache> cache;
+    /*private final ArrayList<Cache> cache;
 
     protected CachingConfig()
     {
@@ -53,5 +52,5 @@ public class CachingConfig
     {
         cache.add(t);
         return t;
-    }
+    }*/
 }

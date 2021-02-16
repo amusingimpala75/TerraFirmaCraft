@@ -1,15 +1,22 @@
+/*
+ * Licensed under the EUPL, Version 1.2.
+ * You may obtain a copy of the Licence at:
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ */
+
 package net.dries007.tfc.forgereplacements.fluid;
 
 import net.minecraft.block.Block;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.item.BucketItem;
+import net.minecraft.util.Lazy;
 
 @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal", "unused"})
 public class FluidProperties {
     private Fluid flow;
     private Fluid still;
-    private BucketItem bucketItem;
-    private Block blockToGet;
+    private Lazy<BucketItem> bucketItem;
+    private Lazy<Block> blockToGet;
     private boolean isInfinite = false;
     private int flowSpeed = 4;
     private int decreasePerBlock = 1;
@@ -46,12 +53,12 @@ public class FluidProperties {
         return this;
     }
 
-    public FluidProperties setBucket(BucketItem b) {
+    public FluidProperties setBucket(Lazy<BucketItem> b) {
         this.bucketItem = b;
         return this;
     }
 
-    public FluidProperties setBlock(Block b) {
+    public FluidProperties setBlock(Lazy<Block> b) {
         this.blockToGet = b;
         return this;
     }
@@ -63,11 +70,11 @@ public class FluidProperties {
         return still;
     }
 
-    public BucketItem getBucketItem() {
+    public Lazy<BucketItem> getBucketItem() {
         return bucketItem;
     }
 
-    public Block getBlockToGet() {
+    public Lazy<Block> getBlockToGet() {
         return blockToGet;
     }
 

@@ -6,14 +6,6 @@
 
 package net.dries007.tfc.config;
 
-import java.util.function.Function;
-
-import net.minecraftforge.common.ForgeConfigSpec;
-
-import net.dries007.tfc.util.Cache;
-
-import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
-
 /**
  * Client Config
  * - not synced, only loaded client side
@@ -21,7 +13,7 @@ import static net.dries007.tfc.TerraFirmaCraft.MOD_ID;
  */
 public class ClientConfig extends CachingConfig
 {
-    public final Cache.Boolean ignoreExperimentalWorldGenWarning;
+    /*public final Cache.Boolean ignoreExperimentalWorldGenWarning;
     public final Cache.Boolean assumeTFCWorld;
 
     ClientConfig(ForgeConfigSpec.Builder innerBuilder)
@@ -36,5 +28,5 @@ public class ClientConfig extends CachingConfig
             "1. (Requires a world restart) Cloud height is moved from 160 -> 210",
             "2. The 'horizon height' (where the fog changes from sky to black) is moved from 63 -> 96"
         ).define("assumeTFCWorld", true));
-    }
+    }*/
 }

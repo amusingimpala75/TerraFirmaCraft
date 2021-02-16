@@ -8,11 +8,11 @@ package net.dries007.tfc.common.fluids;
 
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import net.dries007.tfc.forgereplacements.fluid.FluidProperties;
-import net.minecraft.fluid.FlowableFluid;
+//import net.minecraft.fluid.FlowableFluid;
+import net.minecraft.block.Block;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Lazy;
 import net.minecraft.util.registry.Registry;
@@ -27,10 +27,13 @@ import net.dries007.tfc.common.items.TFCItems;
 import net.dries007.tfc.common.types.Metal;
 import net.dries007.tfc.util.Helpers;
 
+import net.dries007.tfc.forgereplacements.fluid.FlowableFluid;
+
 /**
  * Pairs are {Flowing First, Source Second}
  */
 @SuppressWarnings({"unused", "SameParameterValue"})
+//TODO: Implement commented out areas
 public final class TFCFluids {
     /**
      * Texture locations for both vanilla and TFC fluid textures
@@ -53,7 +56,7 @@ public final class TFCFluids {
     public static final Map<Metal.Default, FluidPair<FlowableFluid>> METALS = Helpers.mapOfKeys(Metal.Default.class, metal -> register(
         "metal/" + metal.name().toLowerCase(),
         "metal/flowing_" + metal.name().toLowerCase(),
-        properties -> properties.setBlock(TFCBlocks.METAL_FLUIDS.get(metal)).setBucket(TFCItems.METAL_FLUID_BUCKETS.get(metal)).setBlastResistance(100),
+        properties -> properties.setBlock(new Lazy<>(() -> TFCBlocks.METAL_FLUIDS.get(metal))).setBucket(new Lazy<>(() -> TFCItems.METAL_FLUID_BUCKETS.get(metal))).setBlastResistance(100),
         //FluidAttributes.builder(MOLTEN_STILL, MOLTEN_FLOW)
         //    .translationKey("fluid.tfc.metal." + metal.name().toLowerCase())
         //    .color(ALPHA_MASK | metal.getColor())
@@ -71,7 +74,7 @@ public final class TFCFluids {
     public static final FluidPair<FlowableFluid> SALT_WATER = register(
         "salt_water",
         "flowing_salt_water",
-        properties -> properties.setBlock(TFCBlocks.SALT_WATER).setBucket(TFCItems.SALT_WATER_BUCKET).setInfinite(true),
+        properties -> properties.setBlock(new Lazy<>(() -> TFCBlocks.SALT_WATER)).setBucket(new Lazy<>(() -> TFCItems.SALT_WATER_BUCKET)).setInfinite(true),
         //builder(WATER_STILL, WATER_FLOW, SaltWaterAttributes::new)
         //    .translationKey("fluid.tfc.salt_water")
         //    .overlay(WATER_OVERLAY)
@@ -85,7 +88,7 @@ public final class TFCFluids {
     public static final FluidPair<FlowableFluid> SPRING_WATER = register(
         "spring_water",
         "flowing_spring_water",
-        properties -> properties.setBlock(TFCBlocks.SPRING_WATER).setBucket(TFCItems.SPRING_WATER_BUCKET),
+        properties -> properties.setBlock(new Lazy<>(() -> TFCBlocks.SPRING_WATER)).setBucket(new Lazy<>(() ->TFCItems.SPRING_WATER_BUCKET)),
         //FluidAttributes.builder(WATER_STILL, WATER_FLOW)
         //    .translationKey("fluid.tfc.spring_water")
         //    .color(ALPHA_MASK | 0x4ECBD7)
@@ -110,21 +113,31 @@ public final class TFCFluids {
     }
 
     @SuppressWarnings("unchecked")
-    private static <F extends FlowableFluid> FluidPair<F> register(String sourceName, String flowingName, Consumer<FluidProperties> builder, Function<FluidProperties, F> sourceFactory, Function<FluidProperties, F> flowingFactory, boolean burning)
+    private static <F extends net.dries007.tfc.forgereplacements.fluid.FlowableFluid> FluidPair<F> register(String sourceName, String flowingName, Consumer<FluidProperties> builder, Supplier<F> sourceFactory, Supplier<F> flowingFactory, boolean burning)
     {
         // The properties needs a reference to both source and flowing
         // In addition, the properties builder cannot be invoked statically, as it has hard references to registry objects, which may not be populated based on class load order - it must be invoked at registration time.
         // So, first we prepare the source and flowing registry objects, referring to the properties box (which will be opened during registration, which is ok)
         // Then, we populate the properties box lazily, (since it's a mutable lazy), so the properties inside are only constructed when the box is opened (again, during registration)
         final Mutable<Lazy<FluidProperties>> propertiesBox = new MutableObject<>();
-        final F source = (F) register(sourceName, () -> sourceFactory.apply(propertiesBox.getValue().get()));
-        final F flowing = (F) register(flowingName, () -> flowingFactory.apply(propertiesBox.getValue().get()));
 
-        propertiesBox.setValue(new Lazy(() -> {
-           FluidProperties lazyProperties = new FluidProperties(source, flowing);
+        //final F source = (F) register(sourceName, () -> sourceFactory.apply(propertiesBox.getValue().get()));
+        //final F flowing = (F) register(flowingName, () -> flowingFactory.apply(propertiesBox.getValue().get()));
+
+        final F source = sourceFactory.get();
+        final F flowing = flowingFactory.get();
+
+        propertiesBox.setValue(new Lazy<>(() -> {
+            FluidProperties lazyProperties = new FluidProperties(flowing, source);
             builder.accept(lazyProperties);
             return lazyProperties;
         }));
+
+        source.init(propertiesBox.getValue().get());
+        flowing.init(propertiesBox.getValue().get());
+
+        register(sourceName, () -> source);
+        register(flowingName, () -> flowing);
 
         return new FluidPair<>(flowing, source);
     }
@@ -143,7 +156,7 @@ public final class TFCFluids {
     /**
      * This exists for simpler labels and type parameters
      */
-    public static class FluidPair<F extends FlowableFluid> extends Pair<F, F> {
+    public static class FluidPair<F extends net.minecraft.fluid.FlowableFluid> extends Pair<F, F> {
         private FluidPair(F first, F second) {
             super(first, second);
         }

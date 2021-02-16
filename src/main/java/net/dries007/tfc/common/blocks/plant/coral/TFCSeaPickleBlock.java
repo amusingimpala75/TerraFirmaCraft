@@ -6,6 +6,7 @@
 
 package net.dries007.tfc.common.blocks.plant.coral;
 
+import net.dries007.tfc.common.blocks.FluidBlockStateProprties;
 import net.minecraft.block.*;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.fluid.Fluids;
@@ -15,7 +16,6 @@ import net.minecraft.state.property.IntProperty;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 
-import net.dries007.tfc.common.blocks.TFCBlockStateProperties;
 import net.dries007.tfc.common.fluids.FluidProperty;
 import net.dries007.tfc.common.fluids.IFluidLoggable;
 import net.dries007.tfc.common.fluids.TFCFluids;
@@ -32,7 +32,7 @@ import org.jetbrains.annotations.Nullable;
 public class TFCSeaPickleBlock extends Block implements IFluidLoggable
 {
     public static final IntProperty PICKLES = Properties.PICKLES;
-    public static final FluidProperty FLUID = TFCBlockStateProperties.SALT_WATER;
+    public static final FluidProperty FLUID = FluidBlockStateProprties.SALT_WATER;
     protected static final VoxelShape ONE_AABB = Block.createCuboidShape(6.0D, 0.0D, 6.0D, 10.0D, 6.0D, 10.0D);
     protected static final VoxelShape TWO_AABB = Block.createCuboidShape(3.0D, 0.0D, 3.0D, 13.0D, 6.0D, 13.0D);
     protected static final VoxelShape THREE_AABB = Block.createCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 6.0D, 14.0D);

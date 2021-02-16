@@ -26,7 +26,7 @@ public abstract class SeededSurfaceBuilder<C extends TernarySurfaceConfig> exten
     {
         if (lastSeed != seed || !initialized)
         {
-            initSeed(seed);
+            initSeed2(seed);
 
             lastSeed = seed;
             initialized = true;

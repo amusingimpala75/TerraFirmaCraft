@@ -6,6 +6,7 @@
 
 package net.dries007.tfc.world;
 
+import net.dries007.tfc.TerraFirmaCraft;
 import net.dries007.tfc.mixin.fabric.world.GeneratorTypeAccessor;
 import net.minecraft.client.world.GeneratorType;
 import net.minecraft.util.registry.Registry;
@@ -13,7 +14,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.chunk.ChunkGeneratorSettings;
 
-import net.dries007.tfc.config.TFCConfig;
+import java.util.List;
 
 public class TFCWorldType
 {
@@ -39,11 +40,17 @@ public class TFCWorldType
         }
     }*/
 
+    //TODO: Fix
     public static void setup()
     {
-        if (TFCConfig.COMMON.setTFCWorldTypeAsDefault.get() && GeneratorTypeAccessor.accessor$getVALUES().get(0).getTranslationKey().getString().contains("default"))
+        if (TerraFirmaCraft.getConfig().commonConfig.general.setTFCWorldTypeAsDefault)
         {
-            GeneratorTypeAccessor.accessor$getVALUES().add(0, WORLD_TYPE);
+            List<GeneratorType> types = GeneratorTypeAccessor.accessor$getVALUES();
+            types.add(0, WORLD_TYPE);
+        }
+        else
+        {
+            GeneratorTypeAccessor.accessor$getVALUES().add(WORLD_TYPE);
         }
 
     }

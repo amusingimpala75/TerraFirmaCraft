@@ -1,7 +1,7 @@
 {
   "__comment__": "This file was automatically created by mcresources",
   "ingredient": {
-    "tag": "forge:sheets/brass"
+    "tag": "c:sheets/brass"
   },
   "metal": "tfc:brass",
   "amount": 200

@@ -30,7 +30,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ServerPlayerInteractionManager.class)
 public abstract class PlayerInteractionManagerMixin
 {
-    @Inject(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;useOn(Lnet/minecraft/item/ItemUseContext;)Lnet/minecraft/util/ActionResultType;"), cancellable = true, require = 2)
+    @Inject(method = "interactBlock", at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;useOnBlock(Lnet/minecraft/item/ItemUsageContext;)Lnet/minecraft/util/ActionResult;"), cancellable = true, require = 2)
     private void inject$useItemOn(ServerPlayerEntity playerIn, World worldIn, ItemStack stackIn, Hand handIn, BlockHitResult blockRaytraceResultIn, CallbackInfoReturnable<ActionResult> cir)
     {
         final int startCount = stackIn.getCount();

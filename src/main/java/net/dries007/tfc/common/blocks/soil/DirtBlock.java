@@ -8,6 +8,7 @@ package net.dries007.tfc.common.blocks.soil;
 
 import java.util.function.Supplier;
 
+import net.dries007.tfc.TerraFirmaCraft;
 import net.fabricmc.fabric.api.tool.attribute.v1.FabricToolTags;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -62,11 +63,11 @@ public class DirtBlock extends Block implements IDirtBlock
     //@Override
     public BlockState getToolModifiedState(BlockState state, World world, BlockPos pos, PlayerEntity player, ItemStack stack, Item toolType)
     {
-        if (toolType.isIn(FabricToolTags.HOES) && TFCConfig.SERVER.enableFarmlandCreation.get() && farmland != null)
+        if (toolType.isIn(FabricToolTags.HOES) && TerraFirmaCraft.getConfig().serverConfig.blocks.farmland.enableFarmlandCreation && farmland != null)
         {
             return farmland.get().getDefaultState();
         }
-        else if (toolType.isIn(FabricToolTags.SHOVELS) && TFCConfig.SERVER.enableGrassPathCreation.get() && grassPath != null)
+        else if (toolType.isIn(FabricToolTags.SHOVELS) && TerraFirmaCraft.getConfig().serverConfig.blocks.grassPath.enableGrassPathCreation && grassPath != null)
         {
             return grassPath.get().getDefaultState();
         }

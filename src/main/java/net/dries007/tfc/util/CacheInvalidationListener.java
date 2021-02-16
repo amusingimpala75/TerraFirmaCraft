@@ -10,14 +10,17 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+import net.dries007.tfc.TerraFirmaCraft;
+import net.dries007.tfc.forgereplacements.world.ServerUtil;
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceReloadListener;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import net.dries007.tfc.common.capabilities.heat.HeatManager;
 import net.dries007.tfc.common.recipes.CollapseRecipe;
@@ -30,19 +33,19 @@ import net.dries007.tfc.world.chunkdata.ChunkDataCache;
 /**
  * This is a manager for various cache invalidations, either on resource reload or server start/stop
  */
-public enum CacheInvalidationListener implements ResourceReloadListener
+public enum CacheInvalidationListener implements ResourceReloadListener, IdentifiableResourceReloadListener
 {
     INSTANCE;
 
     @Override
     public CompletableFuture<Void> reload(Synchronizer stage, ResourceManager resourceManager, Profiler preparationsProfiler, Profiler reloadProfiler, Executor backgroundExecutor, Executor gameExecutor)
     {
-        return CompletableFuture.runAsync(() -> {}, backgroundExecutor).thenCompose(stage::wait).thenRunAsync(this::invalidateAll, gameExecutor);
+        return CompletableFuture.runAsync(() -> {}, backgroundExecutor).thenCompose(stage::whenPrepared).thenRunAsync(this::invalidateAll, gameExecutor);
     }
 
     public void invalidateAll()
     {
-        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        MinecraftServer server = ServerUtil.getCurrentServer();
         if (server != null)
         {
             CollapseRecipe.CACHE.reload(getRecipes(server, TFCRecipeTypes.COLLAPSE));
@@ -61,5 +64,10 @@ public enum CacheInvalidationListener implements ResourceReloadListener
     private <C extends Inventory, R extends Recipe<C>> Collection<R> getRecipes(MinecraftServer server, RecipeType<R> recipeType)
     {
         return (Collection<R>) ((RecipeManagerAccessor) server.getRecipeManager()).call$byType(recipeType).values();
+    }
+
+    @Override
+    public Identifier getFabricId() {
+        return Helpers.identifier("data_listener/cache_invalidator");
     }
 }

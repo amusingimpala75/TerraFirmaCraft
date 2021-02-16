@@ -1,7 +1,7 @@
 {
   "__comment__": "This file was automatically created by mcresources",
   "ingredient": {
-    "tag": "forge:double_sheets/cast_iron"
+    "tag": "c:double_sheets/cast_iron"
   },
   "metal": "tfc:cast_iron",
   "amount": 400

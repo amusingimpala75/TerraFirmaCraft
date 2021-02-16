@@ -51,8 +51,8 @@ public abstract class ServerWorldMixin extends World
      * Redirect a call to {@link Biome#getPrecipitation()} with one that has world and position context.
      * The position is inferred by reverse engineering {@link ServerWorld#getRandomPosInChunk(int, int, int, int)}
      */
-    @Redirect(method = "tickChunk", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/biome/Biome;getPrecipitation()Lnet/minecraft/world/biome/Biome$RainType;"))
-    private Biome.Precipitation redirect$tickChunk$getPrecipitation(Biome biome, Chunk chunkIn)
+    @Redirect(method = "tickChunk", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/biome/Biome;getPrecipitation()Lnet/minecraft/world/biome/Biome$Precipitation;"))
+    private Biome.Precipitation redirect$tickChunk$getPrecipitation(Biome biome, WorldChunk chunkIn)
     {
         ChunkPos chunkPos = chunkIn.getPos();
         BlockPos pos = Helpers.getPreviousRandomPos(chunkPos.getStartX(), 0, chunkPos.getStartZ(), 15, lcgBlockSeed).down();

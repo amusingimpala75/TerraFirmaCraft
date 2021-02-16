@@ -8,6 +8,8 @@ package net.dries007.tfc.common.capabilities.heat;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import net.dries007.tfc.util.Helpers;
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Identifier;
@@ -16,7 +18,7 @@ import net.dries007.tfc.util.collections.IndirectHashCollection;
 import net.dries007.tfc.util.data.DataManager;
 import org.jetbrains.annotations.Nullable;
 
-public class HeatManager extends DataManager<HeatDefinition>
+public class HeatManager extends DataManager<HeatDefinition> implements IdentifiableResourceReloadListener
 {
     public static final IndirectHashCollection<Item, HeatDefinition> CACHE = new IndirectHashCollection<>(HeatDefinition::getValidItems);
     public static final HeatManager INSTANCE = new HeatManager();
@@ -48,5 +50,10 @@ public class HeatManager extends DataManager<HeatDefinition>
     protected HeatDefinition read(Identifier id, JsonObject obj)
     {
         return new HeatDefinition(id, obj);
+    }
+
+    @Override
+    public Identifier getFabricId() {
+        return Helpers.identifier("data_listener/heat_manager");
     }
 }

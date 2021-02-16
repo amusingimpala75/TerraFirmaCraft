@@ -10,6 +10,8 @@ import java.util.List;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import net.dries007.tfc.util.Helpers;
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
@@ -21,7 +23,7 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
-public class MetalItemManager extends DataManager<MetalItem>
+public class MetalItemManager extends DataManager<MetalItem> implements IdentifiableResourceReloadListener
 {
     public static final MetalItemManager INSTANCE = new MetalItemManager();
     private static final IndirectHashCollection<Item, MetalItem> CACHE = new IndirectHashCollection<>(MetalItem::getValidItems);
@@ -64,5 +66,10 @@ public class MetalItemManager extends DataManager<MetalItem>
     protected MetalItem read(Identifier id, JsonObject obj)
     {
         return new MetalItem(id, obj);
+    }
+
+    @Override
+    public Identifier getFabricId() {
+        return Helpers.identifier("data_listener/metal_item_manager");
     }
 }

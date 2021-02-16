@@ -8,6 +8,7 @@ package net.dries007.tfc.world.feature.cave;
 
 import java.util.Random;
 
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.fluid.Fluids;
@@ -38,7 +39,7 @@ public class IceCaveFeature extends Feature<DefaultFeatureConfig>
         final BlockPos.Mutable mutablePos = new BlockPos.Mutable();
         final ChunkPos chunkPos = new ChunkPos(pos);
         final ChunkDataProvider provider = ChunkDataProvider.getOrThrow(generator);
-        final ChunkData chunkData = provider.get(chunkPos, ChunkData.Status.CLIMATE);
+        final ChunkDataChunkComponent chunkData = provider.get(chunkPos, ChunkDataChunkComponent.Status.CLIMATE);
         for (int i = 0; i < 72; i++)
         {
             mutablePos.set(pos, rand.nextInt(15) - rand.nextInt(15), -3, rand.nextInt(15) - rand.nextInt(15));

@@ -6,16 +6,16 @@
 
 package net.dries007.tfc.util.calendar;
 
+import net.dries007.tfc.TerraFirmaCraft;
+import net.dries007.tfc.forgereplacements.world.ServerUtil;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.GameRules;
-import net.minecraftforge.fml.network.PacketDistributor;
-import net.minecraftforge.fml.server.ServerLifecycleHooks;
 
 import net.dries007.tfc.mixin.world.GameRulesAccessor;
 import net.dries007.tfc.mixin.world.GameRulesRuleTypeAccessor;
 import net.dries007.tfc.network.CalendarUpdatePacket;
-import net.dries007.tfc.network.PacketHandler;
 import net.dries007.tfc.util.ReentrantRunnable;
 
 public class ServerCalendar extends Calendar
@@ -224,11 +224,15 @@ public class ServerCalendar extends Calendar
 
     void sendUpdatePacket()
     {
-        PacketHandler.send(PacketDistributor.ALL.noArg(), new CalendarUpdatePacket(this));
+        //PacketHandler.send(PacketDistributor.ALL.noArg(), new CalendarUpdatePacket(this));
+        for (ServerPlayerEntity e : getServer().getPlayerManager().getPlayerList()) {
+            new CalendarUpdatePacket(this).send(e);
+            LOGGER.info("Syncing calendar to client:");
+        }
     }
 
     private MinecraftServer getServer()
     {
-        return ServerLifecycleHooks.getCurrentServer();
+        return ServerUtil.getCurrentServer();
     }
 }

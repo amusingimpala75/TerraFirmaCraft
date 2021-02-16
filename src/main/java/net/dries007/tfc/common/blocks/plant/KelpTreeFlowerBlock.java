@@ -9,6 +9,7 @@ package net.dries007.tfc.common.blocks.plant;
 import java.util.Random;
 import java.util.function.Supplier;
 
+import net.dries007.tfc.TerraFirmaCraft;
 import net.minecraft.block.*;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
@@ -24,7 +25,6 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
-import net.minecraftforge.common.ForgeHooks;
 
 import net.dries007.tfc.common.TFCTags;
 import net.dries007.tfc.common.fluids.FluidProperty;
@@ -85,10 +85,10 @@ public abstract class KelpTreeFlowerBlock extends Block implements IFluidLoggabl
         Fluid fluid = state.get(getFluidProperty()).getFluid();
 
         BlockPos abovePos = pos.up();
-        if (isEmptyWaterBlock(worldIn, abovePos) && abovePos.getY() < 256 && TFCConfig.SERVER.plantGrowthChance.get() > random.nextDouble())
+        if (isEmptyWaterBlock(worldIn, abovePos) && abovePos.getY() < 256 && TerraFirmaCraft.getConfig().serverConfig.blocks.plants.getPlantGrowthChance() > random.nextDouble())
         {
             int i = state.get(AGE);
-            if (i < 5 && ForgeHooks.onCropsGrowPre(worldIn, abovePos, state, true))
+            if (i < 5 )//&& ForgeHooks.onCropsGrowPre(worldIn, abovePos, state, true))
             {
                 boolean shouldPlaceNewBody = false;
                 boolean foundGroundFurtherDown = false;
@@ -163,7 +163,7 @@ public abstract class KelpTreeFlowerBlock extends Block implements IFluidLoggabl
                 {
                     this.placeDeadFlower(worldIn, pos);
                 }
-                ForgeHooks.onCropsGrowPost(worldIn, pos, state);
+                //ForgeHooks.onCropsGrowPost(worldIn, pos, state);
             }
         }
     }

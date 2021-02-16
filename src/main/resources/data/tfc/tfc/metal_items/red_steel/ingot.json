@@ -1,7 +1,7 @@
 {
   "__comment__": "This file was automatically created by mcresources",
   "ingredient": {
-    "tag": "forge:ingots/red_steel"
+    "tag": "c:ingots/red_steel"
   },
   "metal": "tfc:red_steel",
   "amount": 100

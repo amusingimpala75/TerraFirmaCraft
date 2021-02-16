@@ -42,9 +42,9 @@ public abstract class MixingFluid extends FlowableFluid
         return (short) ((deltaX + 128 & 255) << 8 | deltaZ + 128 & 255);
     }
 
-    protected MixingFluid(FluidProperties properties)
+    protected MixingFluid()
     {
-        super(properties);
+        super();
     }
 
     /**
@@ -351,9 +351,9 @@ public abstract class MixingFluid extends FlowableFluid
 
     public static class Flowing extends MixingFluid
     {
-        public Flowing(FluidProperties properties)
+        public Flowing()
         {
-            super(properties);
+            super();
         }
 
         public boolean isStill(FluidState state)
@@ -374,9 +374,9 @@ public abstract class MixingFluid extends FlowableFluid
 
     public static class Source extends MixingFluid
     {
-        public Source(FluidProperties properties)
+        public Source()
         {
-            super(properties);
+            super();
         }
 
         public boolean isStill(FluidState state)

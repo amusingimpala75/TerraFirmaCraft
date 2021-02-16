@@ -1,3 +1,9 @@
+/*
+ * Licensed under the EUPL, Version 1.2.
+ * You may obtain a copy of the Licence at:
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ */
+
 package net.dries007.tfc.forgereplacements.world;
 
 import net.fabricmc.fabric.api.biome.v1.OverworldBiomes;
@@ -6,9 +12,11 @@ import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.biome.Biome;
 import org.apache.logging.log4j.util.TriConsumer;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 
+@SuppressWarnings("ALL")
 public enum BiomeType {
     OCEAN(),
     PLAINS(),
@@ -34,7 +42,7 @@ public enum BiomeType {
     private BiConsumer<RegistryKey<Biome>, RegistryKey<Biome>> biomeRegFunc;
     private OverworldClimate climate;
 
-    private List<RegistryKey<Biome>> biomes;
+    private List<RegistryKey<Biome>> biomes = new ArrayList<>();
 
     BiomeType(TriConsumer<RegistryKey<Biome>, RegistryKey<Biome>, Double> regFunc) {
         this.registryFunc = regFunc;

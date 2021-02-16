@@ -6,9 +6,11 @@
 
 package net.dries007.tfc.common.blocks;
 
+import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SnowBlock;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.ItemStack;
@@ -19,12 +21,13 @@ import net.minecraft.world.World;
 import net.dries007.tfc.common.tileentity.SnowPileTileEntity;
 import net.dries007.tfc.util.Helpers;
 import net.minecraft.world.WorldAccess;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * This block is a snow layer block that hides / covers a block underneath
  * When it melts, it will transform into the underlying block, with one level of snow active
  */
-public class SnowPileBlock extends SnowBlock implements IForgeBlockProperties
+public class SnowPileBlock extends SnowBlock implements IForgeBlockProperties, BlockEntityProvider
 {
     /**
      * Converts an existing block state to a snow pile consisting of that block state
@@ -82,5 +85,11 @@ public class SnowPileBlock extends SnowBlock implements IForgeBlockProperties
     public ItemStack getPickStack(BlockView world, BlockPos pos, BlockState state)
     {
         return new ItemStack(Blocks.SNOW);
+    }
+
+    @Nullable
+    @Override
+    public BlockEntity createBlockEntity(BlockView world) {
+        return properties.createTileEntity();
     }
 }

@@ -8,6 +8,7 @@ package net.dries007.tfc.world.feature.plant;
 
 import java.util.Random;
 
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -36,7 +37,7 @@ public class RandomPatchDensityFeature extends Feature<RandomPatchFeatureConfig>
         BlockState blockstate = config.stateProvider.getBlockState(rand, pos);
         int i = 0;
         BlockPos.Mutable mutablePos = new BlockPos.Mutable();
-        ChunkData data = ChunkData.get(world, mutablePos);
+        ChunkDataChunkComponent data = ChunkDataChunkComponent.get(world, mutablePos);
         float density = (data.getForestDensity() + 0.5f);
         ForestType type = data.getForestType();
         if (type != ForestType.SPARSE && type != ForestType.NONE)

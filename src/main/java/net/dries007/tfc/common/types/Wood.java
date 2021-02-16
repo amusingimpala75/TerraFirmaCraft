@@ -6,6 +6,7 @@
 
 package net.dries007.tfc.common.types;
 
+import java.util.Locale;
 import java.util.Random;
 import java.util.function.Supplier;
 
@@ -22,6 +23,7 @@ import net.dries007.tfc.util.Helpers;
 import net.dries007.tfc.world.feature.tree.TFCTree;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.registry.Registry;
 
 public class Wood
 {
@@ -131,7 +133,8 @@ public class Wood
         BUTTON(wood -> new WoodenButtonBlock(Block.Settings.of(Material.SUPPORTED).noCollision().strength(0.5F).sounds(BlockSoundGroup.WOOD)) {}, true),
         PRESSURE_PLATE(wood -> new PressurePlateBlock(PressurePlateBlock.ActivationRule.EVERYTHING, Block.Settings.of(Material.WOOD, wood.getMainColor()).noCollision().strength(0.5F).sounds(BlockSoundGroup.WOOD)) {}, true),
         SLAB(wood -> new SlabBlock(Block.Settings.of(Material.WOOD, wood.getMainColor()).strength(2.0F, 3.0F).sounds(BlockSoundGroup.WOOD)), true),
-        STAIRS(wood -> new net.dries007.tfc.wrapper.StairsBlock(TFCBlocks.WOODS.get(wood).get(PLANKS).getDefaultState(), Block.Settings.of(Material.WOOD, wood.getMainColor()).strength(2.0F, 3.0F).sounds(BlockSoundGroup.WOOD)), true),
+        //STAIRS(wood -> new net.dries007.tfc.wrapper.StairsBlock(TFCBlocks.WOODS.get(wood).get(PLANKS).getDefaultState(), Block.Settings.of(Material.WOOD, wood.getMainColor()).strength(2.0F, 3.0F).sounds(BlockSoundGroup.WOOD)), true),
+        STAIRS(wood -> new net.dries007.tfc.wrapper.StairsBlock(Registry.BLOCK.get(Helpers.identifier("wood/planks/"+wood.name().toLowerCase(Locale.ROOT))).getDefaultState(), Block.Settings.of(Material.WOOD, wood.getMainColor()).strength(2.0F, 3.0F).sounds(BlockSoundGroup.WOOD)), true),
         TOOL_RACK(wood -> new ToolRackBlock(Block.Settings.of(Material.WOOD, wood.getMainColor()).strength(2.0F).sounds(BlockSoundGroup.WOOD).nonOpaque()) {}, true),
         TWIG(wood -> GroundcoverBlock.twig(Block.Settings.of(Material.SOLID_ORGANIC).strength(0.05F, 0.0F).sounds(BlockSoundGroup.WOOD).nonOpaque()), false),
         FALLEN_LEAVES(wood -> new FallenLeavesBlock(Block.Settings.of(Material.SOLID_ORGANIC).strength(0.05F, 0.0F).nonOpaque().sounds(BlockSoundGroup.CROP)), false);

@@ -6,7 +6,11 @@
 
 package net.dries007.tfc.network;
 
+import net.dries007.tfc.fabric.Networking;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.ChunkPos;
 
 import net.dries007.tfc.world.chunkdata.ChunkDataCache;
@@ -45,5 +49,12 @@ public class ChunkUnwatchPacket
     public void handle()
     {
         ChunkDataCache.CLIENT.remove(new ChunkPos(chunkX, chunkZ));
+    }
+
+    public void send(ServerPlayerEntity e)
+    {
+        PacketByteBuf buf = PacketByteBufs.create();
+        encode(buf);
+        ServerPlayNetworking.send(e, Networking.UNWATCH_PACKET_ID, buf);
     }
 }

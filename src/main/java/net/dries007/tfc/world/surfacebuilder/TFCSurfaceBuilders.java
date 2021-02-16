@@ -10,6 +10,7 @@ import java.util.Random;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.dries007.tfc.util.Helpers;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -53,7 +54,7 @@ public class TFCSurfaceBuilders
      * Tries to apply a {@link IContextSurfaceBuilder} if it exists, otherwise delegates to the standard method.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public static <C extends SurfaceConfig> void applySurfaceBuilderWithContext(ConfiguredSurfaceBuilder<C> configuredSurfaceBuilder, WorldAccess worldIn, Random random, ChunkData chunkData, Chunk chunk, Biome biome, int posX, int posZ, int posY, double noise, long seed, BlockState defaultBlock, BlockState defaultFluid, int seaLevel)
+    public static <C extends SurfaceConfig> void applySurfaceBuilderWithContext(ConfiguredSurfaceBuilder<C> configuredSurfaceBuilder, WorldAccess worldIn, Random random, ChunkDataChunkComponent chunkData, Chunk chunk, Biome biome, int posX, int posZ, int posY, double noise, long seed, BlockState defaultBlock, BlockState defaultFluid, int seaLevel)
     {
         configuredSurfaceBuilder.surfaceBuilder.initSeed(seed);
         if (configuredSurfaceBuilder.surfaceBuilder instanceof IContextSurfaceBuilder)

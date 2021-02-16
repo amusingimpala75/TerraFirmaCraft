@@ -8,6 +8,7 @@ package net.dries007.tfc.world.decorator;
 
 import java.util.Random;
 
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.util.StringIdentifiable;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.gen.decorator.DecoratorConfig;
@@ -56,7 +57,7 @@ public class ClimateConfig implements DecoratorConfig
         this.fuzzy = fuzzy;
     }
 
-    public boolean isValid(ChunkData data, BlockPos pos, Random random)
+    public boolean isValid(ChunkDataChunkComponent data, BlockPos pos, Random random)
     {
         final float temperature = getTemperature(data, pos);
         final float rainfall = data.getRainfall(pos);
@@ -75,7 +76,7 @@ public class ClimateConfig implements DecoratorConfig
         return false;
     }
 
-    private float getTemperature(ChunkData data, BlockPos pos)
+    private float getTemperature(ChunkDataChunkComponent data, BlockPos pos)
     {
         switch (tempType)
         {

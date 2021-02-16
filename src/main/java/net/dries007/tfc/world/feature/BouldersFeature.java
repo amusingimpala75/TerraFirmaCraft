@@ -8,6 +8,7 @@ package net.dries007.tfc.world.feature;
 
 import java.util.Random;
 
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -30,7 +31,7 @@ public class BouldersFeature extends Feature<BoulderConfig>
     public boolean generate(StructureWorldAccess worldIn, ChunkGenerator generator, Random rand, BlockPos pos, BoulderConfig config)
     {
         final ChunkDataProvider provider = ChunkDataProvider.getOrThrow(generator);
-        final ChunkData data = provider.get(pos, ChunkData.Status.ROCKS);
+        final ChunkDataChunkComponent data = provider.get(pos, ChunkDataChunkComponent.Status.ROCKS);
         final Rock rock = data.getRockData().getRock(pos.getX(), pos.getY(), pos.getZ());
         final BlockState baseState = rock.getBlock(config.getBaseType()).getDefaultState();
         final BlockState decorationState = rock.getBlock(config.getDecorationType()).getDefaultState();

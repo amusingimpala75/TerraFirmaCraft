@@ -8,6 +8,7 @@ package net.dries007.tfc.world.feature.coral;
 
 import java.util.Random;
 
+import net.dries007.tfc.common.blocks.FluidBlockStateProprties;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SeaPickleBlock;
@@ -22,7 +23,6 @@ import net.minecraft.world.gen.feature.Feature;
 
 import com.mojang.serialization.Codec;
 import net.dries007.tfc.common.TFCTags;
-import net.dries007.tfc.common.blocks.TFCBlockStateProperties;
 import net.dries007.tfc.common.blocks.TFCBlocks;
 import net.dries007.tfc.common.blocks.plant.coral.TFCDeadCoralWallFanBlock;
 import net.dries007.tfc.common.fluids.TFCFluids;
@@ -82,6 +82,6 @@ public abstract class TFCCoralFeature extends Feature<DefaultFeatureConfig>
 
     private BlockState salty(BlockState state)
     {
-        return state.with(TFCBlockStateProperties.SALT_WATER, TFCBlockStateProperties.SALT_WATER.keyFor(TFCFluids.SALT_WATER.getSource()));
+        return state.with(FluidBlockStateProprties.SALT_WATER, FluidBlockStateProprties.SALT_WATER.keyFor(TFCFluids.SALT_WATER.getSource()));
     }
 }

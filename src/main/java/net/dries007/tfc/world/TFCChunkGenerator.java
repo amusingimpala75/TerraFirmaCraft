@@ -11,6 +11,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.structure.StructureManager;
 import net.minecraft.util.math.noise.NoiseSampler;
 import net.minecraft.util.math.noise.OctaveSimplexNoiseSampler;
@@ -155,7 +156,7 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
 
         final BitSet liquidCarvingMask = chunk.getOrCreateCarvingMask(GenerationStep.Carver.LIQUID);
         final BitSet airCarvingMask = chunk.getOrCreateCarvingMask(GenerationStep.Carver.AIR);
-        final RockData rockData = chunkDataProvider.get(chunk.getPos(), ChunkData.Status.ROCKS).getRockData();
+        final RockData rockData = chunkDataProvider.get(chunk.getPos(), ChunkDataChunkComponent.Status.ROCKS).getRockData();
 
         if (stage == GenerationStep.Carver.AIR)
         {
@@ -199,7 +200,7 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
         random.setTerrainSeed(chunkPos.x, chunkPos.z);
         makeBedrock(chunk, random);
 
-        final ChunkData chunkData = chunkDataProvider.get(chunkPos, ChunkData.Status.ROCKS);
+        final ChunkDataChunkComponent chunkData = chunkDataProvider.get(chunkPos, ChunkDataChunkComponent.Status.ROCKS);
         blockReplacer.replace(chunk, chunkData, world);
     }
 
@@ -568,7 +569,7 @@ public class TFCChunkGenerator extends ChunkGenerator implements ITFCChunkGenera
     protected void buildAccurateSurface(WorldAccess world, Chunk chunk, Biome[] accurateChunkBiomes, Random random)
     {
         final ChunkPos chunkPos = chunk.getPos();
-        final ChunkData chunkData = chunkDataProvider.get(chunkPos, ChunkData.Status.EMPTY);
+        final ChunkDataChunkComponent chunkData = chunkDataProvider.get(chunkPos, ChunkDataChunkComponent.Status.EMPTY);
         for (int x = 0; x < 16; ++x)
         {
             for (int z = 0; z < 16; ++z)

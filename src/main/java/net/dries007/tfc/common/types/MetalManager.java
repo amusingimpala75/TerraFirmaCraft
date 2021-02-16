@@ -8,11 +8,13 @@ package net.dries007.tfc.common.types;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import net.dries007.tfc.util.Helpers;
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.minecraft.util.Identifier;
 
 import net.dries007.tfc.util.data.DataManager;
 
-public class MetalManager extends DataManager<Metal>
+public class MetalManager extends DataManager<Metal> implements IdentifiableResourceReloadListener
 {
     public static final MetalManager INSTANCE = new MetalManager();
 
@@ -25,5 +27,10 @@ public class MetalManager extends DataManager<Metal>
     protected Metal read(Identifier id, JsonObject obj)
     {
         return new Metal(id, obj);
+    }
+
+    @Override
+    public Identifier getFabricId() {
+        return Helpers.identifier("data_listener/metal_manager");
     }
 }

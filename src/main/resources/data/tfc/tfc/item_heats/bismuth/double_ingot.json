@@ -1,7 +1,7 @@
 {
   "__comment__": "This file was automatically created by mcresources",
   "ingredient": {
-    "tag": "forge:double_ingots/bismuth"
+    "tag": "c:double_ingots/bismuth"
   },
   "heat_capacity": 0.14,
   "forging_temperature": 162.0,

@@ -6,6 +6,7 @@
 
 package net.dries007.tfc.util.calendar;
 
+import net.dries007.tfc.TerraFirmaCraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.PacketByteBuf;
 import org.apache.logging.log4j.LogManager;
@@ -32,9 +33,9 @@ public class Calendar implements ICalendar
 
     public Calendar()
     {
-        daysInMonth = TFCConfig.COMMON.defaultMonthLength.get();
+        daysInMonth = TerraFirmaCraft.getConfig().commonConfig.general.defaultMonthLength;
         playerTicks = 0;
-        calendarTicks = (5 * daysInMonth * ICalendar.TICKS_IN_DAY) + (6 * ICalendar.TICKS_IN_HOUR);
+        calendarTicks = (5L * daysInMonth * ICalendar.TICKS_IN_DAY) + (6 * ICalendar.TICKS_IN_HOUR);
         doDaylightCycle = true;
         arePlayersLoggedOn = false;
     }
@@ -92,6 +93,9 @@ public class Calendar implements ICalendar
 
         buffer.writeVarLong(playerTicks);
         buffer.writeVarLong(calendarTicks);
+
+        buffer.writeBoolean(doDaylightCycle);
+        buffer.writeBoolean(arePlayersLoggedOn);
 
         buffer.writeBoolean(doDaylightCycle);
         buffer.writeBoolean(arePlayersLoggedOn);

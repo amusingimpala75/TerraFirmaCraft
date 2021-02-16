@@ -95,6 +95,6 @@ public class ChunkWatchPacket
     public void send(ServerPlayerEntity target) {
         PacketByteBuf buf = PacketByteBufs.create();
         encode(buf);
-        ServerPlayNetworking.send(target, Networking.CHANNEL_ID, buf);
+        ServerPlayNetworking.send(target, Networking.WATCH_PACKET_ID, buf);
     }
 }

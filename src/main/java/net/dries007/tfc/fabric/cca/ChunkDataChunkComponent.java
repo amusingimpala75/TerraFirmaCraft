@@ -1,3 +1,9 @@
+/*
+ * Licensed under the EUPL, Version 1.2.
+ * You may obtain a copy of the Licence at:
+ * https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+ */
+
 package net.dries007.tfc.fabric.cca;
 
 import dev.onyxstudios.cca.api.v3.component.Component;
@@ -54,7 +60,8 @@ public class ChunkDataChunkComponent implements Component {
         return Optional.empty();
     }
 
-    private final ChunkPos pos;
+    private ChunkPos pos;
+    private Chunk chunk;
 
     private ChunkDataChunkComponent.Status status;
 
@@ -74,12 +81,14 @@ public class ChunkDataChunkComponent implements Component {
     }
 
     public ChunkDataChunkComponent(Chunk chunk) {
-        this(chunk.getPos());
+        this.chunk = chunk;
+
+        reset();
     }
 
     public ChunkPos getPos()
     {
-        return pos;
+        return pos != null ? pos : chunk.getPos();
     }
 
     public RockData getRockData()
@@ -177,7 +186,7 @@ public class ChunkDataChunkComponent implements Component {
      */
     public ChunkWatchPacket getUpdatePacket()
     {
-        return new ChunkWatchPacket(pos.x, pos.z, rainfallLayer, temperatureLayer, forestType, forestDensity, forestWeirdness, plateTectonicsInfo);
+        return new ChunkWatchPacket(getPos().x, getPos().z, rainfallLayer, temperatureLayer, forestType, forestDensity, forestWeirdness, plateTectonicsInfo);
     }
 
     /**
@@ -261,7 +270,7 @@ public class ChunkDataChunkComponent implements Component {
     @Override
     public String toString()
     {
-        return "ChunkData{pos=" + pos + ", status=" + status + ", hashCode=" + Integer.toHexString(hashCode()) + '}';
+        return "ChunkData{pos=" + getPos() + ", status=" + status + ", hashCode=" + Integer.toHexString(hashCode()) + '}';
     }
 
     private void reset()

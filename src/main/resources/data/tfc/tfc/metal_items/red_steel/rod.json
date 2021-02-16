@@ -1,7 +1,7 @@
 {
   "__comment__": "This file was automatically created by mcresources",
   "ingredient": {
-    "tag": "forge:rods/red_steel"
+    "tag": "c:wooden_rods/red_steel"
   },
   "metal": "tfc:red_steel",
   "amount": 100

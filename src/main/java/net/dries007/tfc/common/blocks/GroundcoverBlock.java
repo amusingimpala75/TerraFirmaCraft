@@ -8,6 +8,7 @@ package net.dries007.tfc.common.blocks;
 
 import java.util.function.Supplier;
 
+import net.dries007.tfc.forgereplacements.item.ItemUtils;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -32,7 +33,6 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
-import net.minecraftforge.items.ItemHandlerHelper;
 
 import net.dries007.tfc.common.fluids.FluidProperty;
 import net.dries007.tfc.common.fluids.IFluidLoggable;
@@ -41,7 +41,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class GroundcoverBlock extends Block implements IFluidLoggable
 {
-    public static final FluidProperty FLUID = TFCBlockStateProperties.WATER;
+    public static final FluidProperty FLUID = FluidBlockStateProprties.WATER;
     public static final DirectionProperty FACING = HorizontalFacingBlock.FACING;
 
     public static final VoxelShape FLAT = createCuboidShape(2.0D, 0.0D, 2.0D, 14.0D, 2.0D, 14.0D);
@@ -126,7 +126,7 @@ public class GroundcoverBlock extends Block implements IFluidLoggable
         if (!player.isCreative() && worldIn instanceof ServerWorld)
         {
             BlockEntity tileEntity = state.getBlock().hasBlockEntity() ? worldIn.getBlockEntity(pos) : null;
-            getDroppedStacks(state, (ServerWorld) worldIn, pos, tileEntity, null, ItemStack.EMPTY).forEach(stackToSpawn -> ItemHandlerHelper.giveItemToPlayer(player, stackToSpawn));
+            getDroppedStacks(state, (ServerWorld) worldIn, pos, tileEntity, null, ItemStack.EMPTY).forEach(stackToSpawn -> ItemUtils.giveItemToPlayer(player, stackToSpawn, -1));
         }
         return ActionResult.SUCCESS;
     }

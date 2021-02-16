@@ -1,7 +1,7 @@
 {
   "__comment__": "This file was automatically created by mcresources",
   "ingredient": {
-    "tag": "forge:rods/bismuth_bronze"
+    "tag": "c:wooden_rods/bismuth_bronze"
   },
   "metal": "tfc:bismuth_bronze",
   "amount": 100

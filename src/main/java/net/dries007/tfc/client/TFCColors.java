@@ -8,6 +8,7 @@ package net.dries007.tfc.client;
 
 import java.util.function.ToIntFunction;
 
+import net.dries007.tfc.fabric.cca.ChunkDataChunkComponent;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
@@ -107,7 +108,7 @@ public final class TFCColors
 
     public static int getSpringWaterColor(BlockPos pos)
     {
-        ChunkData data = ChunkDataCache.CLIENT.getOrEmpty(pos);
+        ChunkDataChunkComponent data = ChunkDataCache.CLIENT.getOrEmpty(pos);
         float temperature = Climate.calculateTemperature(pos.getZ(), pos.getY(), data.getAverageTemp(pos), Calendars.CLIENT.getCalendarTicks(), Calendars.CLIENT.getCalendarDaysInMonth());
         return getClimateColor(WATER_COLORS_CACHE, temperature, 500);
     }
@@ -173,7 +174,7 @@ public final class TFCColors
      */
     private static int getClimateColor(int[] colorCache, BlockPos pos)
     {
-        ChunkData data = ChunkDataCache.CLIENT.getOrEmpty(pos);
+        ChunkDataChunkComponent data = ChunkDataCache.CLIENT.getOrEmpty(pos);
         float temperature = Climate.calculateTemperature(pos.getZ(), pos.getY(), data.getAverageTemp(pos), Calendars.CLIENT.getCalendarTicks(), Calendars.CLIENT.getCalendarDaysInMonth());
         float rainfall = data.getRainfall(pos);
         return getClimateColor(colorCache, temperature, rainfall);
