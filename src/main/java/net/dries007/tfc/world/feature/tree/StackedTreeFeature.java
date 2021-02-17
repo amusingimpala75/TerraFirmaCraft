@@ -50,7 +50,7 @@ public class StackedTreeFeature extends TreeFeature<StackedTreeConfig>
             for (int i = 0; i < layerCount; i++)
             {
                 final Identifier structureId = layer.templates.get(random.nextInt(layer.templates.size()));
-                final Structure structure = manager.getStructureOrBlank(structureId);
+                final Structure structure = TreeHelpers.getOrBlank(manager, structureId);
                 TreeHelpers.placeTemplate(structure, settings, worldIn, mutablePos.subtract(TreeHelpers.transformCenter(structure.getSize(), settings)));
                 mutablePos.move(0, structure.getSize().getY(), 0);
             }

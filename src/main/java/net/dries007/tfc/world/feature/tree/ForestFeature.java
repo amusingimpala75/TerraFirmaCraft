@@ -119,6 +119,7 @@ public class ForestFeature extends Feature<ForestConfig>
             {
                 feature = random.nextInt(200) == 0 ? entry.getOldGrowthFeature() : entry.getFeature();
             }
+            System.out.println("Generating tree "+entry.getTreeId().toString());
             return feature.generate(worldIn, generator, random, mutablePos);
         }
         return false;

@@ -6,6 +6,8 @@
 
 package net.dries007.tfc.util.calendar;
 
+import net.dries007.tfc.fabric.event.PlayerConnectionEvents;
+import net.dries007.tfc.mixin.fabric.PlayerMangerAccessor;
 import net.dries007.tfc.mixin.fabric.ServerLoginHandlerAccessor;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -74,7 +76,7 @@ public class CalendarEventHandler
             if (world.getRegistryKey() == World.OVERWORLD)
             {
                 Calendars.SERVER.onOverworldTick(world);
-                LOGGER.info("Overworld tick!");
+                //LOGGER.info("Overworld tick!");
             }
         });
     }
@@ -131,15 +133,14 @@ public class CalendarEventHandler
     }*/
     public static void registerPlayerLogoutEvent()
     {
-        ServerLoginConnectionEvents.DISCONNECT.register((handler, server) -> {
-            if (((ServerLoginHandlerAccessor) handler).accessor$getPlayer() != null)
+        PlayerConnectionEvents.LEAVE.register((manager, player) -> {
+            if (player != null)
             {
-                ServerPlayerEntity player = ((ServerLoginHandlerAccessor) handler).accessor$getPlayer();
                 // Check total players and reset player / calendar time ticking
-                if (server != null)
+                if (((PlayerMangerAccessor)manager).accessor$getServer() != null)
                 {
                     LOGGER.info("Player Logged Out - Checking for Calendar Updates.");
-                    List<ServerPlayerEntity> players = server.getPlayerManager().getPlayerList();
+                    List<ServerPlayerEntity> players = manager.getPlayerList();
                     int playerCount = players.size();
                     // The player logging out doesn't count
                     if (players.contains(player))
@@ -175,15 +176,15 @@ public class CalendarEventHandler
 
     public static void registerPlayerLoginEvent()
     {
-        ServerLoginConnectionEvents.QUERY_START.register((handler, server, sender, synchronizer) -> {
-            if (((ServerLoginHandlerAccessor) handler).accessor$getPlayer() != null)
+        PlayerConnectionEvents.JOIN.register((manager, player) -> {
+            if (player != null)
             {
-                ServerPlayerEntity player = ((ServerLoginHandlerAccessor) handler).accessor$getPlayer();
                 // Check total players and reset player / calendar time ticking
-                if (server != null)
+                if (((PlayerMangerAccessor)manager).accessor$getServer() != null)
                 {
                     LOGGER.info("Player Logged In - Checking for Calendar Updates.");
-                    Calendars.SERVER.setPlayersLoggedOn(server.getPlayerManager().getCurrentPlayerCount() > 0);
+                    //Imma just assume that if a player is logging on then there is at least one player online
+                    Calendars.SERVER.setPlayersLoggedOn(/*server.getPlayerManager().getCurrentPlayerCount() > 0*/true);
                 }
             }
         });

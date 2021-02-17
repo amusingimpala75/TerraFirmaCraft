@@ -9,12 +9,14 @@ package net.dries007.tfc.client;
 import net.dries007.tfc.client.screen.CalendarScreen;
 import net.dries007.tfc.client.screen.ClimateScreen;
 import net.dries007.tfc.client.screen.NutritionScreen;
+import net.dries007.tfc.common.TFCArmorMaterial;
 import net.dries007.tfc.common.blocks.TFCBlocks;
 import net.dries007.tfc.common.blocks.plant.Plant;
 import net.dries007.tfc.common.blocks.soil.SoilBlockType;
 import net.dries007.tfc.common.container.TFCContainerTypes;
 import net.dries007.tfc.common.entities.TFCEntities;
 import net.dries007.tfc.common.fluids.TFCFluids;
+import net.dries007.tfc.common.items.TFCItems;
 import net.dries007.tfc.common.types.Metal;
 import net.dries007.tfc.common.types.Rock;
 import net.dries007.tfc.common.types.Wood;
@@ -26,6 +28,7 @@ import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandler;
 import net.fabricmc.fabric.api.client.render.fluid.v1.FluidRenderHandlerRegistry;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.EntityRendererRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.ArmorRenderingRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.ColorProviderRegistry;
 import net.fabricmc.fabric.api.client.screenhandler.v1.ScreenRegistry;
 import net.fabricmc.fabric.api.event.client.ClientSpriteRegistryCallback;
@@ -54,6 +57,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -135,6 +139,21 @@ public class TerraFirmaCraftClient implements ClientModInitializer {
         Networking.clientRegister();
 
         ClientForgeEventHandler.registerClientEvents();
+
+        for (Map.Entry<Metal.Default, Map<Metal.ItemType, Item>> mat : TFCItems.METAL_ITEMS.entrySet())
+        {
+            ArmorRenderingRegistry.registerTexture(
+                (livingEntity, itemStack, equipmentSlot, b, s, identifier) ->
+                    Helpers.identifier("textures/models/armor/"+mat.getKey().name().toLowerCase(Locale.ROOT)+"_layer_1"),
+                mat.getValue().get(Metal.ItemType.HELMET),
+                mat.getValue().get(Metal.ItemType.CHESTPLATE),
+                mat.getValue().get(Metal.ItemType.BOOTS)
+            );
+            ArmorRenderingRegistry.registerTexture((livingEntity, itemStack, equipmentSlot, b, s, identifier) ->
+                Helpers.identifier("textures/models/armor/"+mat.getKey().name().toLowerCase(Locale.ROOT)+"_layer_2"),
+                mat.getValue().get(Metal.ItemType.GREAVES)
+            );
+        }
     }
 
 

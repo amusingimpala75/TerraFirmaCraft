@@ -34,7 +34,7 @@ public class RandomTreeFeature extends TreeFeature<RandomTreeConfig>
         final StructureManager manager = TreeHelpers.getTemplateManager(worldIn);
         final StructurePlacementData settings = TreeHelpers.getPlacementSettings(chunkPos, random);
         final Identifier structureId = config.structureNames.get(random.nextInt(config.structureNames.size()));
-        final Structure structure = manager.getStructureOrBlank(structureId);
+        final Structure structure = TreeHelpers.getOrBlank(manager, structureId);
 
         if (!isValidLocation(worldIn, mutablePos) || !isAreaClear(worldIn, mutablePos, config.radius, 2))
         {

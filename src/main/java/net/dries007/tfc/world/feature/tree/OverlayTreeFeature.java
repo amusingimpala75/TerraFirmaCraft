@@ -8,6 +8,7 @@ package net.dries007.tfc.world.feature.tree;
 
 import java.util.Random;
 
+import net.dries007.tfc.util.Helpers;
 import net.minecraft.structure.Structure;
 import net.minecraft.structure.StructureManager;
 import net.minecraft.structure.StructurePlacementData;
@@ -33,8 +34,8 @@ public class OverlayTreeFeature extends TreeFeature<OverlayTreeConfig>
         final BlockPos.Mutable mutablePos = new BlockPos.Mutable().set(pos);
         final StructureManager manager = TreeHelpers.getTemplateManager(worldIn);
         final StructurePlacementData settings = TreeHelpers.getPlacementSettings(chunkPos, random);
-        final Structure structureBase = manager.getStructureOrBlank(config.base);
-        final Structure structureOverlay = manager.getStructureOrBlank(config.overlay);
+        final Structure structureBase = TreeHelpers.getOrBlank(manager, config.base);
+        final Structure structureOverlay = TreeHelpers.getOrBlank(manager, config.overlay);
 
         if (!isValidLocation(worldIn, mutablePos) || !isAreaClear(worldIn, mutablePos, config.radius, 3))
         {

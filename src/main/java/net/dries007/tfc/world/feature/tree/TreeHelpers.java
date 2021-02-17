@@ -9,7 +9,13 @@ package net.dries007.tfc.world.feature.tree;
 import java.util.List;
 import java.util.Random;
 
+import net.dries007.tfc.TerraFirmaCraft;
+import net.dries007.tfc.mixin.fabric.world.StructureManagerAccessor;
+import net.fabricmc.fabric.api.client.itemgroup.FabricItemGroupBuilder;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
 import net.minecraft.structure.Structure;
 import net.minecraft.structure.StructureManager;
 import net.minecraft.structure.StructurePlacementData;
@@ -17,6 +23,7 @@ import net.minecraft.structure.processor.BlockIgnoreStructureProcessor;
 import net.minecraft.tag.BlockTags;
 import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockBox;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -183,5 +190,21 @@ public final class TreeHelpers
     private static BlockMirror randomMirror(Random random)
     {
         return MIRROR_VALUES[random.nextInt(MIRROR_VALUES.length)];
+    }
+
+    /**
+     * Because I want MC to warn if It can't find said structure
+     * */
+    public static Structure getOrBlank(StructureManager manager, Identifier id)
+    {
+        Structure s = manager.getStructure(id);
+
+        if (s == null) {
+            s = new Structure();
+            ((StructureManagerAccessor)manager).accessor$getStructures().put(id, s);
+            TerraFirmaCraft.LOGGER.warn("Could no find structure "+id.toString()+", instead using empty one");
+        }
+
+        return s;
     }
 }

@@ -6,6 +6,7 @@
 
 package net.dries007.tfc.world.surfacebuilder;
 
+import net.dries007.tfc.util.Helpers;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.BuiltinRegistries;
@@ -43,6 +44,6 @@ public class ParentedSurfaceBuilderConfig extends TernarySurfaceConfig
 
     public ConfiguredSurfaceBuilder<?> getParent()
     {
-        return BuiltinRegistries.CONFIGURED_SURFACE_BUILDER.get(parent);
+        return Helpers.getOrThrow(Registry.CONFIGURED_SURFACE_BUILDER_WORLDGEN, parent);
     }
 }

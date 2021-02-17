@@ -46,8 +46,11 @@ PAUSED ON WOOD IN common/types!!
 ## Port TODO:
 - Package Info's Params nonnull and Methods nonnull
 
-- config - migrate (which one tho)
-    
-- util
-  - Helpers - CraftingPlayer - Suppressed for now
+- WorldGen
+    - Check lack of trees
+    - Compare w/ forge for inconsistencies
+- Fluids
+    - metals look weird
+    - Bucket textures non-existent
+- General checking of features    
     

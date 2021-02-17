@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import net.dries007.tfc.forgereplacements.NotNullFunction;
+import net.dries007.tfc.forgereplacements.world.ServerUtil;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.command.argument.BlockArgumentParser;
 import net.minecraft.loot.context.LootContext;
@@ -33,6 +34,7 @@ import net.minecraft.util.JsonHelper;
 import net.minecraft.util.Lazy;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.WorldView;
 import org.apache.logging.log4j.LogManager;
@@ -468,5 +470,32 @@ public final class Helpers
             }
             worldIn.setBlockState(pos, fluidstate.getBlockState(), 3, 512);
         }
+    }
+
+    public static <T> T getOrThrow(Registry<T> registry, Identifier id)
+    {
+        T t = registry.get(id);
+        if (t != null)
+        {
+            return t;
+        }
+
+        throw new IllegalStateException("Could not find registry entry "+id.toString()+" in register "+registry.getKey().getValue().toString());
+    }
+
+    /**
+     * SHOULD ONLY BE CALLED WHEN SERVER IS INITIALIZED AS IT REQUIRES IT'S DYNAMIC REGISTRY MANAGER
+     *
+     * @param key Key of the registry wished to get from the DynamicRegistryManger
+     * @param id Identifier of object to acquire
+     * */
+    public static <T> T getOrThrow(RegistryKey<Registry<T>> key, Identifier id)
+    {
+        T t = ServerUtil.getCurrentServer().getRegistryManager().get(key).get(id);
+        if (t != null)
+        {
+            return t;
+        }
+        throw new IllegalStateException("Could not find registry entry "+id.toString()+" in register "+key.getValue().toString());
     }
 }

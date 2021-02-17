@@ -10,10 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import net.dries007.tfc.forgereplacements.world.ServerUtil;
 import net.dries007.tfc.util.Helpers;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.BuiltinRegistries;
+import net.minecraft.util.registry.DynamicRegistryManager;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.gen.feature.ConfiguredFeature;
@@ -107,12 +109,12 @@ public class ForestConfig implements FeatureConfig
 
         public ConfiguredFeature<?, ?> getFeature()
         {
-            return getOrThrow(BuiltinRegistries.CONFIGURED_FEATURE, treeFeature);
+            return Helpers.getOrThrow(Registry.CONFIGURED_FEATURE_WORLDGEN, treeFeature);
         }
 
         public ConfiguredFeature<?, ?> getOldGrowthFeature()
         {
-            return getOrThrow(BuiltinRegistries.CONFIGURED_FEATURE, oldGrowthFeature.orElse(treeFeature));
+            return Helpers.getOrThrow(Registry.CONFIGURED_FEATURE_WORLDGEN, oldGrowthFeature.orElse(treeFeature));
         }
 
         public BlockState getLog()
@@ -135,18 +137,9 @@ public class ForestConfig implements FeatureConfig
             return fallen_leaves;
         }
 
-        private <T> T getOrThrow(Registry<T> registry, Identifier id)
+        public Identifier getTreeId()
         {
-            T t = registry.get(id);
-            if (t != null)
-            {
-                return t;
-            }
-            for (Map.Entry<RegistryKey<T>, T> e : registry.getEntries())
-            {
-                System.out.println(e.getKey().getValue().toString());
-            }
-            throw new IllegalStateException("Could not find entry "+id.toString()+" in registry "+registry.toString()+"!");
+            return treeFeature;
         }
     }
 }
