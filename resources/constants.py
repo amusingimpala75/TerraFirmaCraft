@@ -401,6 +401,7 @@ DEFAULT_LANG = {
     'tfc.enum.season.december': 'Early Winter',
     'tfc.thatch_bed.use': 'This bed is too uncomfortable to sleep in.',
     'tfc.thatch_bed.thundering': 'You are too scared to sleep.',
+    'tfc.nether_portal.disabled': 'What do you think this is, a video game?',
 
     **dict(('metal.tfc.%s' % metal, lang('%s' % metal)) for metal in METALS.keys())
 }

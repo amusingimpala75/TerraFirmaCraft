@@ -88,6 +88,7 @@ def generate(rm: ResourceManager):
     rm.block_tag('kelp_tree', 'tfc:plant/giant_kelp_flower', 'tfc:plant/giant_kelp_plant')
     rm.block_tag('kelp_flower', 'tfc:plant/giant_kelp_flower')
     rm.block_tag('kelp_branch', 'tfc:plant/giant_kelp_plant')
+    rm.block_tag('c:dirt', 'minecraft:dirt', 'minecraft:grass_block', 'minecraft:coarse_dirt', 'minecraft:podzol', 'minecraft:mycelium')
 
     # Thatch Bed
     rm.item_tag('thatch_bed_hides', 'tfc:large_raw_hide', 'tfc:large_sheepskin_hide')

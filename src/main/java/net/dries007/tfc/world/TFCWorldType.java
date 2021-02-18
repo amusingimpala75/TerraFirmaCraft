@@ -18,7 +18,7 @@ import java.util.List;
 
 public class TFCWorldType
 {
-    public static final GeneratorType WORLD_TYPE = new GeneratorType("terrafirmacraft.world_type") {
+    public static final GeneratorType WORLD_TYPE = new GeneratorType("tfc.tng") {
         @Override
         protected ChunkGenerator getChunkGenerator(Registry<Biome> biomeRegistry, Registry<ChunkGeneratorSettings> chunkGeneratorSettingsRegistry, long seed) {
             return TFCChunkGenerator.createDefaultPreset(chunkGeneratorSettingsRegistry.getOrThrow(ChunkGeneratorSettings.OVERWORLD), biomeRegistry, seed);

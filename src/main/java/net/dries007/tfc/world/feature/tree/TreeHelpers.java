@@ -7,6 +7,7 @@
 package net.dries007.tfc.world.feature.tree;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import net.dries007.tfc.TerraFirmaCraft;
@@ -204,7 +205,6 @@ public final class TreeHelpers
             ((StructureManagerAccessor)manager).accessor$getStructures().put(id, s);
             TerraFirmaCraft.LOGGER.warn("Could no find structure "+id.toString()+", instead using empty one");
         }
-
         return s;
     }
 }

@@ -17,7 +17,6 @@ You can find the mod on [Curseforge](https://www.curseforge.com/minecraft/mc-mod
  - In addition, we request that you give us the right to change the license in the future.
  - Import & use the project's Code Style. (Recommend using Intellij as that's what our code style xml is based on)
 - Before creating a Pull Request, run `gradlew updateLicenses`. This will apply the correct license header to all project files.
-- This project uses [Mappificator](https://github.com/alcatrazEscapee/mappificator) for its mappings. This is a tool based on the official mappings provided by Mojang. For information on how to set that up, see the project's README.md, it should detail how to create a customized mapping set and publish it to your maven local for use by FG. (or the comment in [build.gradle](build.gradle))
 - We use python for data and asset generation, among other things. In order to run the generation scripts (all found in `/resources`), you will need to install the python modules `mcresources`, `pillow`, and `nbtlib`.
 
 ## License / Copyright / Credit
@@ -41,16 +40,16 @@ Based on original work by Robert "Bioxx" Anthony, Amanda "Kittychanley" Halek an
 Parts of this project are edited source code from the original TerraFirmaCraft for 1.7.10 mod. They are used under with permission from the original author (Bioxx).
 
 
-PAUSED ON WOOD IN common/types!!
-
 ## Port TODO:
 - Package Info's Params nonnull and Methods nonnull
 
-- WorldGen
-    - Check lack of trees
+- World
     - Compare w/ forge for inconsistencies
+    - Collapses
 - Fluids
     - metals look weird
     - Bucket textures non-existent
+- Client
+    - Debug screen world info
 - General checking of features    
     

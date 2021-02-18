@@ -70,10 +70,10 @@ public class TerraFirmaCraftClient implements ClientModInitializer {
     public void onInitializeClient() {
 
         for (Map.Entry<Metal.Default, TFCFluids.FluidPair<net.dries007.tfc.forgereplacements.fluid.FlowableFluid>> set : TFCFluids.METALS.entrySet()) {
-            setupFluidRendering(set.getValue().getSource(), set.getValue().getFlowing(), ALPHA_MASK | set.getKey().getColor());
+            setupFluidRendering(set.getValue().getSource(), set.getValue().getFlowing(), ALPHA_MASK | set.getKey().getColor(), true);
         }
-        setupFluidRendering(TFCFluids.SALT_WATER.getSource(), TFCFluids.SALT_WATER.getFlowing(), ALPHA_MASK | 0x3F76E4);
-        setupFluidRendering(TFCFluids.SPRING_WATER.getSource(), TFCFluids.SPRING_WATER.getFlowing(), ALPHA_MASK | 0x4ECBD7);
+        setupFluidRendering(TFCFluids.SALT_WATER.getSource(), TFCFluids.SALT_WATER.getFlowing(), ALPHA_MASK | 0x3F76E4, false);
+        setupFluidRendering(TFCFluids.SPRING_WATER.getSource(), TFCFluids.SPRING_WATER.getFlowing(), ALPHA_MASK | 0x4ECBD7, false);
 
 
         LOGGER.debug("Client Setup");
@@ -142,6 +142,10 @@ public class TerraFirmaCraftClient implements ClientModInitializer {
 
         for (Map.Entry<Metal.Default, Map<Metal.ItemType, Item>> mat : TFCItems.METAL_ITEMS.entrySet())
         {
+            if (!mat.getKey().hasArmor())
+            {
+                continue;
+            }
             ArmorRenderingRegistry.registerTexture(
                 (livingEntity, itemStack, equipmentSlot, b, s, identifier) ->
                     Helpers.identifier("textures/models/armor/"+mat.getKey().name().toLowerCase(Locale.ROOT)+"_layer_1"),
@@ -157,9 +161,9 @@ public class TerraFirmaCraftClient implements ClientModInitializer {
     }
 
 
-    public static void setupFluidRendering(final Fluid still, final Fluid flowing, final int color) {
-        final Identifier stillSpriteId = Helpers.identifier("block/fluid_still");
-        final Identifier flowingSpriteId = Helpers.identifier("block/fluid_flow");
+    public static void setupFluidRendering(final Fluid still, final Fluid flowing, final int color, boolean isMetal) {
+        final Identifier stillSpriteId = isMetal ? Helpers.identifier("block/molten_still") : Helpers.identifier("block/fluid_still");
+        final Identifier flowingSpriteId = isMetal ? Helpers.identifier("block/molten_flow") : Helpers.identifier("block/fluid_flow");
 
         // If they're not already present, add the sprites to the block atlas
         ClientSpriteRegistryCallback.event(SpriteAtlasTexture.BLOCK_ATLAS_TEXTURE).register((atlasTexture, registry) ->
