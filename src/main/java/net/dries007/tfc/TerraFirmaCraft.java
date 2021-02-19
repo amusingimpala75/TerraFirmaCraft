@@ -8,13 +8,10 @@ package net.dries007.tfc;
 
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
-import net.dries007.tfc.common.command.TFCCommands;
 import net.dries007.tfc.fabric.Networking;
 import net.dries007.tfc.forgereplacements.world.ServerUtil;
 import net.dries007.tfc.util.calendar.CalendarEventHandler;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
-import net.minecraft.server.MinecraftServer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import net.minecraft.util.registry.Registry;
@@ -116,7 +113,7 @@ public final class TerraFirmaCraft implements ModInitializer {
         //TFCConfig.init();
         Networking.register();
 
-        ForgeEventHandler.registerEvents();
+        FabricEventHandler.registerEvents();
 
         CalendarEventHandler.registerCalendarEvents();
 

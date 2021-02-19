@@ -41,15 +41,36 @@ Parts of this project are edited source code from the original TerraFirmaCraft f
 
 
 ## Port TODO:
-- Package Info's Params nonnull and Methods nonnull
+- Block
+    - ThatchBed instabreaks on placement
+    - Kelp no bonemeal
+    
+- Item
+    - Armor textures crash
 
 - World
     - Compare w/ forge for inconsistencies
-    - Collapses
+    - Collapses/Landslides
+    - Components: null loading of tags (see below)
+    
 - Fluids
     - metals look weird
-    - Bucket textures non-existent
+    - Bucket textures non-existent (blank, not missingno)
+    
 - Client
     - Debug screen world info
-- General checking of features    
+    - Screens accessed from inventory screen
+    
+- General checking of features
+
+- Package Info's Params nonnull and Methods nonnull (optional? definitely bottom of list todo)
+
+
+[20:55:25] [Server thread/ERROR] (Minecraft) Couldn't load chunk [85, 179]
+- java.util.ConcurrentModificationException: null
+    - at java.util.HashMap.computeIfAbsent(HashMap.java:1225) ~[?:?]    
+    - at net.dries007.tfc.world.chunkdata.ChunkDataCache.getOrCreate(ChunkDataCache.java:132) ~[main/:?]
+    - at net.dries007.tfc.world.chunkdata.ChunkDataProvider.get(ChunkDataProvider.java:88) ~[main/:?]
+    - at net.dries007.tfc.world.biome.TFCBiomeProvider.getBiomeForNoiseGen(TFCBiomeProvider.java:146) ~[main/:?]
+
     

@@ -6,7 +6,7 @@
 
 package net.dries007.tfc.mixin.fabric.world;
 
-import net.dries007.tfc.ForgeEventHandler;
+import net.dries007.tfc.FabricEventHandler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.level.ServerWorldProperties;
@@ -20,6 +20,6 @@ public class MinecraftServerMixin {
     @Inject(method = "setupSpawn", at=@At("HEAD"), cancellable = true)
     private static void inject$modifySpawn(ServerWorld world, ServerWorldProperties serverWorldProperties, boolean bonusChest, boolean debugWorld, boolean bl, CallbackInfo ci)
     {
-        ForgeEventHandler.modifySpawn(world, serverWorldProperties, ci);
+        FabricEventHandler.modifySpawn(world, serverWorldProperties, ci);
     }
 }

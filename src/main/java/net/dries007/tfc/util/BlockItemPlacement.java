@@ -9,7 +9,7 @@ package net.dries007.tfc.util;
 import java.util.Collections;
 import java.util.function.Supplier;
 
-import net.dries007.tfc.ForgeEventHandler;
+import net.dries007.tfc.FabricEventHandler;
 import net.minecraft.advancement.criterion.Criteria;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -116,7 +116,7 @@ public class BlockItemPlacement implements InteractionManager.OnItemUseAction
                     placedState = updateBlockStateFromTag(pos, world, stack, placedState);
                     BlockItem.writeTagToBlockEntity(world, player, pos, stack);
                     placedBlock.onPlaced(world, pos, placedState, player, stack);
-                    ForgeEventHandler.onBlockPlace(pos, world, placedState);
+                    FabricEventHandler.onBlockPlace(pos, world, placedState);
                     if (player instanceof ServerPlayerEntity)
                     {
                         Criteria.PLACED_BLOCK.trigger((ServerPlayerEntity) player, pos, stack);

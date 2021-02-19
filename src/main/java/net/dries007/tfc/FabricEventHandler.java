@@ -22,6 +22,8 @@ import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.level.ServerWorldProperties;
 import org.apache.logging.log4j.LogManager;
@@ -54,7 +56,7 @@ import net.dries007.tfc.world.chunkdata.ITFCChunkGenerator;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 //@Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE)
-public final class ForgeEventHandler
+public final class FabricEventHandler
 {
     private static final Logger LOGGER = LogManager.getLogger();
 
@@ -261,34 +263,43 @@ public final class ForgeEventHandler
     }*/
 
     //TODO: Especially check watch/unwatch events
+    //TODO: FIXFIXIFIXFIX
     public static void registerChunkLoadEvents()
     {
         ServerChunkEvents.CHUNK_LOAD.register((world, chunk) -> {
-            if (!(chunk instanceof EmptyChunk))
-            {
-                ChunkPos pos = chunk.getPos();
-                ChunkDataChunkComponent.getCapability(chunk).ifPresent(data -> {
-                    ChunkDataCache.SERVER.update(pos, data);
-                    ChunkDataCache.WATCH_QUEUE.dequeueLoadedChunk(pos, data);
-                });
-            }
 
+            chunkLoad(chunk);
+            chunkWatch(chunk, world);
 
-
-
-            // Send an update packet to the client when watching the chunk
-            ChunkPos pos = chunk.getPos();
-            ChunkDataChunkComponent chunkData = ChunkDataChunkComponent.get(chunk.getWorld(), pos);
-            for (ServerPlayerEntity e : world.getPlayers()) {
-                if (chunkData.getStatus() != ChunkDataChunkComponent.Status.EMPTY) {
-                    //PacketHandler.send(PacketDistributor.PLAYER.with(event::getPlayer), chunkData.getUpdatePacket());
-                    chunkData.getUpdatePacket().send(e);
-                } else {
-                    // Chunk does not exist yet but it's queue'd for watch. Queue an update packet to be sent on chunk load
-                    ChunkDataCache.WATCH_QUEUE.enqueueUnloadedChunk(pos, e);
-                }
-            }
         });
+    }
+
+    public static void chunkLoad(WorldChunk chunk)
+    {
+        if (!(chunk instanceof EmptyChunk))
+        {
+            ChunkPos pos = chunk.getPos();
+            ChunkDataChunkComponent.getCapability(chunk).ifPresent(data -> {
+                ChunkDataCache.SERVER.update(pos, data);
+                ChunkDataCache.WATCH_QUEUE.dequeueLoadedChunk(pos, data);
+            });
+        }
+    }
+
+    public static void chunkWatch(WorldChunk chunk, ServerWorld world)
+    {
+        // Send an update packet to the client when watching the chunk
+        ChunkPos pos = chunk.getPos();
+        ChunkDataChunkComponent chunkData = ChunkDataChunkComponent.get(chunk.getWorld(), pos);
+        for (ServerPlayerEntity e : world.getPlayers()) {
+            if (chunkData.getStatus() != ChunkDataChunkComponent.Status.EMPTY) {
+                //PacketHandler.send(PacketDistributor.PLAYER.with(event::getPlayer), chunkData.getUpdatePacket());
+                chunkData.getUpdatePacket().send(e);
+            } else {
+                // Chunk does not exist yet but it's queue'd for watch. Queue an update packet to be sent on chunk load
+                ChunkDataCache.WATCH_QUEUE.enqueueUnloadedChunk(pos, e);
+            }
+        }
     }
 
     /*@SubscribeEvent
@@ -302,27 +313,37 @@ public final class ForgeEventHandler
     }*/
 
     //Todo: Especially check watch/unwatch events
+    //TODO: FIXFIXFIXFIXFIX
     public static void registerChunkUnloadEvents()
     {
         ServerChunkEvents.CHUNK_UNLOAD.register((world, chunk) -> {
-            // Clear server side chunk data cache
-            if (!(chunk instanceof EmptyChunk))
-            {
-                ChunkDataCache.SERVER.remove(chunk.getPos());
-            }
 
-
-            // Send an update packet to the client when un-watching the chunk
-            ChunkPos pos = chunk.getPos();
-            //PacketHandler.send(PacketDistributor.PLAYER.with(event::getPlayer), new ChunkUnwatchPacket(pos));
-            for (ServerPlayerEntity e : world.getPlayers())
-            {
-                if (ChunkDataCache.WATCH_QUEUE.dequeueChunk(pos, e))
-                {
-                    new ChunkUnwatchPacket(pos).send(e);
-                }
-            }
+            chunkUnload(chunk);
+            chunkUnwatch(chunk, world);
         });
+    }
+
+    public static void chunkUnload(WorldChunk chunk)
+    {
+        // Clear server side chunk data cache
+        if (!(chunk instanceof EmptyChunk))
+        {
+            ChunkDataCache.SERVER.remove(chunk.getPos());
+        }
+    }
+
+    public static void chunkUnwatch(WorldChunk chunk, ServerWorld world)
+    {
+        // Send an update packet to the client when un-watching the chunk
+        ChunkPos pos = chunk.getPos();
+        //PacketHandler.send(PacketDistributor.PLAYER.with(event::getPlayer), new ChunkUnwatchPacket(pos));
+        for (ServerPlayerEntity e : world.getPlayers())
+        {
+            if (ChunkDataCache.WATCH_QUEUE.dequeueChunk(pos, e))
+            {
+                new ChunkUnwatchPacket(pos).send(e);
+            }
+        }
     }
 
     /*@SubscribeEvent

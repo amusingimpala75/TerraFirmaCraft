@@ -1,6 +1,6 @@
 package net.dries007.tfc.mixin.fabric.item;
 
-import net.dries007.tfc.ForgeEventHandler;
+import net.dries007.tfc.FabricEventHandler;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BlockItem;
@@ -21,6 +21,6 @@ public class BlockItemMixin {
     @Inject(method = "place(Lnet/minecraft/item/ItemPlacementContext;)Lnet/minecraft/util/ActionResult;", at=@At(value = "INVOKE", target = "Lnet/minecraft/block/Block;onPlaced(Lnet/minecraft/world/World;Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;Lnet/minecraft/entity/LivingEntity;Lnet/minecraft/item/ItemStack;)V"), locals = LocalCapture.CAPTURE_FAILHARD)
     public void inject$updateComponents(ItemPlacementContext context, CallbackInfoReturnable<ActionResult> cir, ItemPlacementContext ctx, BlockState state, BlockPos pos, World world, PlayerEntity entity, ItemStack stack, BlockState blockState2)
     {
-        ForgeEventHandler.onBlockPlace(pos, world, blockState2);
+        FabricEventHandler.onBlockPlace(pos, world, blockState2);
     }
 }

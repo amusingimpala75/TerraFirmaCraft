@@ -64,7 +64,6 @@ public class WorldMixin {
     @Inject(method = "updateNeighborsAlways", at=@At("TAIL"))
     public void inject$updateComponents(BlockPos pos1, Block block, CallbackInfo ci)
     {
-        System.out.println("Update Detected!");
         final ServerWorld world = (ServerWorld) (Object) this;
         for (Direction direction : Direction.values())
         {
@@ -89,7 +88,6 @@ public class WorldMixin {
     @Inject(method = "updateNeighborsExcept", at=@At("TAIL"))
     public void inject$updateComponentsPartialDirection(BlockPos pos1, Block sourceBlock, Direction direction2, CallbackInfo ci)
     {
-        System.out.println("Update Detected!");
         final ServerWorld world = (ServerWorld) (Object) this;
         for (Direction direction : Direction.values())
         {

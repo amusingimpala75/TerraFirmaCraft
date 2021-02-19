@@ -1,6 +1,6 @@
 package net.dries007.tfc.mixin.fabric.client.gui;
 
-import net.dries007.tfc.client.ClientForgeEventHandler;
+import net.dries007.tfc.client.ClientFabricEventHandler;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.world.ClientWorld;
@@ -20,6 +20,6 @@ public class ClientWorldMixin {
     @Inject(method = "<init>", at=@At("RETURN"))
     public void inject$modifyColors(ClientPlayNetworkHandler networkHandler, ClientWorld.Properties properties, RegistryKey<World> registryRef, DimensionType dimensionType, int loadDistance, Supplier<Profiler> profiler, WorldRenderer worldRenderer, boolean debugWorld, long seed, CallbackInfo ci)
     {
-        ClientForgeEventHandler.onClientWorldLoad((World)(Object)this);
+        ClientFabricEventHandler.onClientWorldLoad((World)(Object)this);
     }
 }

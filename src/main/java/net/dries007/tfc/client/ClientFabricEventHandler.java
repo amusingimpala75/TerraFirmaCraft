@@ -41,7 +41,7 @@ import static net.minecraft.util.Formatting.*;
 
 //@Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 //TODO FIX
-public class ClientForgeEventHandler
+public class ClientFabricEventHandler
 {
     /*@SubscribeEvent
     public static void onRenderGameOverlayText(RenderGameOverlayEvent.Text event)

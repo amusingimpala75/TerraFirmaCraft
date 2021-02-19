@@ -52,7 +52,6 @@ public class Networking {
             //Update Calendar
             ClientPlayNetworking.registerReceiver(CALENDAR_UPDATE_PACKET_ID, (client, handler, packet, sender) -> {
                 CalendarUpdatePacket update = (new CalendarUpdatePacket(packet));
-                System.out.println("Received calendar update packet!");
                 client.execute(update::handle);
             });
         });

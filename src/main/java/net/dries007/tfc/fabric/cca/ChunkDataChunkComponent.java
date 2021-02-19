@@ -194,6 +194,7 @@ public class ChunkDataChunkComponent implements Component {
      */
     public void onUpdatePacket(LerpFloatLayer rainfallLayer, LerpFloatLayer temperatureLayer, ForestType forestType, float forestDensity, float forestWeirdness, PlateTectonicsClassification plateTectonicsInfo)
     {
+        System.out.println("Receiving chunk data, updating client!");
         this.rainfallLayer = rainfallLayer;
         this.temperatureLayer = temperatureLayer;
         this.forestType = forestType;

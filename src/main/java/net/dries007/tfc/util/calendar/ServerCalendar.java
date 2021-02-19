@@ -227,7 +227,6 @@ public class ServerCalendar extends Calendar
         //PacketHandler.send(PacketDistributor.ALL.noArg(), new CalendarUpdatePacket(this));
         for (ServerPlayerEntity e : getServer().getPlayerManager().getPlayerList()) {
             new CalendarUpdatePacket(this).send(e);
-            LOGGER.info("Syncing calendar to client:");
         }
     }
 

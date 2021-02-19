@@ -9,7 +9,6 @@ package net.dries007.tfc.client;
 import net.dries007.tfc.client.screen.CalendarScreen;
 import net.dries007.tfc.client.screen.ClimateScreen;
 import net.dries007.tfc.client.screen.NutritionScreen;
-import net.dries007.tfc.common.TFCArmorMaterial;
 import net.dries007.tfc.common.blocks.TFCBlocks;
 import net.dries007.tfc.common.blocks.plant.Plant;
 import net.dries007.tfc.common.blocks.soil.SoilBlockType;
@@ -41,11 +40,9 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.entity.FallingBlockEntityRenderer;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.texture.SpriteAtlasTexture;
-import net.minecraft.fluid.FlowableFluid;
 import net.minecraft.fluid.Fluid;
 import net.minecraft.fluid.FluidState;
 import net.minecraft.item.Item;
-import net.minecraft.resource.ReloadableResourceManager;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
@@ -138,7 +135,7 @@ public class TerraFirmaCraftClient implements ClientModInitializer {
 
         Networking.clientRegister();
 
-        ClientForgeEventHandler.registerClientEvents();
+        ClientFabricEventHandler.registerClientEvents();
 
         for (Map.Entry<Metal.Default, Map<Metal.ItemType, Item>> mat : TFCItems.METAL_ITEMS.entrySet())
         {
