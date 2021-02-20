@@ -16,7 +16,12 @@ import dev.onyxstudios.cca.api.v3.world.WorldComponentFactoryRegistry;
 import dev.onyxstudios.cca.api.v3.world.WorldComponentInitializer;
 import net.dries007.tfc.common.capabilities.heat.HeatManager;
 import net.dries007.tfc.util.Helpers;
+import net.dries007.tfc.world.chunkdata.ChunkDataCache;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.ReadOnlyChunk;
+import net.minecraft.world.chunk.WorldChunk;
 
 public class Components implements
     WorldComponentInitializer,
@@ -48,6 +53,43 @@ public class Components implements
 
     @Override
     public void registerChunkComponentFactories(ChunkComponentFactoryRegistry registry) {
-        registry.register(CHUNK_DATA, ChunkDataChunkComponent::new);
+        registry.register(CHUNK_DATA, chunk -> {
+            ChunkDataChunkComponent data;
+            if (chunk instanceof WorldChunk || (chunk instanceof ReadOnlyChunk && ((ReadOnlyChunk)chunk).getWrappedChunk() != null))
+            {
+                World world;
+                ChunkPos chunkPos = chunk.getPos();
+                if (chunk instanceof WorldChunk)
+                {
+                    world = ((WorldChunk) chunk).getWorld();
+                }
+                else
+                {
+                    world = ((ReadOnlyChunk) chunk).getWrappedChunk().getWorld();
+                }
+                if (!Helpers.isClientSide(world))
+                {
+                    // Chunk was created on server thread.
+                    // 1. If this was due to world gen, it won't have any cap data. This is where we clear the world gen cache and attach it to the chunk
+                    // 2. If this was due to chunk loading, the caps will be deserialized from NBT after this event is posted. Attach empty data here
+                    data = ChunkDataCache.WORLD_GEN.remove(chunkPos);
+                    if (data == null)
+                    {
+                        data = new ChunkDataChunkComponent(chunkPos);
+                    }
+                }
+                else
+                {
+                    // This may happen before or after the chunk is watched and synced to client
+                    // Default to using the cache. If later the sync packet arrives it will update the same instance in the chunk capability and cache
+                    data = ChunkDataCache.CLIENT.getOrCreate(chunkPos);
+                }
+                return data;
+            }
+            else
+            {
+                return ChunkDataChunkComponent.EMPTY;
+            }
+        });
     }
 }

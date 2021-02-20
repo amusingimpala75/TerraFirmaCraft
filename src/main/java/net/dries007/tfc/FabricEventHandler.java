@@ -264,7 +264,7 @@ public final class FabricEventHandler
 
     //TODO: Especially check watch/unwatch events
     //TODO: FIXFIXIFIXFIX
-    public static void registerChunkLoadEvents()
+    /*public static void registerChunkLoadEvents()
     {
         ServerChunkEvents.CHUNK_LOAD.register((world, chunk) -> {
 
@@ -272,7 +272,7 @@ public final class FabricEventHandler
             chunkWatch(chunk, world);
 
         });
-    }
+    }*/
 
     public static void chunkLoad(WorldChunk chunk)
     {
@@ -286,19 +286,19 @@ public final class FabricEventHandler
         }
     }
 
-    public static void chunkWatch(WorldChunk chunk, ServerWorld world)
+    public static void chunkWatch(ServerWorld world, ServerPlayerEntity player, ChunkPos pos)
     {
         // Send an update packet to the client when watching the chunk
-        ChunkPos pos = chunk.getPos();
-        ChunkDataChunkComponent chunkData = ChunkDataChunkComponent.get(chunk.getWorld(), pos);
-        for (ServerPlayerEntity e : world.getPlayers()) {
-            if (chunkData.getStatus() != ChunkDataChunkComponent.Status.EMPTY) {
-                //PacketHandler.send(PacketDistributor.PLAYER.with(event::getPlayer), chunkData.getUpdatePacket());
-                chunkData.getUpdatePacket().send(e);
-            } else {
-                // Chunk does not exist yet but it's queue'd for watch. Queue an update packet to be sent on chunk load
-                ChunkDataCache.WATCH_QUEUE.enqueueUnloadedChunk(pos, e);
-            }
+        ChunkDataChunkComponent chunkData = ChunkDataChunkComponent.get(world, pos);
+        if (chunkData.getStatus() != ChunkDataChunkComponent.Status.EMPTY)
+        {
+            //PacketHandler.send(PacketDistributor.PLAYER.with(event::getPlayer), chunkData.getUpdatePacket());
+            chunkData.getUpdatePacket().send(player);
+        }
+        else
+        {
+            // Chunk does not exist yet but it's queue'd for watch. Queue an update packet to be sent on chunk load
+            ChunkDataCache.WATCH_QUEUE.enqueueUnloadedChunk(pos, player);
         }
     }
 
@@ -314,14 +314,14 @@ public final class FabricEventHandler
 
     //Todo: Especially check watch/unwatch events
     //TODO: FIXFIXFIXFIXFIX
-    public static void registerChunkUnloadEvents()
+    /*public static void registerChunkUnloadEvents()
     {
         ServerChunkEvents.CHUNK_UNLOAD.register((world, chunk) -> {
 
             chunkUnload(chunk);
             chunkUnwatch(chunk, world);
         });
-    }
+    }*/
 
     public static void chunkUnload(WorldChunk chunk)
     {
@@ -332,17 +332,13 @@ public final class FabricEventHandler
         }
     }
 
-    public static void chunkUnwatch(WorldChunk chunk, ServerWorld world)
+    public static void chunkUnwatch(ServerWorld world, ServerPlayerEntity player, ChunkPos pos)
     {
         // Send an update packet to the client when un-watching the chunk
-        ChunkPos pos = chunk.getPos();
         //PacketHandler.send(PacketDistributor.PLAYER.with(event::getPlayer), new ChunkUnwatchPacket(pos));
-        for (ServerPlayerEntity e : world.getPlayers())
+        if (ChunkDataCache.WATCH_QUEUE.dequeueChunk(pos, player))
         {
-            if (ChunkDataCache.WATCH_QUEUE.dequeueChunk(pos, e))
-            {
-                new ChunkUnwatchPacket(pos).send(e);
-            }
+            new ChunkUnwatchPacket(pos).send(player);
         }
     }
 
@@ -600,9 +596,9 @@ public final class FabricEventHandler
 
     public static void registerEvents()
     {
-        registerChunkLoadEvents();
+        //registerChunkLoadEvents();
         registerCommands();
-        registerChunkUnloadEvents();
+        //registerChunkUnloadEvents();
         registerBlockBreakEvent();
         registerFluidReactionBehaviour();
         registerReloadListeners();

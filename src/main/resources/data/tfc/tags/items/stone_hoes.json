@@ -1,0 +1,10 @@
+{
+  "__comment__": "This file was automatically created by mcresources",
+  "replace": false,
+  "values": [
+    "tfc:stone/hoe/sedimentary",
+    "tfc:stone/hoe/metamorphic",
+    "tfc:stone/hoe/igneous_extrusive",
+    "tfc:stone/hoe/igneous_intrusive"
+  ]
+}

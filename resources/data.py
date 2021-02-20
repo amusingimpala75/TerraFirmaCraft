@@ -42,7 +42,7 @@ def generate(rm: ResourceManager):
 
         # Common metal crafting tools
         if 'tool' in metal_data.types:
-            for tool in ('hammer', 'chisel', 'axe', 'pickaxe', 'shovel'):
+            for tool in ('hammer', 'chisel', 'axe', 'pickaxe', 'shovel', 'propick', 'hoe', 'saw', 'javelin', 'sword', 'knife', 'scythe', 'mace', 'shears'):
                 rm.item_tag('tfc:%ss' % tool, 'tfc:metal/%s/%s' % (tool, metal))
 
     # Rocks
@@ -98,3 +98,17 @@ def generate(rm: ResourceManager):
 
     # Valid spawn tag - grass, sand, or raw rock
     rm.block_tag('minecraft:valid_spawn', *['tfc:grass/%s' % v for v in SOIL_BLOCK_VARIANTS], *['tfc:sand/%s' % c for c in SAND_BLOCK_TYPES], *['tfc:rock/raw/%s' % r for r in ROCKS.keys()])
+
+    #Stone tools types
+    for stone in ROCK_CATEGORIES:
+        for tool in ('hammer', 'axe', 'shovel', 'hoe', 'javelin', 'knife'):
+            rm.item_tag('tfc:stone_%ss' % tool, 'tfc:stone/%s/%s' % (tool, stone))
+
+    # Fabric Tool tags
+    rm.item_tag('fabric:axes', '#tfc:axes', '#tfc:stone_axes')
+    rm.item_tag('fabric:shovels', '#tfc:shovels', '#tfc:stone_shovels')
+    rm.item_tag('fabric:pickaxes', '#tfc:pickaxes')
+    # Don't ask
+    rm.item_tag('fabric:shears', '#tfc:shearss')
+    rm.item_tag('fabric:hoes', '#tfc:hoes', '#tfc:stone_hoes')
+    rm.item_tag('fabric:swords', '#tfc:swords')

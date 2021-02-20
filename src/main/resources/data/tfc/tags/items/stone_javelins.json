@@ -1,0 +1,10 @@
+{
+  "__comment__": "This file was automatically created by mcresources",
+  "replace": false,
+  "values": [
+    "tfc:stone/javelin/sedimentary",
+    "tfc:stone/javelin/metamorphic",
+    "tfc:stone/javelin/igneous_extrusive",
+    "tfc:stone/javelin/igneous_intrusive"
+  ]
+}
