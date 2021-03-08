@@ -7,6 +7,8 @@
 package net.dries007.tfc.fabric.cca;
 
 import dev.onyxstudios.cca.api.v3.component.Component;
+import dev.onyxstudios.cca.api.v3.component.CopyableComponent;
+import dev.onyxstudios.cca.api.v3.component.tick.ServerTickingComponent;
 import net.dries007.tfc.network.ChunkWatchPacket;
 import net.dries007.tfc.world.chunkdata.*;
 import net.minecraft.nbt.CompoundTag;

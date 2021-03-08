@@ -44,6 +44,12 @@ public class TFCSeaPickleBlock extends Block implements IFluidLoggable
         setDefaultState(getStateManager().getDefaultState().with(PICKLES, 1));
     }
 
+    public static boolean isDead(BlockState state)
+    {
+        FluidProperty property = ((TFCSeaPickleBlock) state.getBlock()).getFluidProperty();
+        return state.get(property) == property.keyFor(Fluids.EMPTY);
+    }
+
     @Nullable
     @Override
     public BlockState getPlacementState(ItemPlacementContext context)
@@ -61,48 +67,10 @@ public class TFCSeaPickleBlock extends Block implements IFluidLoggable
         }
     }
 
-    public static boolean isDead(BlockState state)
-    {
-        FluidProperty property = ((TFCSeaPickleBlock) state.getBlock()).getFluidProperty();
-        return state.get(property) == property.keyFor(Fluids.EMPTY);
-    }
-
     @Override
-    @SuppressWarnings("deprecation")
-    public boolean canReplace(BlockState state, ItemPlacementContext useContext)
+    protected void appendProperties(StateManager.Builder<Block, BlockState> builder)
     {
-        return useContext.getStack().getItem() == this.asItem() && state.get(PICKLES) < 4 || super.canReplace(state, useContext);
-    }
-
-    protected boolean mayPlaceOn(BlockState state, BlockView worldIn, BlockPos pos)
-    {
-        return !state.getCollisionShape(worldIn, pos).getFace(Direction.UP).isEmpty() || state.isSideSolidFullSquare(worldIn, pos, Direction.UP);
-    }
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public boolean canPlaceAt(BlockState state, WorldView worldIn, BlockPos pos)
-    {
-        BlockPos blockpos = pos.down();
-        return mayPlaceOn(worldIn.getBlockState(blockpos), worldIn, blockpos);
-    }
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public VoxelShape getOutlineShape(BlockState state, BlockView worldIn, BlockPos pos, ShapeContext context)
-    {
-        switch (state.get(PICKLES))
-        {
-            case 1:
-            default:
-                return ONE_AABB;
-            case 2:
-                return TWO_AABB;
-            case 3:
-                return THREE_AABB;
-            case 4:
-                return FOUR_AABB;
-        }
+        builder.add(PICKLES, getFluidProperty());
     }
 
     @Override
@@ -132,14 +100,46 @@ public class TFCSeaPickleBlock extends Block implements IFluidLoggable
     }
 
     @Override
+    @SuppressWarnings("deprecation")
+    public boolean canReplace(BlockState state, ItemPlacementContext useContext)
+    {
+        return useContext.getStack().getItem() == this.asItem() && state.get(PICKLES) < 4 || super.canReplace(state, useContext);
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public boolean canPlaceAt(BlockState state, WorldView worldIn, BlockPos pos)
+    {
+        BlockPos blockpos = pos.down();
+        return mayPlaceOn(worldIn.getBlockState(blockpos), worldIn, blockpos);
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public VoxelShape getOutlineShape(BlockState state, BlockView worldIn, BlockPos pos, ShapeContext context)
+    {
+        switch (state.get(PICKLES))
+        {
+            case 1:
+            default:
+                return ONE_AABB;
+            case 2:
+                return TWO_AABB;
+            case 3:
+                return THREE_AABB;
+            case 4:
+                return FOUR_AABB;
+        }
+    }
+
+    @Override
     public FluidProperty getFluidProperty()
     {
         return FLUID;
     }
 
-    @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder)
+    protected boolean mayPlaceOn(BlockState state, BlockView worldIn, BlockPos pos)
     {
-        builder.add(PICKLES, getFluidProperty());
+        return !state.getCollisionShape(worldIn, pos).getFace(Direction.UP).isEmpty() || state.isSideSolidFullSquare(worldIn, pos, Direction.UP);
     }
 }

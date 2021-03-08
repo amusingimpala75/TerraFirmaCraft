@@ -143,14 +143,15 @@ public class TerraFirmaCraftClient implements ClientModInitializer {
             {
                 continue;
             }
-            ArmorRenderingRegistry.registerTexture(
-                (livingEntity, itemStack, equipmentSlot, b, s, identifier) ->
-                    Helpers.identifier("textures/models/armor/"+mat.getKey().name().toLowerCase(Locale.ROOT)+"_layer_1"),
+            Identifier id = Helpers.identifier("textures/models/armor/"+mat.getKey().name().toLowerCase(Locale.ROOT)+"_layer_1");
+            System.out.println(id.toString());
+            ArmorRenderingRegistry.registerSimpleTexture(
+                id,
                 mat.getValue().get(Metal.ItemType.HELMET),
                 mat.getValue().get(Metal.ItemType.CHESTPLATE),
                 mat.getValue().get(Metal.ItemType.BOOTS)
             );
-            ArmorRenderingRegistry.registerTexture((livingEntity, itemStack, equipmentSlot, b, s, identifier) ->
+            ArmorRenderingRegistry.registerSimpleTexture(
                 Helpers.identifier("textures/models/armor/"+mat.getKey().name().toLowerCase(Locale.ROOT)+"_layer_2"),
                 mat.getValue().get(Metal.ItemType.GREAVES)
             );

@@ -154,6 +154,5 @@ def main():
         overlay_image('texture_templates/mossy_stone_bricks', path + 'block/rock/bricks/%s' % rock, path + 'block/rock/mossy_bricks/%s' % rock)
         overlay_image('texture_templates/mossy_cobblestone', path + 'block/rock/cobble/%s' % rock, path + 'block/rock/mossy_cobble/%s' % rock)
 
-
 if __name__ == '__main__':
     main()

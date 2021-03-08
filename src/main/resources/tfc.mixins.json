@@ -31,6 +31,7 @@
     "fabric.world.MinecraftServerMixin",
     "fabric.world.ServerWorldMixin",
     "fabric.world.StructureManagerAccessor",
+    "fabric.world.WorldChunkMixin",
     "fabric.world.WorldMixin",
     "fabric.world.WorldViewMixin",
     "fabric.world.loadandwatch.ClientChunkManagerMixin",

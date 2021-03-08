@@ -64,39 +64,28 @@ public class WorldMixin {
     @Inject(method = "updateNeighborsAlways", at=@At("TAIL"))
     public void inject$updateComponents(BlockPos pos1, Block block, CallbackInfo ci)
     {
-        final ServerWorld world = (ServerWorld) (Object) this;
         for (Direction direction : Direction.values())
         {
-            // Check each notified block for a potential gravity block
-            final BlockPos pos = pos1.offset(direction);
-            final BlockState state = world.getBlockState(pos);
-
-            if (TFCTags.Blocks.CAN_LANDSLIDE.contains(state.getBlock()))
-            {
-                //world.getCapability(WorldTrackerCapability.CAPABILITY).ifPresent(cap -> cap.addLandslidePos(pos));
-                Components.WORLD_TRACKING.maybeGet(world).ifPresent(comp -> comp.addLandslidePos(pos));
-            }
-
-            if (TFCTags.Blocks.BREAKS_WHEN_ISOLATED.contains(state.getBlock()))
-            {
-                //world.getCapability(WorldTrackerCapability.CAPABILITY).ifPresent(cap -> cap.addIsolatedPos(pos));
-                Components.WORLD_TRACKING.maybeGet(world).ifPresent(comp -> comp.addIsolatedPos(pos));
-            }
+            updateLandslideAndIsolated(pos1.offset(direction));
         }
     }
 
     @Inject(method = "updateNeighborsExcept", at=@At("TAIL"))
     public void inject$updateComponentsPartialDirection(BlockPos pos1, Block sourceBlock, Direction direction2, CallbackInfo ci)
     {
-        final ServerWorld world = (ServerWorld) (Object) this;
         for (Direction direction : Direction.values())
         {
-            // Check each notified block for a potential gravity block
-            if (direction == direction2)
+            if (direction.equals(direction2))
             {
                 continue;
             }
-            final BlockPos pos = pos1.offset(direction);
+            updateLandslideAndIsolated(pos1.offset(direction));
+        }
+    }
+
+    public void updateLandslideAndIsolated(BlockPos pos)
+    {
+        final ServerWorld world = (ServerWorld) (Object) this;
             final BlockState state = world.getBlockState(pos);
 
             if (TFCTags.Blocks.CAN_LANDSLIDE.contains(state.getBlock()))
@@ -110,6 +99,5 @@ public class WorldMixin {
                 //world.getCapability(WorldTrackerCapability.CAPABILITY).ifPresent(cap -> cap.addIsolatedPos(pos));
                 Components.WORLD_TRACKING.maybeGet(world).ifPresent(comp -> comp.addIsolatedPos(pos));
             }
-        }
     }
 }

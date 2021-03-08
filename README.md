@@ -52,7 +52,6 @@ Parts of this project are edited source code from the original TerraFirmaCraft f
     - Compare w/ forge for inconsistencies
     - Collapses/Landslides
     - Components: null loading of tags (see below)
-    - Chunk load vs Chunk Watch (and un- variants)
     
 - Fluids
     - metals look weird

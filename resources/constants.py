@@ -10,7 +10,6 @@ Ore = NamedTuple('Ore', metal=Optional[str], graded=bool)
 OreGrade = NamedTuple('OreGrade', weight=int)
 Vein = NamedTuple('Vein', ore=str, type=str, rarity=int, size=int, min_y=int, max_y=int, density=float, poor=float, normal=float, rich=float, rocks=List[str])
 Plant = NamedTuple('Plant', clay=bool, min_temp=float, max_temp=float, min_rain=float, max_rain=float, type=str)
-
 HORIZONTAL_DIRECTIONS: List[str] = ['east', 'west', 'north', 'south']
 
 ROCK_CATEGORIES: List[str] = ['sedimentary', 'metamorphic', 'igneous_extrusive', 'igneous_intrusive']

@@ -54,6 +54,16 @@ public final class TFCItems {
         )
     );
 
+    // Flora
+
+    public static final Map<Coral, Item> CORAL_FANS = Helpers.mapOfKeys(Coral.class, color ->
+        register("coral/" + color.toString().toLowerCase() + "_coral_fan", () -> new WallStandingBlockItem(TFCBlocks.CORAL.get(color).get(Coral.BlockType.CORAL_FAN), TFCBlocks.CORAL.get(color).get(Coral.BlockType.CORAL_WALL_FAN), (new Item.Settings()).group(FLORA)))
+    );
+
+    public static final Map<Coral, Item> DEAD_CORAL_FANS = Helpers.mapOfKeys(Coral.class, color ->
+        register("coral/" + color.toString().toLowerCase() + "_dead_coral_fan", () -> new WallStandingBlockItem(TFCBlocks.CORAL.get(color).get(Coral.BlockType.DEAD_CORAL_FAN), TFCBlocks.CORAL.get(color).get(Coral.BlockType.DEAD_CORAL_WALL_FAN), (new Item.Settings()).group(FLORA)))
+    );
+
     // Rock Stuff
 
     public static final Map<RockCategory, Map<RockCategory.ItemType, Item>> ROCK_TOOLS = Helpers.mapOfKeys(RockCategory.class, category ->
@@ -67,13 +77,6 @@ public final class TFCItems {
     );
 
     // Misc
-
-    public static final Map<Coral.Color, Item> CORAL_FANS = Helpers.mapOfKeys(Coral.Color.class, color ->
-        register("coral/" + color.toString().toLowerCase() + "_coral_fan", () -> new WallStandingBlockItem(TFCBlocks.CORAL.get(color).get(Coral.BlockType.CORAL_FAN), TFCBlocks.CORAL.get(color).get(Coral.BlockType.CORAL_WALL_FAN), (new Item.Settings()).group(FLORA)))
-    );
-    public static final Map<Coral.Color, Item> DEAD_CORAL_FANS = Helpers.mapOfKeys(Coral.Color.class, color ->
-        register("coral/" + color.toString().toLowerCase() + "_dead_coral_fan", () -> new WallStandingBlockItem(TFCBlocks.CORAL.get(color).get(Coral.BlockType.DEAD_CORAL_FAN), TFCBlocks.CORAL.get(color).get(Coral.BlockType.DEAD_CORAL_WALL_FAN), (new Item.Settings()).group(FLORA)))
-    );
 
 
     public static final Map<HideItemType, Map<HideItemType.Size, Item>> HIDES = Helpers.mapOfKeys(HideItemType.class, type ->
